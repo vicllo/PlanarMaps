@@ -1,5 +1,19 @@
 class PlanarMap:
 	def __init__(self, sigma:Permutation, alpha:Permutation):
+		"""
+		A class to represent a planar map.
+
+		Attributes
+		----------
+		sigma : Permutation
+			Fixed-point free involution whose cycles are given by the edges
+		alpha : Permutation
+			Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, around the vertex it belongs to.
+		
+		Methods
+		-------
+
+		"""
 		self.sigma = sigma
 		self.alpha = alpha
 		self.phi = self.sigma.right_action_product(self.alpha)
