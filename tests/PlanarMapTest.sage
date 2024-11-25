@@ -161,7 +161,7 @@ def test_build_graph():
     map_1 = PlanarMap(sigma_1,alpha_1)
     
     graph_1= map_1.buildGraph()
-    edges_1 = graph_1.edges(labels = false)
+    edges_1 = graph_1.edges(labels = False)
     
     correctEdges_1  = [(1,2),(2,3),(3,4)]
 
@@ -179,7 +179,7 @@ def test_build_graph():
     map_2 = PlanarMap(sigma_2,alpha_2)
     
     graph_2 = map_2.buildGraph()
-    edges_2 = graph_2.edges(labels = false)
+    edges_2 = graph_2.edges(labels = False)
 
     correctEdges_2 = [(1,2),(1,3),(2,3)]
     
@@ -190,6 +190,50 @@ def test_build_graph():
 
     assert passed_test_2 is True
 
+#Return the dual of the Planar map
+def test_dual():
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [1,3,2,5,4,6])
+    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
+    
+    map_1 = PlanarMap(sigma_1,alpha_1)
+    
+    dualMap_1 = map_1.dual()
+
+
+    graphDual_1 = dualMap_1.buildGraph()
+
+    correctDualEdges_1 = [(1,1),(1,1),(1,1)]
+
+    dualEdges_1 = graphDual_1.edges(labels = False)
+
+    passed_test_1 = True
+
+    for k in range(map_1.numberOfEdges()):
+        passed_test_1 &= dualEdges_1[k]==correctDualEdges_1[k]
+    assert passed_test_1 is True
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
+    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
+    
+    map_2 = PlanarMap(sigma_2,alpha_2)
+
+    dualMap_2 = map_2.dual()
+
+    graphDual_2  = dualMap_2.buildGraph()
+
+    correctDualEdges_2 = [(1,2),(1,2),(1,2)]
+
+    dualEdges_2 = graphDual_2.edges(labels = False)
+
+    passed_test_2 = True
+
+    for k in range(map_2.numberOfEdges()):
+        passed_test_2 &= correctDualEdges_2[k]==dualEdges_2[k]
+    assert passed_test_2 is True
 
 if __name__ == "__main__":
     #Test init function
@@ -215,3 +259,7 @@ if __name__ == "__main__":
     #Test the build graph function
     test_build_graph()
     print("test_build_graph passed")
+
+    #Test the dual graph
+    test_dual()
+    print("test_dual_graph passed")
