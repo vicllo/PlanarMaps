@@ -91,3 +91,11 @@ class PlanarMap:
 		O(1)
 		"""
 		return self.n
+
+	def dual(self):
+		"""
+		A method that return the dual of the planar map
+		-------
+		O(n)
+		"""
+		return  PlanarMap(self.phi.inverse(),self.alpha)
