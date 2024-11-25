@@ -4,7 +4,7 @@ from sage.all_cmdline import *   # import sage library
 load("../PlanarMap.sage")
 
 
-#Testing the init function of the PlanarMap class
+#Testing the init method of the PlanarMap class
 def test_init_planar_map():
 
     #Test case 1
@@ -93,7 +93,7 @@ def test_init_planar_map():
     assert correct_graph is True
 
 
-#Test the repr function of planar map
+#Test the repr method of planar map
 def test_repr_map():
     #Test case 1
     sigma_1 = Permutation( [1,3,2,5,4,6])
@@ -102,7 +102,7 @@ def test_repr_map():
     correct_repr = "Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]"
     assert str(map_1) == correct_repr
 
-#Test the numberOfFaces function
+#Test the numberOfFaces method
 def test_number_of_faces():
     #Test case 1
     #Correspond to a linear tree with 4 nodes
@@ -118,7 +118,7 @@ def test_number_of_faces():
     map_2 = PlanarMap(sigma_2,alpha_2)
     assert map_2.numberOfFaces()==2
 
-#Test the numberOfNodes function
+#Test the numberOfNodes method
 def test_number_of_nodes():
     #Test case 1
     #Correspond to a linear tree with 4 nodes
@@ -134,7 +134,7 @@ def test_number_of_nodes():
     map_2 = PlanarMap(sigma_2,alpha_2)
     assert map_2.numberOfNodes()==3
 
-#Test the numberOfEdges function
+#Test the numberOfEdges method
 def test_number_of_edges():
     #Test case 1
     #Correspond to a linear tree with 4 nodes
@@ -150,7 +150,7 @@ def test_number_of_edges():
     map_2 = PlanarMap(sigma_2,alpha_2)
     assert map_2.numberOfEdges()==3
 
-#Test the buildGraph function
+#Test the buildGraph method
 def test_build_graph():
 
     #Test case 1
@@ -190,7 +190,7 @@ def test_build_graph():
 
     assert passed_test_2 is True
 
-#Return the dual of the Planar map
+#Test the dual method
 def test_dual():
     #Test case 1
     #Correspond to a linear tree with 4 nodes
@@ -235,31 +235,55 @@ def test_dual():
         passed_test_2 &= correctDualEdges_2[k]==dualEdges_2[k]
     assert passed_test_2 is True
 
+#Test the diameter method
+def test_diameter():
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [1,3,2,5,4,6])
+    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
+    
+    map_1 = PlanarMap(sigma_1,alpha_1)
+
+    assert map_1.diameter() == 3
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
+    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
+    
+    map_2 = PlanarMap(sigma_2,alpha_2)
+
+    assert map_2.diameter() == 1
+
 if __name__ == "__main__":
-    #Test init function
+    #Test init method
     test_init_planar_map()
     print("test_init_planar_map passed")
     
-    #Test repr function
+    #Test repr method
     test_repr_map()
     print("test_repr_map passed")
 
-    #Test the numberOfFaces function
+    #Test the numberOfFaces method
     test_number_of_faces()
     print("test_number_of_faces passed")
 
-    #Test the numberOfNodes function
+    #Test the numberOfNodes method
     test_number_of_nodes()
     print("test_number_of_nodes passed")
 
-    #Test the numberOfEdges function
+    #Test the numberOfEdges method
     test_number_of_edges()
     print("test_number_of_edges passed")
 
-    #Test the build graph function
+    #Test the buildGraph method
     test_build_graph()
     print("test_build_graph passed")
 
-    #Test the dual graph
+    #Test the dual method
     test_dual()
     print("test_dual_graph passed")
+
+    #Test the diameter method
+    test_diameter()
+    print("test_diameter passed")
