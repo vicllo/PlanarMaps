@@ -118,6 +118,48 @@ def test_number_of_faces():
     map_2 = PlanarMap(sigma_2,alpha_2)
     assert map_2.numberOfFaces()==2
 
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    
+    assert map_3.numberOfFaces() == 1
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+
+    assert map_4.numberOfFaces() == 1
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    assert map_5.numberOfFaces() == 2
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    assert map_6.numberOfFaces() == 3
+
+    
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    assert map_7.numberOfFaces() == 4
+    
+
 #Test the numberOfNodes method
 def test_number_of_nodes():
     #Test case 1
@@ -134,6 +176,47 @@ def test_number_of_nodes():
     map_2 = PlanarMap(sigma_2,alpha_2)
     assert map_2.numberOfNodes()==3
 
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    
+    assert map_3.numberOfNodes() == 2
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+
+    assert map_4.numberOfNodes() == 3
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    assert map_5.numberOfNodes() == 1
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    assert map_6.numberOfNodes() == 2
+
+    
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    assert map_7.numberOfNodes() == 2
+
 #Test the numberOfEdges method
 def test_number_of_edges():
     #Test case 1
@@ -148,7 +231,49 @@ def test_number_of_edges():
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
     map_2 = PlanarMap(sigma_2,alpha_2)
+    
     assert map_2.numberOfEdges()==3
+
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    
+    assert map_3.numberOfEdges() == 1
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+
+    assert map_4.numberOfEdges() == 2
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    assert map_5.numberOfEdges() == 1
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    assert map_6.numberOfEdges() == 3
+
+    
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    assert map_7.numberOfEdges() == 4
 
 #Test the buildGraph method
 def test_build_graph():
@@ -255,6 +380,91 @@ def test_diameter():
 
     assert map_2.diameter() == 1
 
+
+
+def printVEF(pMap):
+    print("V: ",pMap.numberOfNodes(),"E: ",pMap.numberOfEdges(),"F: ",pMap.numberOfFaces())
+
+def printSigmaAlphaPhi(pMap):
+    print("Alpha:",pMap.alpha.to_cycles())
+    print("Sigma:",pMap.alpha.to_cycles())
+    print("Phi",pMap.phi.to_cycles())
+
+#Test the derivedMap method
+def test_derivedMap():
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [1,3,2,5,4,6])
+    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
+    map_1 = PlanarMap(sigma_1,alpha_1)
+    derived_1 = map_1.derivedMap()
+    assert derived_1.numberOfFaces() == 6
+    assert derived_1.numberOfEdges() == 12
+    assert derived_1.numberOfNodes() == 8
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
+    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
+    map_2 = PlanarMap(sigma_2,alpha_2)
+    derived_2 = map_2.derivedMap()
+    assert derived_2.numberOfFaces() == 6
+    assert derived_2.numberOfEdges() == 12
+    assert derived_2.numberOfNodes() == 8
+
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    derived_3 = map_3.derivedMap()
+    assert derived_3.numberOfFaces() == 2
+    assert derived_3.numberOfEdges() == 4
+    assert derived_3.numberOfNodes() == 4
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+    derived_4 = map_4.derivedMap()
+
+    assert derived_4.numberOfNodes() == 6
+    assert derived_4.numberOfEdges() == 8
+    assert derived_4.numberOfFaces() == 4
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    derived_5 = map_5.derivedMap()
+    
+    assert derived_5.numberOfNodes() == 4
+    assert derived_5.numberOfEdges() == 4
+    assert derived_5.numberOfFaces() == 2
+
+    #Test case 6
+    #Correspond to two nodes link by 2 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    derived_6 = map_6.derivedMap()
+    assert derived_6.numberOfNodes() == 8
+    assert derived_6.numberOfEdges() == 12
+    assert derived_6.numberOfFaces() == 6
+
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    derived_7 = map_7.derivedMap()
+
+    assert derived_7.numberOfFaces() == 8
+    assert derived_7.numberOfEdges() == 16
+    assert derived_7.numberOfNodes() == 10
+
 if __name__ == "__main__":
     #Test init method
     test_init_planar_map()
@@ -287,3 +497,7 @@ if __name__ == "__main__":
     #Test the diameter method
     test_diameter()
     print("test_diameter passed")
+
+    #Test the derivedMap
+    test_derivedMap()
+    print("test_derivedMap passed")
