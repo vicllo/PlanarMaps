@@ -119,7 +119,8 @@ class PlanarMap:
 		""" 
 		A method that return the derived Map of the planar map
 		-------
-		O(n)
+		O(m)
+		where m is the number of edges
 		"""
 		K = 8*self.m+1
 		
@@ -153,7 +154,8 @@ class PlanarMap:
 		""" 
 		A method that return the incidence Map of the planar map
 		-------
-		O(n)
+		O(m)
+		where m is the number of edges
 		"""
 
 		face = list(range(2*self.m+1))
