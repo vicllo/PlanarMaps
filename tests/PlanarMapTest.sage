@@ -445,7 +445,7 @@ def test_derivedMap():
     assert derived_5.numberOfFaces() == 2
 
     #Test case 6
-    #Correspond to two nodes link by 2 edges
+    #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
     map_6 = PlanarMap(sigma_6,alpha_6)
@@ -464,6 +464,95 @@ def test_derivedMap():
     assert derived_7.numberOfFaces() == 8
     assert derived_7.numberOfEdges() == 16
     assert derived_7.numberOfNodes() == 10
+
+#Test the incidence map
+def test_incidenceMap():
+
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [_sage_const_1 ,_sage_const_3 ,_sage_const_2 ,_sage_const_5 ,_sage_const_4 ,_sage_const_6 ])
+    alpha_1 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 )])
+    map_1 = PlanarMap(sigma_1,alpha_1)
+    
+    incidence_1 = map_1.incidenceMap()
+
+    assert incidence_1.numberOfNodes() == 5
+    assert incidence_1.numberOfFaces() == 1
+    assert incidence_1.numberOfEdges() == 4
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
+    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
+    map_2 = PlanarMap(sigma_2,alpha_2)
+
+    incidence_2 = map_2.incidenceMap()
+
+    assert incidence_2.numberOfNodes() == 5
+    assert incidence_2.numberOfEdges() == 6
+    assert incidence_2.numberOfFaces() == 3
+
+
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+
+    incidence_3 = map_3.incidenceMap()
+
+    assert incidence_3.numberOfNodes() == 3
+    assert incidence_3.numberOfEdges() == 2
+    assert incidence_3.numberOfFaces() == 1
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+    incidence_4 = map_4.incidenceMap()
+
+    assert incidence_4.numberOfNodes() == 4
+    assert incidence_4.numberOfEdges() == 3
+    assert incidence_4.numberOfFaces() == 1
+
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    incidence_5 = map_5.incidenceMap()
+
+    assert incidence_5.numberOfNodes() == 3
+    assert incidence_5.numberOfEdges() == 2
+    assert incidence_5.numberOfFaces() == 1
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    incidence_6 = map_6.incidenceMap()
+
+    assert incidence_6.numberOfNodes() == 5
+    assert incidence_6.numberOfEdges() == 6
+    assert incidence_6.numberOfFaces() == 3
+
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    incidence_7 = map_7.incidenceMap()
+
+    assert incidence_7.numberOfNodes() == 6
+    assert incidence_7.numberOfEdges() == 8
+    assert incidence_7.numberOfFaces() == 4
+
 
 if __name__ == "__main__":
     #Test init method
@@ -498,6 +587,10 @@ if __name__ == "__main__":
     test_diameter()
     print("test_diameter passed")
 
-    #Test the derivedMap
+    #Test the derivedMapt
     test_derivedMap()
     print("test_derivedMap passed")
+
+    #Test the incidenceMap
+    test_incidenceMap()
+    print("test_incidence_map passed")

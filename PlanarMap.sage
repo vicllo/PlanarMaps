@@ -1,5 +1,6 @@
 from sage.all_cmdline import *   # import sage library
 
+
 class PlanarMap:
 	def __init__(self, sigma:Permutation, alpha:Permutation):
 		"""
@@ -148,3 +149,85 @@ class PlanarMap:
 		derivedAlpha = Permutation(derivedAlphaList)
 		return PlanarMap(derivedSigma,derivedAlpha)
 
+	def incidenceMap(self):
+		""" 
+		A method that return the incidence Map of the planar map
+		-------
+		O(n)
+		"""
+
+		face = list(range(2*self.m+1))
+
+		phiCycles = self.phi.to_cycles()
+		invPhi = self.phi.inverse()
+
+		for k in range(len(phiCycles)):
+			for demiEdge in phiCycles[k]:
+				face[demiEdge] = k
+		
+
+		t = 1
+		sigmaInciList = []
+		corres = [-1]
+		invCorres  = list(range(2*self.m+1))
+
+		for k in range(len(phiCycles)):
+			l = 0
+			t0 = t
+			while l<len(phiCycles[k]):
+				demiEdge = phiCycles[k][l]
+				
+				if face[demiEdge] == face[self.alpha(demiEdge)]:
+					cnt = 1
+					l+=1
+
+					while l<len(phiCycles[k]) and face[phiCycles[k][l]] == face[self.alpha(phiCycles[k][l])]:
+						cnt+=1
+						l+=1
+
+					for j in range(cnt//2):
+						t+=1
+						corres.append(-1)
+						sigmaInciList.append(-1)
+
+				else:
+					sigmaInciList.append(-1)
+					corres.append(-1)
+					corres[t] = demiEdge
+					invCorres[demiEdge] = t
+					t+=1
+					l+=1	
+
+			if len(phiCycles) == 1:
+				sigmaInciList.append(-1)
+				corres.append(-1)
+				t+=1
+
+			for x in range(t0+1,t):
+				sigmaInciList[x-1] = x-1
+					
+			sigmaInciList[t0-1	] = t-1
+
+		N = len(sigmaInciList)
+
+
+		for j in range(N):
+			sigmaInciList.append(-1)
+
+		alphaInciList = list(range(2*N))
+
+		for j in range(1,N+1):
+			alphaInciList[j-1] = j+N 
+			alphaInciList[j+N-1] = j
+			
+			if corres[j] == -1:
+				sigmaInciList[j+N-1] = j+N
+			else:
+				demiEdge = corres[j]
+				sigmaInciList[j+N-1] = invCorres[self.sigma(demiEdge)]+N
+
+		alphaInci = Permutation(alphaInciList)
+		sigmaInci = Permutation(sigmaInciList)
+
+		return PlanarMap(sigmaInci,alphaInci)
+		
