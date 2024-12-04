@@ -8,19 +8,41 @@ from sage.all_cmdline import *   # import sage library
 
 
 class PlanarMap:
-	def __init__(self, sigma:Permutation, alpha:Permutation):
-		"""
-		A class to represent a planar map.
+	"""
+	A class to represent a planar map.
 
-		Attributes
-		----------
-		sigma : Permutation
-			Fixed-point free involution whose cycles are given by the edges
-		alpha : Permutation
-			Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, around the vertex it belongs to.
+	Attributes
+	----------
+	sigma : Permutation
+		Fixed-point free involution whose cycles are given by the edges
+	alpha : Permutation
+		Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, around the vertex it belongs to.
+	
+	Methods:
+	-------
+	"""
+	
+	def __init__(self, sigma:Permutation = None, alpha:Permutation = None, adj = None):
+		"""
+		Initializes the planar map from either the permutations alpha and sigma, or an adjacency list (giving for
+				vertex a list of its neighbors in order; vertices must be numbered from 1 to n).
+		"""
 		
-		Methods:
-		-------
+		if sigma == None and alpha == None and adj == None:
+			sigma = Permutation()
+			alpha = Permutation()
+		if adj != None and (sigma != None or alpha != None):
+			raise ValueError("Cannot build the map from both an adjacency list and permutations")
+
+		if adj == None:
+			self._build_from_permutations(sigma, alpha)
+		else:
+			self._build_from_adj(adj)
+	
+	
+	def _build_from_permutations(self, sigma, alpha):
+		"""
+		Initializes the planar map from the underlying permutations.
 		"""
 		self.sigma = sigma
 		self.alpha = alpha
@@ -49,12 +71,50 @@ class PlanarMap:
 		dfs(_sage_const_1 )
 
 		if False in seen:
-			raise ValueError("The graph isn't connected")
+			raise ValueError("The graph is not connected")
 
+
+	def _build_from_adj(self, adj):
+		n = len(adj)
+		
+		if sum(map(len, adj)) % _sage_const_2  != _sage_const_0 :
+			raise ValueError("Invalid adjacency list")
+
+		self.m = sum(map(len, adj)) // _sage_const_2 
+		pairs = []		# pairs of half-edges corresponding to a single edge (ie. the transpositions of alpha)
+		cycles = []		# lists of outgoing half-edges for each vertex (ie. the cycles of sigma)
+
+		edges = {}
+		iEdge = _sage_const_1 
+		
+		for u in range(_sage_const_1 , n+_sage_const_1 ):
+			c = []
+
+			for v in adj[u-_sage_const_1 ]:
+				other = None
+				if (v, u) in edges:				# the test must be done before setting (u, v) to account for loops
+					other = edges[(v, u)]
+					edges.pop((v, u))
+
+				if other:
+					pairs.append((iEdge, other))
+				else:
+					edges[(u, v)] = iEdge
+
+				c.append(iEdge)
+				iEdge += _sage_const_1 
+			
+			cycles.append(tuple(c))
+		
+		if edges != {}:
+			raise ValueError("Invalid adjacency list")
+
+		self._build_from_permutations(Permutation(cycles), Permutation(pairs))
 
 	def buildGraph(self):
 		"""
-		A method that build the multigraph corresponding to the planar map
+		A method that build the multigraph corresponding to the planar map.
+		Vertices are numbered from 1 to n.
 		-------
 		O(m)
 		where m is the number of edges
@@ -90,7 +150,7 @@ class PlanarMap:
 
 	def numberOfNodes(self):
 		"""
-		A method that return the number of vertices of the planar map
+		A method that returns the number of vertices of the planar map
 		-------
 		O(m)
 		where m is the number of edges
@@ -100,11 +160,40 @@ class PlanarMap:
 
 	def numberOfEdges(self):
 		"""
-		A method that return the number of edges of the planar map
+		A method that returns the number of edges of the planar map
 		-------
 		O(1)
 		"""
 		return self.m
+
+
+	def getSpanningTree(self):
+		"""
+		A method that returns any spanning tree of the planar map
+		-------
+		O(m)
+		"""
+
+		g = self.buildGraph()
+		n = g.order()
+
+		tree = Graph()
+
+		seen = [False] * (n+_sage_const_1 )
+		seen[_sage_const_0 ] = True
+		
+		def dfs(u):
+			seen[u] = True
+			for v in g.neighbor_iterator(u):
+				if not seen[v]:
+					tree.add_edge(u, v)
+					dfs(v)
+		
+		dfs(_sage_const_1 )
+
+		assert False not in seen
+
+		return tree
 
 
 	def dual(self):

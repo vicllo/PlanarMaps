@@ -103,8 +103,7 @@ class PlanarMap:
 		if edges != {}:
 			raise ValueError("Invalid adjacency list")
 
-		self.alpha = Permutation(pairs)
-		self.sigma = Permutation(cycles) 
+		self._build_from_permutations(Permutation(cycles), Permutation(pairs))
 
 	def buildGraph(self):
 		"""
