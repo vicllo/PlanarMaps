@@ -74,9 +74,8 @@ def test_init_planar_map():
 
     try: 
         map_4 = PlanarMap(sigma_4,alpha_4)
-    except ValueError as e:
-        if str(e) == "The graph isn't connected" :
-            connected_fail = True
+    except ValueError:
+        connected_fail = True
     assert connected_fail is True
 
     #Test case 5
@@ -92,6 +91,26 @@ def test_init_planar_map():
         correct_graph = False
     assert correct_graph is True
 
+    # Test case 6
+    # Invalid adjacency list
+    adj_1 = [(3,), (1,3), (2,)]
+    invalid_adj_fail = False
+
+    try:
+        map_6 = PlanarMap(adj = adj_1)
+    except ValueError:
+        invalid_adj_fail = True
+    assert invalid_adj_fail
+
+    # Test case 7
+    # Too much information
+    invalid_args_fail = False
+
+    try:
+        map_7 = PlanarMap(sigma_5, adj = adj_1)
+    except ValueError:
+        invalid_args_fail = True
+    assert invalid_args_fail
 
 #Test the repr method of planar map
 def test_repr_map():

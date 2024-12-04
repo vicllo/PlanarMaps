@@ -45,6 +45,7 @@ class PlanarMap:
 		if False in seen:
 			raise ValueError("The graph isn't connected")
 
+
 	def buildGraph(self):
 		"""
 		A method that build the multigraph corresponding to the planar map
@@ -65,9 +66,11 @@ class PlanarMap:
 				edges.append((corres[i], corres[self.alpha(i)]))
 
 		return Graph(edges, loops = True, multiedges = True)
-			
+
+
 	def __repr__(self):
 		return "Sigma : " + str(self.sigma) + ", Alpha : " + str(self.alpha)
+
 
 	def numberOfFaces(self):
 		"""
@@ -78,6 +81,7 @@ class PlanarMap:
 		"""
 		return len(self.phi.to_cycles())
 
+
 	def numberOfNodes(self):
 		"""
 		A method that return the number of vertices of the planar map
@@ -87,6 +91,7 @@ class PlanarMap:
 		"""
 		return len(self.sigma.to_cycles())
 	
+
 	def numberOfEdges(self):
 		"""
 		A method that return the number of edges of the planar map
@@ -95,6 +100,7 @@ class PlanarMap:
 		"""
 		return self.m
 
+
 	def dual(self):
 		"""
 		A method that return the dual of the planar map
@@ -102,8 +108,9 @@ class PlanarMap:
 		O(m)
 		where m is the number of edges
 		"""
-		return  PlanarMap(self.phi.inverse(),self.alpha)
+		return PlanarMap(self.phi.inverse(),self.alpha)
 	
+
 	def diameter(self):
 		"""
 		A method that return the diameter of the planar map
@@ -113,6 +120,7 @@ class PlanarMap:
 		"""
 		graph = self.buildGraph()
 		return Graph.diameter(graph)
+
 
 	def derivedMap(self):
 
@@ -149,6 +157,7 @@ class PlanarMap:
 		derivedSigma = Permutation(derivedSigmaList)
 		derivedAlpha = Permutation(derivedAlphaList)
 		return PlanarMap(derivedSigma,derivedAlpha)
+
 
 	def incidenceMap(self):
 		""" 
@@ -232,4 +241,3 @@ class PlanarMap:
 		sigmaInci = Permutation(sigmaInciList)
 
 		return PlanarMap(sigmaInci,alphaInci)
-		
