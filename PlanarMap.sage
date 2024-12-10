@@ -330,3 +330,62 @@ class PlanarMap:
 		sigmaInci = Permutation(sigmaInciList)
 
 		return PlanarMap(sigmaInci,alphaInci)
+	
+
+	def edgeMap(self):
+		""" 
+		A method that return the edge Map of the planar map ,
+		not defined if m = 1 and will raise an error.
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		if self.m == 1 and self.sigma(1) == 1:
+			raise ValueError("The edge map of a planar map with no corner isn't valid.")
+
+		invSigma = self.sigma.inverse()
+		alpha = self.alpha
+		sigma = self.sigma
+		m = self.m
+
+		corres = [-1]
+		corresI = [-1 for k in range(2*m+1)]
+
+		#For each corner we add an edge to the edge map and moreover associate it 
+		#An half edge for instance if the corner is (i,sigma(i)) we associate the new edge
+		#to i
+		j = 1
+		for i in range(1,2*self.m+1):
+			if i != self.sigma(i):	
+				corres.append(-1)
+				corres[j] = i
+				corresI[i] = j
+				j+=1
+		#The number of edge in the edge map
+		L = j-1
+		
+		
+		alphaListEdgeMap = [-1 for k in range(2*L) ]
+		sigmaListEdgeMap = [-1 for k in range(2*L) ]
+
+		
+		#Construction of alpha and sigma for the edge map
+		for k in range(1,L+1):
+			alphaListEdgeMap[k-1] = k+L
+			alphaListEdgeMap[k+L-1] = k
+			i = corres[k]
+
+			t = invSigma(i)
+			sigmaListEdgeMap[k-1] = L+corresI[t]
+
+			j = sigma(i)
+
+			if sigma(alpha(j)) == alpha(j):
+				sigmaListEdgeMap[k+L-1] = corresI[j]
+			else:
+				sigmaListEdgeMap[k+L-1] = corresI[alpha(j)]
+			
+		alphaEdgeMap = Permutation(alphaListEdgeMap)
+		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
+
+		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)

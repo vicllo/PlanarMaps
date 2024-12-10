@@ -336,4 +336,63 @@ class PlanarMap:
 		sigmaInci = Permutation(sigmaInciList)
 
 		return PlanarMap(sigmaInci,alphaInci)
+	
+
+	def edgeMap(self):
+		""" 
+		A method that return the edge Map of the planar map ,
+		not defined if m = 1 and will raise an error.
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		if self.m == _sage_const_1  and self.sigma(_sage_const_1 ) == _sage_const_1 :
+			raise ValueError("The edge map of a planar map with no corner isn't valid.")
+
+		invSigma = self.sigma.inverse()
+		alpha = self.alpha
+		sigma = self.sigma
+		m = self.m
+
+		corres = [-_sage_const_1 ]
+		corresI = [-_sage_const_1  for k in range(_sage_const_2 *m+_sage_const_1 )]
+
+		#For each corner we add an edge to the edge map and moreover associate it 
+		#An half edge for instance if the corner is (i,sigma(i)) we associate the new edge
+		#to i
+		j = _sage_const_1 
+		for i in range(_sage_const_1 ,_sage_const_2 *self.m+_sage_const_1 ):
+			if i != self.sigma(i):	
+				corres.append(-_sage_const_1 )
+				corres[j] = i
+				corresI[i] = j
+				j+=_sage_const_1 
+		#The number of edge in the edge map
+		L = j-_sage_const_1 
+		
+		
+		alphaListEdgeMap = [-_sage_const_1  for k in range(_sage_const_2 *L) ]
+		sigmaListEdgeMap = [-_sage_const_1  for k in range(_sage_const_2 *L) ]
+
+		
+		#Construction of alpha and sigma for the edge map
+		for k in range(_sage_const_1 ,L+_sage_const_1 ):
+			alphaListEdgeMap[k-_sage_const_1 ] = k+L
+			alphaListEdgeMap[k+L-_sage_const_1 ] = k
+			i = corres[k]
+
+			t = invSigma(i)
+			sigmaListEdgeMap[k-_sage_const_1 ] = L+corresI[t]
+
+			j = sigma(i)
+
+			if sigma(alpha(j)) == alpha(j):
+				sigmaListEdgeMap[k+L-_sage_const_1 ] = corresI[j]
+			else:
+				sigmaListEdgeMap[k+L-_sage_const_1 ] = corresI[alpha(j)]
+			
+		alphaEdgeMap = Permutation(alphaListEdgeMap)
+		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
+
+		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)
 

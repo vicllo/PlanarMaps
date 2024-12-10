@@ -573,6 +573,97 @@ def test_incidenceMap():
     assert incidence_7.numberOfFaces() == 4
 
 
+#Test the edge map
+def test_edgeMap():
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [1,3,2,5,4,6])
+    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
+    map_1 = PlanarMap(sigma_1,alpha_1)
+
+    edgeMap_1 = map_1.edgeMap()
+
+    assert edgeMap_1.numberOfNodes() == 3
+    assert edgeMap_1.numberOfFaces() == 3
+    assert edgeMap_1.numberOfEdges() == 4
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
+    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
+    map_2 = PlanarMap(sigma_2,alpha_2)
+
+    edgeMap_2 = map_2.edgeMap()
+
+    assert edgeMap_2.numberOfNodes() == 3
+    assert edgeMap_2.numberOfEdges() == 6
+    assert edgeMap_2.numberOfFaces() == 5
+
+
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [1,2])
+    alpha_3 = Permutation( [(1,2)])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    edge_map_invalid = False
+
+    try: 
+        edgeMap_3 = map_3.edgeMap()   
+    except:
+        edge_map_invalid = True
+    
+    assert edge_map_invalid == True
+
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [1,3,2,4])
+    alpha_4 = Permutation( [(1,2),(3,4)])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+    edgeMap_4 = map_4.edgeMap()
+
+    assert edgeMap_4.numberOfNodes() == 2
+    assert edgeMap_4.numberOfEdges() == 2
+    assert edgeMap_4.numberOfFaces() == 2
+
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [2,1])
+    alpha_5 =Permutation( [(1,2)])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    edgeMap_5 = map_5.edgeMap()
+
+    assert edgeMap_5.numberOfNodes() == 1
+    assert edgeMap_5.numberOfEdges() == 2
+    assert edgeMap_5.numberOfFaces() == 3
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(1,3,5),(2,6,4)])
+    alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    edgeMap_6 = map_6.edgeMap()
+
+    assert edgeMap_6.numberOfNodes() == 3
+    assert edgeMap_6.numberOfEdges() == 6
+    assert edgeMap_6.numberOfFaces() == 5
+
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
+    alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    edgeMap_7 = map_7.edgeMap()
+
+    assert edgeMap_7.numberOfNodes() == 4
+    assert edgeMap_7.numberOfEdges() == 8
+    assert edgeMap_7.numberOfFaces() == 6
+
+
 if __name__ == "__main__":
     #Test init method
     test_init_planar_map()
@@ -613,3 +704,7 @@ if __name__ == "__main__":
     #Test the incidenceMap
     test_incidenceMap()
     print("test_incidence_map passed")
+
+    #Test the edgeMap
+    test_edgeMap()
+    print("test_edgeMap passed")

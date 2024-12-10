@@ -579,6 +579,97 @@ def test_incidenceMap():
     assert incidence_7.numberOfFaces() == _sage_const_4 
 
 
+#Test the edge map
+def test_edgeMap():
+    #Test case 1
+    #Correspond to a linear tree with 4 nodes
+    sigma_1 = Permutation( [_sage_const_1 ,_sage_const_3 ,_sage_const_2 ,_sage_const_5 ,_sage_const_4 ,_sage_const_6 ])
+    alpha_1 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 )])
+    map_1 = PlanarMap(sigma_1,alpha_1)
+
+    edgeMap_1 = map_1.edgeMap()
+
+    assert edgeMap_1.numberOfNodes() == _sage_const_3 
+    assert edgeMap_1.numberOfFaces() == _sage_const_3 
+    assert edgeMap_1.numberOfEdges() == _sage_const_4 
+
+    #Test case 2    
+    #Correspond to a triangle
+    sigma_2 = Permutation( [(_sage_const_1 ,_sage_const_6 ),(_sage_const_2 ,_sage_const_3 ),(_sage_const_4 ,_sage_const_5 )])
+    alpha_2 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 )])
+    map_2 = PlanarMap(sigma_2,alpha_2)
+
+    edgeMap_2 = map_2.edgeMap()
+
+    assert edgeMap_2.numberOfNodes() == _sage_const_3 
+    assert edgeMap_2.numberOfEdges() == _sage_const_6 
+    assert edgeMap_2.numberOfFaces() == _sage_const_5 
+
+
+    #Test case 3
+    #Correspond to a segment
+    sigma_3 = Permutation( [_sage_const_1 ,_sage_const_2 ])
+    alpha_3 = Permutation( [(_sage_const_1 ,_sage_const_2 )])
+    map_3 = PlanarMap(sigma_3,alpha_3)
+    edge_map_invalid = False
+
+    try: 
+        edgeMap_3 = map_3.edgeMap()   
+    except:
+        edge_map_invalid = True
+    
+    assert edge_map_invalid == True
+
+
+    #Test case 4
+    #Correspond to a linear tree of 3 nodes
+    sigma_4 = Permutation( [_sage_const_1 ,_sage_const_3 ,_sage_const_2 ,_sage_const_4 ])
+    alpha_4 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 )])
+    map_4 = PlanarMap(sigma_4,alpha_4)
+    edgeMap_4 = map_4.edgeMap()
+
+    assert edgeMap_4.numberOfNodes() == _sage_const_2 
+    assert edgeMap_4.numberOfEdges() == _sage_const_2 
+    assert edgeMap_4.numberOfFaces() == _sage_const_2 
+
+
+    #Test case 5
+    #Correspond to a loop on a node
+    sigma_5 = Permutation( [_sage_const_2 ,_sage_const_1 ])
+    alpha_5 =Permutation( [(_sage_const_1 ,_sage_const_2 )])
+    map_5 = PlanarMap(sigma_5,alpha_5)
+    
+    edgeMap_5 = map_5.edgeMap()
+
+    assert edgeMap_5.numberOfNodes() == _sage_const_1 
+    assert edgeMap_5.numberOfEdges() == _sage_const_2 
+    assert edgeMap_5.numberOfFaces() == _sage_const_3 
+
+    #Test case 6
+    #Correspond to two nodes link by 3 edges
+    sigma_6 = Permutation( [(_sage_const_1 ,_sage_const_3 ,_sage_const_5 ),(_sage_const_2 ,_sage_const_6 ,_sage_const_4 )])
+    alpha_6 =Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 )])
+    map_6 = PlanarMap(sigma_6,alpha_6)
+    
+    edgeMap_6 = map_6.edgeMap()
+
+    assert edgeMap_6.numberOfNodes() == _sage_const_3 
+    assert edgeMap_6.numberOfEdges() == _sage_const_6 
+    assert edgeMap_6.numberOfFaces() == _sage_const_5 
+
+    #Test case 7
+    #Correspond to two nodes link with 4 edges
+    sigma_7 = Permutation( [(_sage_const_1 ,_sage_const_7 ,_sage_const_3 ,_sage_const_5 ),(_sage_const_2 ,_sage_const_6 ,_sage_const_4 ,_sage_const_8 )])
+    alpha_7 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 ),(_sage_const_7 ,_sage_const_8 )])
+    map_7 = PlanarMap(sigma_7,alpha_7)
+    
+    edgeMap_7 = map_7.edgeMap()
+
+    assert edgeMap_7.numberOfNodes() == _sage_const_4 
+    assert edgeMap_7.numberOfEdges() == _sage_const_8 
+    assert edgeMap_7.numberOfFaces() == _sage_const_6 
+
+
 if __name__ == "__main__":
     #Test init method
     test_init_planar_map()
@@ -619,4 +710,8 @@ if __name__ == "__main__":
     #Test the incidenceMap
     test_incidenceMap()
     print("test_incidence_map passed")
+
+    #Test the edgeMap
+    test_edgeMap()
+    print("test_edgeMap passed")
 
