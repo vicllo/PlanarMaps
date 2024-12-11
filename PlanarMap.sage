@@ -121,11 +121,44 @@ class PlanarMap:
 		
 		edges = []
 
-		for i in range(1, 2*self.m+1):			# pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
+		for i in range(1, 2*self.m+1):				# pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
 			if i < self.alpha(i):					# on évite d'ajouter les arêtes en double
 				edges.append((corres[i], corres[self.alpha(i)]))
 
 		return Graph(edges, loops = True, multiedges = True)
+
+	def show(self):
+		"""
+		Show the planar map.
+		Does not work (yet) if the map contains loops or multiedges.
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+
+		# todo: allow multiedges & loops by adding imaginary nodes wherever necessary
+
+		vertices = self.sigma.to_cycles()
+		embedding = {}
+		corres = [0] * int(2 * self.m + 1)			# associe à une demi-arête le sommet correspondant
+		for i in range(1, len(vertices)+1):
+			for k in vertices[i-1]:
+				corres[k] = i
+
+		for i in range(1, len(vertices)+1):			# pour chaque sommet, on construit som embedding (liste des voisins dans le sens horaire)
+			embedding[i] = list(corres[self.alpha(k)] for k in vertices[i-1])
+			embedding[i].reverse()					# sens horaire
+
+		edges = []
+
+		for i in range(1, 2*self.m+1):				# pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
+			if i < self.alpha(i):					# on évite d'ajouter les arêtes en double
+				edges.append((corres[i], corres[self.alpha(i)]))
+
+		g = Graph(edges, loops = False, multiedges = False)
+		g.set_embedding(embedding)
+
+		g.show(layout="planar")
 
 
 	def __repr__(self):
