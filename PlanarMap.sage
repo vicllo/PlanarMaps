@@ -422,3 +422,7 @@ class PlanarMap:
 		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
 
 		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)
+
+	def isPlaneTrees (self):
+		return self.numberOfFaces()==1 and self.numberOfEdges() == self.numberOfNodes() -1
+		
