@@ -286,90 +286,66 @@ class PlanarMap:
 		derivedAlpha = Permutation(derivedAlphaList)
 		return PlanarMap(derivedSigma,derivedAlpha)
 
-
-	def incidenceMap(self):
+	def quadrangulation(self):
 		""" 
-		A method that return the incidence Map of the planar map
+		A method that return a quadrangulation of the planar map
 		-------
 		O(m)
 		where m is the number of edges
 		"""
+		return self.incidenceMap()
 
-		face = list(range(_sage_const_2 *self.m+_sage_const_1 ))
-
-		phiCycles = self.phi.to_cycles()
-		invPhi = self.phi.inverse()
-
-		for k in range(len(phiCycles)):
-			for demiEdge in phiCycles[k]:
-				face[demiEdge] = k
+	def incidenceMap(self):
+		""" 
+		A method that return the incidence map of the planar map
+		-------
+		O(m)
+		where m is the number of edges
+		"""
 		
+		invPhi = self.phi.inverse()
+		invPhiCycles = invPhi.to_cycles()
 
-		t = _sage_const_1 
-		sigmaInciList = []
+		quadDemiEdge = _sage_const_1 
+
 		corres = [-_sage_const_1 ]
-		invCorres  = list(range(_sage_const_2 *self.m+_sage_const_1 ))
+		invCorres = list(range(_sage_const_2 *self.m+_sage_const_1 ))
 
-		for k in range(len(phiCycles)):
-			l = _sage_const_0 
-			t0 = t
-			while l<len(phiCycles[k]):
-				demiEdge = phiCycles[k][l]
-				
-				if face[demiEdge] == face[self.alpha(demiEdge)]:
-					cnt = _sage_const_1 
-					l+=_sage_const_1 
+		sigmaQuadList = []
 
-					while l<len(phiCycles[k]) and face[phiCycles[k][l]] == face[self.alpha(phiCycles[k][l])]:
-						cnt+=_sage_const_1 
-						l+=_sage_const_1 
+		for k in range(len(invPhiCycles)):
+			startQuadDemiEdge = quadDemiEdge
+			for demiEdge in invPhiCycles[k]:
+				if quadDemiEdge!=startQuadDemiEdge:
+					sigmaQuadList.append(quadDemiEdge)
 
-					for j in range(cnt//_sage_const_2 ):
-						t+=_sage_const_1 
-						corres.append(-_sage_const_1 )
-						sigmaInciList.append(-_sage_const_1 )
+				corres.append(demiEdge)
 
-				else:
-					sigmaInciList.append(-_sage_const_1 )
-					corres.append(-_sage_const_1 )
-					corres[t] = demiEdge
-					invCorres[demiEdge] = t
-					t+=_sage_const_1 
-					l+=_sage_const_1 	
+				invCorres[demiEdge] = quadDemiEdge
+				quadDemiEdge+=_sage_const_1 
 
-			if len(phiCycles) == _sage_const_1 :
-				sigmaInciList.append(-_sage_const_1 )
-				corres.append(-_sage_const_1 )
-				t+=_sage_const_1 
+			sigmaQuadList.append(startQuadDemiEdge) 			
+		
+		numberOfQuadEdge = quadDemiEdge-_sage_const_1 
 
-			for x in range(t0+_sage_const_1 ,t):
-				sigmaInciList[x-_sage_const_1 ] = x-_sage_const_1 
-					
-			sigmaInciList[t0-_sage_const_1 	] = t-_sage_const_1 
+		alphaQuadList = list(range(_sage_const_2 *numberOfQuadEdge))
 
-		N = len(sigmaInciList)
+		for quadDemiEdge in range(_sage_const_1 ,numberOfQuadEdge+_sage_const_1 ):
+			demiEdge = corres[quadDemiEdge]
+			turnedDemiEdge = self.sigma(demiEdge)
 
+			quadDemiEdgePrime = invCorres[turnedDemiEdge]
 
-		for j in range(N):
-			sigmaInciList.append(-_sage_const_1 )
+			sigmaQuadList.append(quadDemiEdgePrime+numberOfQuadEdge)
 
-		alphaInciList = list(range(_sage_const_2 *N))
+			alphaQuadList[quadDemiEdge-_sage_const_1 ] = quadDemiEdge+numberOfQuadEdge
+			alphaQuadList[quadDemiEdge+numberOfQuadEdge-_sage_const_1 ] = quadDemiEdge
 
-		for j in range(_sage_const_1 ,N+_sage_const_1 ):
-			alphaInciList[j-_sage_const_1 ] = j+N 
-			alphaInciList[j+N-_sage_const_1 ] = j
-			
-			if corres[j] == -_sage_const_1 :
-				sigmaInciList[j+N-_sage_const_1 ] = j+N
-			else:
-				demiEdge = corres[j]
-				sigmaInciList[j+N-_sage_const_1 ] = invCorres[self.sigma(demiEdge)]+N
+		alphaQuad = Permutation(alphaQuadList)
+		sigmaQuad = Permutation(sigmaQuadList)
 
-		alphaInci = Permutation(alphaInciList)
-		sigmaInci = Permutation(sigmaInciList)
+		return PlanarMap(sigmaQuad,alphaQuad)
 
-		return PlanarMap(sigmaInci,alphaInci)
-	
 
 	def edgeMap(self):
 		""" 
@@ -428,4 +404,8 @@ class PlanarMap:
 		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
 
 		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)
+
+	def isPlaneTrees (self):
+		return self.numberOfFaces()==_sage_const_1  and self.numberOfEdges() == self.numberOfNodes() -_sage_const_1 
+		
 

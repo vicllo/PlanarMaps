@@ -501,9 +501,10 @@ def test_incidenceMap():
     
     incidence_1 = map_1.incidenceMap()
 
+
     assert incidence_1.numberOfNodes() == _sage_const_5 
-    assert incidence_1.numberOfFaces() == _sage_const_1 
-    assert incidence_1.numberOfEdges() == _sage_const_4 
+    assert incidence_1.numberOfFaces() == _sage_const_3 
+    assert incidence_1.numberOfEdges() == _sage_const_6 
 
     #Test case 2    
     #Correspond to a triangle
@@ -512,6 +513,7 @@ def test_incidenceMap():
     map_2 = PlanarMap(sigma_2,alpha_2)
 
     incidence_2 = map_2.incidenceMap()
+
 
     assert incidence_2.numberOfNodes() == _sage_const_5 
     assert incidence_2.numberOfEdges() == _sage_const_6 
@@ -537,9 +539,10 @@ def test_incidenceMap():
     map_4 = PlanarMap(sigma_4,alpha_4)
     incidence_4 = map_4.incidenceMap()
 
+
     assert incidence_4.numberOfNodes() == _sage_const_4 
-    assert incidence_4.numberOfEdges() == _sage_const_3 
-    assert incidence_4.numberOfFaces() == _sage_const_1 
+    assert incidence_4.numberOfEdges() == _sage_const_4 
+    assert incidence_4.numberOfFaces() == _sage_const_2 
 
 
     #Test case 5
@@ -577,7 +580,6 @@ def test_incidenceMap():
     assert incidence_7.numberOfNodes() == _sage_const_6 
     assert incidence_7.numberOfEdges() == _sage_const_8 
     assert incidence_7.numberOfFaces() == _sage_const_4 
-
 
 #Test the edge map
 def test_edgeMap():

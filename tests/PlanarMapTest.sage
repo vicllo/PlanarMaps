@@ -495,9 +495,10 @@ def test_incidenceMap():
     
     incidence_1 = map_1.incidenceMap()
 
+
     assert incidence_1.numberOfNodes() == 5
-    assert incidence_1.numberOfFaces() == 1
-    assert incidence_1.numberOfEdges() == 4
+    assert incidence_1.numberOfFaces() == 3
+    assert incidence_1.numberOfEdges() == 6
 
     #Test case 2    
     #Correspond to a triangle
@@ -506,6 +507,7 @@ def test_incidenceMap():
     map_2 = PlanarMap(sigma_2,alpha_2)
 
     incidence_2 = map_2.incidenceMap()
+
 
     assert incidence_2.numberOfNodes() == 5
     assert incidence_2.numberOfEdges() == 6
@@ -531,9 +533,10 @@ def test_incidenceMap():
     map_4 = PlanarMap(sigma_4,alpha_4)
     incidence_4 = map_4.incidenceMap()
 
+
     assert incidence_4.numberOfNodes() == 4
-    assert incidence_4.numberOfEdges() == 3
-    assert incidence_4.numberOfFaces() == 1
+    assert incidence_4.numberOfEdges() == 4
+    assert incidence_4.numberOfFaces() == 2
 
 
     #Test case 5
@@ -571,7 +574,6 @@ def test_incidenceMap():
     assert incidence_7.numberOfNodes() == 6
     assert incidence_7.numberOfEdges() == 8
     assert incidence_7.numberOfFaces() == 4
-
 
 #Test the edge map
 def test_edgeMap():
