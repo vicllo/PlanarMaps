@@ -1,5 +1,15 @@
 from sage.all_cmdline import *   # import sage library
+import warnings
 
+try:
+	import igraph
+except:
+	igraph = None
+
+try:
+	import matplotlib.pyplot as plt
+except:
+	plt = None
 
 class PlanarMap:
 	"""
@@ -25,6 +35,7 @@ class PlanarMap:
 		if sigma == None and alpha == None and adj == None:
 			sigma = Permutation()
 			alpha = Permutation()
+
 		if adj != None and (sigma != None or alpha != None):
 			raise ValueError("Cannot build the map from both an adjacency list and permutations")
 
@@ -127,13 +138,14 @@ class PlanarMap:
 
 		return Graph(edges, loops = True, multiedges = True)
 
-	def show(self):
+	def show(self, show_vertices = True, use_sage_viewer = False, weight = 1):
 		"""
-		Show the planar map.
+		Show the planar map, using igraph if possible and the default sage viewer otherwise.
 		Does not work (yet) if the map contains loops or multiedges.
-		-------
-		O(m)
-		where m is the number of edges
+
+		Note that the fancy igraph viewer might display crossing edges for large graphes.
+		In this case, increase the weight parameter (a bigger value will decrease the odds of introducing crossing edges,
+				but will also reduce the overall display quality); you may also re-run the method until the result is satisfying.
 		"""
 
 		# todo: allow multiedges & loops by adding imaginary nodes wherever necessary
@@ -158,7 +170,37 @@ class PlanarMap:
 		g = Graph(edges, loops = False, multiedges = False)
 		g.set_embedding(embedding)
 
-		g.show(layout="planar")
+		if not use_sage_viewer and igraph is None:
+			warnings.warn("Package igraph not found; falling back to default sage viewer. Consider installing igraph using sage --pip install igraph")
+			use_sage_viewer = True
+		if not use_sage_viewer and plt is None:
+			warnings.warn("Package matplotlib not found; falling back to default sage viewer. Consider installing matplotlib using sage --pip install matplotlib")
+			use_sage_viewer = True
+
+		if show_vertices:
+			vertex_size = 90 / max(1, len(vertices))**.5
+		else:
+			vertex_size = 0
+
+		if use_sage_viewer:
+			g.show(layout = "planar", vertex_size = vertex_size * 8, vertex_labels = False, vertex_color = "red")
+		else:
+			if weight is None:
+				weight = 10**len(vertices)
+			layout_dict = g.layout_planar()
+			layout_seed = [layout_dict[i] for i in range(1, len(layout_dict)+1)]
+
+			gg = g.igraph_graph()
+			layout = gg.layout_davidson_harel(seed = layout_seed, weight_edge_crossings = float(1e40) * len(vertices)**3 * weight)
+			layout.fit_into((0,0,1,1))
+			
+			fig, ax = plt.subplots()
+			ax.set_xlim(-0.1,1.1)
+			ax.set_ylim(-0.1,1.1)
+
+			ig.plot(gg, layout = layout, target = ax, vertex_size = vertex_size)
+			fig.tight_layout()
+			plt.show()
 
 
 	def __repr__(self):
