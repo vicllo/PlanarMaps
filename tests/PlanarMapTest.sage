@@ -112,6 +112,9 @@ def test_init_planar_map():
         invalid_args_fail = True
     assert invalid_args_fail
 
+
+    # TODO : Test case 8 - valid adjacency list
+
 #Test the repr method of planar map
 def test_repr_map():
     #Test case 1

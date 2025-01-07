@@ -27,9 +27,24 @@ class PlanarMap:
 	"""
 	
 	def __init__(self, sigma:Permutation = None, alpha:Permutation = None, adj = None):
-		"""
+		r"""
 		Initializes the planar map from either the permutations alpha and sigma, or an adjacency list (giving for
 				vertex a list of its neighbors in order; vertices must be numbered from 1 to n).
+
+		INPUT:
+
+		- ``sigma`` -- Permutation; Fixed-point free involution whose cycles are given by the edges
+
+		- ``alpha`` -- Permutation; Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, 
+		  around the vertex it belongs to.
+
+		EXAMPLES:
+		sage: sigma = Permutation( [1,3,2,5,4,6])
+		sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+		sage: p = PlanarMap(sigma, alpha)
+		sage: p
+		Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+		
 		"""
 		
 		if sigma == None and alpha == None and adj == None:
@@ -46,7 +61,7 @@ class PlanarMap:
 	
 	
 	def _build_from_permutations(self, sigma, alpha):
-		"""
+		r"""
 		Initializes the planar map from the underlying permutations.
 		"""
 		self.sigma = sigma
