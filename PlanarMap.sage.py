@@ -45,9 +45,11 @@ class PlanarMap:
 		  around the vertex it belongs to.
 
 		EXAMPLES:
-		sigma_5 = Permutation( [1,3,2,5,4,6])
-    	alpha_5 = Permutation( [(1,2),(3,4),(5,6)])
-		PlanarMap(sigma_5,alpha_5)
+		sage: sigma = Permutation( [1,3,2,5,4,6])
+		sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+		sage: p = PlanarMap(sigma, alpha)
+		sage: p
+		Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
 		
 		"""
 		
@@ -140,6 +142,9 @@ class PlanarMap:
 		A method that build the multigraph corresponding to the planar map.
 		Vertices are numbered from 1 to n.
 		-------
+		Returns:
+    		A multigraph corresponding to self
+		-------
 		O(m)
 		where m is the number of edges
 		"""
@@ -202,11 +207,20 @@ class PlanarMap:
 			vertex_size = _sage_const_0 
 
 		if use_sage_viewer:
-			g.show(layout = "planar", vertex_size = vertex_size * _sage_const_8 , vertex_labels = False, vertex_color = "red")
+			if self.genus() == _sage_const_0 :
+				layout = "planar"
+			else:
+				layout = "spring"
+			g.show(layout = layout, vertex_size = vertex_size * _sage_const_8 , vertex_labels = False, vertex_color = "red")
+
 		else:
 			if weight is None:
 				weight = _sage_const_10 **len(vertices)
-			layout_dict = g.layout_planar()
+			if self.genus() == _sage_const_0 :
+				layout_dict = g.layout_planar()
+			else:
+				layout_dict = g.layout()
+			
 			layout_seed = [layout_dict[i] for i in range(_sage_const_1 , len(layout_dict)+_sage_const_1 )]
 
 			gg = g.igraph_graph()
@@ -230,15 +244,21 @@ class PlanarMap:
 		"""
 		A method that return the number of faces of the planar map
 		-------
+		Returns:
+     		The number of faces of self
+		-------
 		O(m)
 		where m is the number of edges
 		"""
 		return len(self.phi.to_cycles())
-
+    
 
 	def numberOfNodes(self):
 		"""
 		A method that returns the number of vertices of the planar map
+		-------
+		Returns:
+     		The number of nodes of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -246,18 +266,38 @@ class PlanarMap:
 		return len(self.sigma.to_cycles())
 	
 
+
 	def numberOfEdges(self):
 		"""
 		A method that returns the number of edges of the planar map
 		-------
+		Returns:
+     		The number of edge of self
+		-------
 		O(1)
 		"""
 		return self.m
+	
+	def genus(self):
+		"""
+		A method that returns the genus of a map
+		-------
+		Returns:
+     		The genus of self
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+
+		return (self.numberOfEdges() + _sage_const_2  - self.numberOfFaces() - self.numberOfNodes()) // _sage_const_2 
 
 
 	def getSpanningTree(self):
 		"""
 		A method that returns any spanning tree of the planar map
+		-------
+		Returns:
+     		A spanning tree of self
 		-------
 		O(m)
 		"""
@@ -288,6 +328,9 @@ class PlanarMap:
 		"""
 		A method that return the dual of the planar map
 		-------
+		Returns:
+     		The dual of self
+		-------
 		O(m)
 		where m is the number of edges
 		"""
@@ -298,17 +341,23 @@ class PlanarMap:
 		"""
 		A method that return the diameter of the planar map
 		-------
+		Returns:
+     		The diameter of self
+		-------
 		O(m*n)
 		where m is the number of edges and n is the number of nodes
 		"""
 		graph = self.buildGraph()
 		return Graph.diameter(graph)
-
+    
 
 	def derivedMap(self):
 
 		""" 
 		A method that return the derived Map of the planar map
+		-------
+		Returns:
+     		The derived map of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -340,124 +389,204 @@ class PlanarMap:
 		derivedSigma = Permutation(derivedSigmaList)
 		derivedAlpha = Permutation(derivedAlphaList)
 		return PlanarMap(derivedSigma,derivedAlpha)
+    
 
-
-	def incidenceMap(self):
+	def quadrangulation(self):
 		""" 
-		A method that return the incidence Map of the planar map
+		There is bijection between rooted map with m edge and bipartite quadrangulation rooted map with m vertices ,
+		this function  return a labelled map(say Q) representant of a rooted quadrangulation associated to self rooted,
+		the coloration is given as follow,a node is black ( i.e a cycle of Q.sigma ) if every demi-edge 
+		inside it have label <=2*m otherwise it is white.
+		-------
+		Returns:
+     		A quadrangulation of self
 		-------
 		O(m)
 		where m is the number of edges
 		"""
+		return self.incidenceMap()
+    
 
-		face = list(range(_sage_const_2 *self.m+_sage_const_1 ))
-
-		phiCycles = self.phi.to_cycles()
-		invPhi = self.phi.inverse()
-
-		for k in range(len(phiCycles)):
-			for demiEdge in phiCycles[k]:
-				face[demiEdge] = k
+	def incidenceMap(self):
+		""" 
+		A method that return the incidence map of the planar map
+		-------
+		Returns:
+     		Incidence map of self
+		-------
+		O(m)
+		where m is the number of edges
+		"""
 		
+		invPhi = self.phi.inverse()
+		invPhiCycles = invPhi.to_cycles()
 
-		t = _sage_const_1 
-		sigmaInciList = []
+		quadDemiEdge = _sage_const_1 
+
 		corres = [-_sage_const_1 ]
-		invCorres  = list(range(_sage_const_2 *self.m+_sage_const_1 ))
+		invCorres = list(range(_sage_const_2 *self.m+_sage_const_1 ))
 
-		for k in range(len(phiCycles)):
-			l = _sage_const_0 
-			t0 = t
-			while l<len(phiCycles[k]):
-				demiEdge = phiCycles[k][l]
-				
-				if face[demiEdge] == face[self.alpha(demiEdge)]:
-					cnt = _sage_const_1 
-					l+=_sage_const_1 
+		sigmaQuadList = []
 
-					while l<len(phiCycles[k]) and face[phiCycles[k][l]] == face[self.alpha(phiCycles[k][l])]:
-						cnt+=_sage_const_1 
-						l+=_sage_const_1 
+		for k in range(len(invPhiCycles)):
+			startQuadDemiEdge = quadDemiEdge
+			for demiEdge in invPhiCycles[k]:
+				if quadDemiEdge!=startQuadDemiEdge:
+					sigmaQuadList.append(quadDemiEdge)
 
-					for j in range(cnt//_sage_const_2 ):
-						t+=_sage_const_1 
-						corres.append(-_sage_const_1 )
-						sigmaInciList.append(-_sage_const_1 )
+				corres.append(demiEdge)
 
-				else:
-					sigmaInciList.append(-_sage_const_1 )
-					corres.append(-_sage_const_1 )
-					corres[t] = demiEdge
-					invCorres[demiEdge] = t
-					t+=_sage_const_1 
-					l+=_sage_const_1 	
+				invCorres[demiEdge] = quadDemiEdge
+				quadDemiEdge+=_sage_const_1 
 
-			if len(phiCycles) == _sage_const_1 :
-				sigmaInciList.append(-_sage_const_1 )
-				corres.append(-_sage_const_1 )
-				t+=_sage_const_1 
+			sigmaQuadList.append(startQuadDemiEdge) 			
+		
+		numberOfQuadEdge = quadDemiEdge-_sage_const_1 
 
-			for x in range(t0+_sage_const_1 ,t):
-				sigmaInciList[x-_sage_const_1 ] = x-_sage_const_1 
-					
-			sigmaInciList[t0-_sage_const_1 	] = t-_sage_const_1 
+		alphaQuadList = list(range(_sage_const_2 *numberOfQuadEdge))
 
-		N = len(sigmaInciList)
+		for quadDemiEdge in range(_sage_const_1 ,numberOfQuadEdge+_sage_const_1 ):
+			demiEdge = corres[quadDemiEdge]
+			turnedDemiEdge = self.sigma(demiEdge)
+
+			quadDemiEdgePrime = invCorres[turnedDemiEdge]
+
+			sigmaQuadList.append(quadDemiEdgePrime+numberOfQuadEdge)
+
+			alphaQuadList[quadDemiEdge-_sage_const_1 ] = quadDemiEdge+numberOfQuadEdge
+			alphaQuadList[quadDemiEdge+numberOfQuadEdge-_sage_const_1 ] = quadDemiEdge
+
+		alphaQuad = Permutation(alphaQuadList)
+		sigmaQuad = Permutation(sigmaQuadList)
+
+		relabelList = [i+_sage_const_1  for i in range(_sage_const_2 *numberOfQuadEdge)]
+
+		for quadDemiEdge in range(_sage_const_1 ,numberOfQuadEdge+_sage_const_1 ):
+			relabelList[quadDemiEdge-_sage_const_1 ] = corres[quadDemiEdge]
+		
+		relabelPerm = Permutation(relabelList)
+		return PlanarMap(sigmaQuad,alphaQuad).relabel(relabelPerm)
+    
+
+	def getRootedMapCorrespondance(self,otherMap,rootDemiEdge):
+		""" 
+		A method that return a labelling of the demi-edge of self giving otherMap while letting rootDemiEdge 
+		invariant if self and otherMap represent the same rooted map at rootDemiEdge otherwise None
+		-------
+		Args:
+      		otherMap: The other planar map
+			rootDemiEdge: The edge on which to root
+    	Returns:
+     		t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
+			t is a permutaion mapping the demi-edge of self to the one of otherMap 
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		if otherMap.numberOfEdges() != self.numberOfEdges():
+			return None
+		
+		m = self.numberOfEdges()
+
+		tList = [-_sage_const_1  for k in range(_sage_const_2 *m)]
+		seen = [ False for k in range(_sage_const_2 *m)]
 
 
-		for j in range(N):
-			sigmaInciList.append(-_sage_const_1 )
+		alpha = self.alpha
+		sigma = self.sigma 
 
-		alphaInciList = list(range(_sage_const_2 *N))
+		sigmaOther = otherMap.sigma
+		alphaOther = otherMap.alpha
 
-		for j in range(_sage_const_1 ,N+_sage_const_1 ):
-			alphaInciList[j-_sage_const_1 ] = j+N 
-			alphaInciList[j+N-_sage_const_1 ] = j
-			
-			if corres[j] == -_sage_const_1 :
-				sigmaInciList[j+N-_sage_const_1 ] = j+N
-			else:
-				demiEdge = corres[j]
-				sigmaInciList[j+N-_sage_const_1 ] = invCorres[self.sigma(demiEdge)]+N
+		tList[rootDemiEdge-_sage_const_1 ] = rootDemiEdge
 
-		alphaInci = Permutation(alphaInciList)
-		sigmaInci = Permutation(sigmaInciList)
+		p = []
 
-		return PlanarMap(sigmaInci,alphaInci)
+		p.append(rootDemiEdge)
+
+		seen[rootDemiEdge-_sage_const_1 ] = True
+
+		while len(p)>_sage_const_0 :
+			u = p.pop()
+			if not seen[alpha(u)-_sage_const_1 ]:
+				seen[alpha(u)-_sage_const_1 ] = True
+				tList[alpha(u)-_sage_const_1 ] = alphaOther(tList[u-_sage_const_1 ])
+				p.append(alpha(u))
+
+			if not seen[sigma(u)-_sage_const_1 ]:
+				seen[sigma(u)-_sage_const_1 ] = True
+				tList[sigma(u)-_sage_const_1 ] = sigmaOther(tList[u-_sage_const_1 ])
+				p.append(sigma(u))
+
+		try:
+			t = Permutation(tList)
+		except:
+			return None
+
+		if self.relabel(t) != otherMap: 
+			return None
+
+		return t
+	
+	def relabel(self,tau):
+		""" 
+		A method that return a relabel PlanarMap , relabelling the demi-edge i by tau(i)
+		-------
+		Args:
+      		tau:  A permutation on the demi-edges representing the relabelling
+    	Returns:
+     		The relabeled map
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		
+		invTau = tau.inverse()
+
+		relabeledSigma = tau.left_action_product(invTau.right_action_product(self.sigma))
+
+		relabeledAlpha = tau.left_action_product(invTau.right_action_product(self.alpha))
+
+		return PlanarMap(relabeledSigma,relabeledAlpha)
+    
+
+	def tetravalance(self):
+		""" 
+		There is bijection between rooted map with m edge and face-bicolored tetravalant rooted map with m vertices ,
+		this function  return a labelled map(say T) representant of a face-bicolored rooted tetravalance associated to self rooted,
+		the coloration is given as follow,a face ( i.e a cycle of T.phi ) is black if every demi-edge 
+		inside it have label <=2*m otherwise it is white.
+		-------
+		Returns:
+     		A tetravalent map representant of a bi-colored tetravalant map associated to self rooted
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		return self.edgeMap()
+
+    
 	
 
 	def edgeMap(self):
 		""" 
-		A method that return the edge Map of the planar map ,
-		not defined if m = 1 and will raise an error.
+		A method that return the edge Map of the planar map 
+		-------
+		Returns:
+     		The edge map of self
 		-------
 		O(m)
 		where m is the number of edges
 		"""
-		if self.m == _sage_const_1  and self.sigma(_sage_const_1 ) == _sage_const_1 :
-			raise ValueError("The edge map of a planar map with no corner isn't valid.")
 
 		invSigma = self.sigma.inverse()
 		alpha = self.alpha
 		sigma = self.sigma
 		m = self.m
 
-		corres = [-_sage_const_1 ]
-		corresI = [-_sage_const_1  for k in range(_sage_const_2 *m+_sage_const_1 )]
 
-		#For each corner we add an edge to the edge map and moreover associate it 
-		#An half edge for instance if the corner is (i,sigma(i)) we associate the new edge
-		#to i
-		j = _sage_const_1 
-		for i in range(_sage_const_1 ,_sage_const_2 *self.m+_sage_const_1 ):
-			if i != self.sigma(i):	
-				corres.append(-_sage_const_1 )
-				corres[j] = i
-				corresI[i] = j
-				j+=_sage_const_1 
 		#The number of edge in the edge map
-		L = j-_sage_const_1 
-		
+		L = int(_sage_const_2 *m)
 		
 		alphaListEdgeMap = [-_sage_const_1  for k in range(_sage_const_2 *L) ]
 		sigmaListEdgeMap = [-_sage_const_1  for k in range(_sage_const_2 *L) ]
@@ -467,24 +596,31 @@ class PlanarMap:
 		for k in range(_sage_const_1 ,L+_sage_const_1 ):
 			alphaListEdgeMap[k-_sage_const_1 ] = k+L
 			alphaListEdgeMap[k+L-_sage_const_1 ] = k
-			i = corres[k]
 
-			t = invSigma(i)
-			sigmaListEdgeMap[k-_sage_const_1 ] = L+corresI[t]
+			t = invSigma(k)
+			sigmaListEdgeMap[k-_sage_const_1 ] = L+t
 
-			j = sigma(i)
+			j = sigma(k)
 
-			if sigma(alpha(j)) == alpha(j):
-				sigmaListEdgeMap[k+L-_sage_const_1 ] = corresI[j]
-			else:
-				sigmaListEdgeMap[k+L-_sage_const_1 ] = corresI[alpha(j)]
-			
+			sigmaListEdgeMap[k+L-_sage_const_1 ] = alpha(j)
+		
+
 		alphaEdgeMap = Permutation(alphaListEdgeMap)
 		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
 
 		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)
-
-	def isPlaneTrees (self):
-		return self.numberOfFaces()==_sage_const_1  and self.numberOfEdges() == self.numberOfNodes() -_sage_const_1 
-		
+    
+	
+	def isPlaneTree(self):
+		"""
+		A method return a boolean indicating if self is a plane Tree or not
+		-------
+		Returns:
+     		A boolean indicating if self is plane tree or not
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+		return self.numberOfFaces()==_sage_const_1  and self.numberOfEdges() == self.numberOfNodes()-_sage_const_1 
+	
 
