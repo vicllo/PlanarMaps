@@ -198,11 +198,20 @@ class PlanarMap:
 			vertex_size = 0
 
 		if use_sage_viewer:
-			g.show(layout = "planar", vertex_size = vertex_size * 8, vertex_labels = False, vertex_color = "red")
+			if self.genus() == 0:
+				layout = "planar"
+			else:
+				layout = "spring"
+			g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = False, vertex_color = "red")
+
 		else:
 			if weight is None:
 				weight = 10**len(vertices)
-			layout_dict = g.layout_planar()
+			if self.genus() == 0:
+				layout_dict = g.layout_planar()
+			else:
+				layout_dict = g.layout()
+			
 			layout_seed = [layout_dict[i] for i in range(1, len(layout_dict)+1)]
 
 			gg = g.igraph_graph()
@@ -249,6 +258,17 @@ class PlanarMap:
 		O(1)
 		"""
 		return self.m
+
+	
+	def genus(self):
+		"""
+		A method that returns the genus of a map
+		-------
+		O(m)
+		where m is the number of edges
+		"""
+
+		return (self.numberOfEdges() + 2 - self.numberOfFaces() - self.numberOfNodes()) // 2
 
 
 	def getSpanningTree(self):
