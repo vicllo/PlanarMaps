@@ -65,7 +65,11 @@ class PlanarMap:
 		else:
 			self._build_from_adj(adj)
 	
-	
+	def __eq__(self,other):
+		if isinstance(other,self.__class__):
+			return self.sigma == other.sigma and self.alpha == other.alpha
+		return False
+
 	def _build_from_permutations(self, sigma, alpha):
 		r"""
 		Initializes the planar map from the underlying permutations.
@@ -143,7 +147,7 @@ class PlanarMap:
 		Vertices are numbered from 1 to n.
 		-------
 		Returns:
-    		A multigraph corresponding to self
+			A multigraph corresponding to self
 		-------
 		O(m)
 		where m is the number of edges
@@ -245,20 +249,20 @@ class PlanarMap:
 		A method that return the number of faces of the planar map
 		-------
 		Returns:
-     		The number of faces of self
+	 		The number of faces of self
 		-------
 		O(m)
 		where m is the number of edges
 		"""
 		return len(self.phi.to_cycles())
-    
+	
 
 	def numberOfNodes(self):
 		"""
 		A method that returns the number of vertices of the planar map
 		-------
 		Returns:
-     		The number of nodes of self
+	 		The number of nodes of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -272,7 +276,7 @@ class PlanarMap:
 		A method that returns the number of edges of the planar map
 		-------
 		Returns:
-     		The number of edge of self
+	 		The number of edge of self
 		-------
 		O(1)
 		"""
@@ -283,7 +287,7 @@ class PlanarMap:
 		A method that returns the genus of a map
 		-------
 		Returns:
-     		The genus of self
+	 		The genus of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -291,13 +295,36 @@ class PlanarMap:
 
 		return (self.numberOfEdges() + _sage_const_2  - self.numberOfFaces() - self.numberOfNodes()) // _sage_const_2 
 
+	
+	def force_planar(self):
+		"""
+		If the underlying graph is planar, returns a map of genus 0 with the same underlying graph.
+		For example, the adjacency list [(2,3,4),(3,4,1),(4,1,2),(1,2,3)] is a valid adjacency list
+			for the complete graph with 4 nodes, but its genus is 1; this method could, for example,
+			build a map from the list [(2,4,3),(3,4,1),(4,2,1),(1,2,3)] which is the same graph, of genus 0.
+		Raises an error if the underlying graph is not planar.
+		-------
+		Returns:
+     		Another map corresponding to the above description.
+		-------
+		"""
+
+		g = self.buildGraph()
+
+		if not g.is_planar(set_embedding = True):
+			raise ValueError("The force_planar method can be used on maps whose underlying graph is planar.")
+		
+		e = g.get_embedding()
+		adj = [tuple(reversed(e[i])) for i in range(_sage_const_1 , len(e)+_sage_const_1 )]
+
+		return PlanarMap(adj = adj)
 
 	def getSpanningTree(self):
 		"""
 		A method that returns any spanning tree of the planar map
 		-------
 		Returns:
-     		A spanning tree of self
+	 		A spanning tree of self
 		-------
 		O(m)
 		"""
@@ -329,7 +356,7 @@ class PlanarMap:
 		A method that return the dual of the planar map
 		-------
 		Returns:
-     		The dual of self
+	 		The dual of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -342,14 +369,14 @@ class PlanarMap:
 		A method that return the diameter of the planar map
 		-------
 		Returns:
-     		The diameter of self
+	 		The diameter of self
 		-------
 		O(m*n)
 		where m is the number of edges and n is the number of nodes
 		"""
 		graph = self.buildGraph()
 		return Graph.diameter(graph)
-    
+	
 
 	def derivedMap(self):
 
@@ -357,7 +384,7 @@ class PlanarMap:
 		A method that return the derived Map of the planar map
 		-------
 		Returns:
-     		The derived map of self
+	 		The derived map of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -389,30 +416,31 @@ class PlanarMap:
 		derivedSigma = Permutation(derivedSigmaList)
 		derivedAlpha = Permutation(derivedAlphaList)
 		return PlanarMap(derivedSigma,derivedAlpha)
-    
+	
+
 
 	def quadrangulation(self):
 		""" 
 		There is bijection between rooted map with m edge and bipartite quadrangulation rooted map with m vertices ,
-		this function  return a labelled map(say Q) representant of a rooted quadrangulation associated to self rooted,
+		this function  return a labelled map(say Q) representant of a rooted quadrangulation associated to self if rooted,
 		the coloration is given as follow,a node is black ( i.e a cycle of Q.sigma ) if every demi-edge 
 		inside it have label <=2*m otherwise it is white.
 		-------
 		Returns:
-     		A quadrangulation of self
+	 		A quadrangulation of self
 		-------
 		O(m)
 		where m is the number of edges
 		"""
 		return self.incidenceMap()
-    
+
 
 	def incidenceMap(self):
 		""" 
 		A method that return the incidence map of the planar map
 		-------
 		Returns:
-     		Incidence map of self
+	 		Incidence map of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -463,10 +491,11 @@ class PlanarMap:
 
 		for quadDemiEdge in range(_sage_const_1 ,numberOfQuadEdge+_sage_const_1 ):
 			relabelList[quadDemiEdge-_sage_const_1 ] = corres[quadDemiEdge]
-		
+			relabelList[quadDemiEdge+numberOfQuadEdge-_sage_const_1 ] = relabelList[quadDemiEdge-_sage_const_1 ]+numberOfQuadEdge
+
 		relabelPerm = Permutation(relabelList)
 		return PlanarMap(sigmaQuad,alphaQuad).relabel(relabelPerm)
-    
+	
 
 	def getRootedMapCorrespondance(self,otherMap,rootDemiEdge):
 		""" 
@@ -474,10 +503,10 @@ class PlanarMap:
 		invariant if self and otherMap represent the same rooted map at rootDemiEdge otherwise None
 		-------
 		Args:
-      		otherMap: The other planar map
+	  		otherMap: The other planar map
 			rootDemiEdge: The edge on which to root
-    	Returns:
-     		t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
+		Returns:
+	 		t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
 			t is a permutaion mapping the demi-edge of self to the one of otherMap 
 		-------
 		O(m)
@@ -533,9 +562,9 @@ class PlanarMap:
 		A method that return a relabel PlanarMap , relabelling the demi-edge i by tau(i)
 		-------
 		Args:
-      		tau:  A permutation on the demi-edges representing the relabelling
-    	Returns:
-     		The relabeled map
+	  		tau:  A permutation on the demi-edges representing the relabelling
+		Returns:
+	 		The relabeled map
 		-------
 		O(m)
 		where m is the number of edges
@@ -548,24 +577,24 @@ class PlanarMap:
 		relabeledAlpha = tau.left_action_product(invTau.right_action_product(self.alpha))
 
 		return PlanarMap(relabeledSigma,relabeledAlpha)
-    
+	
 
 	def tetravalance(self):
 		""" 
 		There is bijection between rooted map with m edge and face-bicolored tetravalant rooted map with m vertices ,
-		this function  return a labelled map(say T) representant of a face-bicolored rooted tetravalance associated to self rooted,
+		this function  return a labelled map(say T) representant of a face-bicolored rooted tetravalance associated to self if rooted,
 		the coloration is given as follow,a face ( i.e a cycle of T.phi ) is black if every demi-edge 
 		inside it have label <=2*m otherwise it is white.
 		-------
 		Returns:
-     		A tetravalent map representant of a bi-colored tetravalant map associated to self rooted
+	 		A tetravalent map representant of a bi-colored tetravalant map associated to self rooted
 		-------
 		O(m)
 		where m is the number of edges
 		"""
 		return self.edgeMap()
 
-    
+	
 	
 
 	def edgeMap(self):
@@ -573,7 +602,7 @@ class PlanarMap:
 		A method that return the edge Map of the planar map 
 		-------
 		Returns:
-     		The edge map of self
+	 		The edge map of self
 		-------
 		O(m)
 		where m is the number of edges
@@ -609,18 +638,17 @@ class PlanarMap:
 		sigmaEdgeMap = Permutation(sigmaListEdgeMap)
 
 		return PlanarMap(sigmaEdgeMap,alphaEdgeMap)
-    
+	
 	
 	def isPlaneTree(self):
 		"""
 		A method return a boolean indicating if self is a plane Tree or not
 		-------
 		Returns:
-     		A boolean indicating if self is plane tree or not
+	 		A boolean indicating if self is plane tree or not
 		-------
 		O(m)
 		where m is the number of edges
 		"""
 		return self.numberOfFaces()==_sage_const_1  and self.numberOfEdges() == self.numberOfNodes()-_sage_const_1 
-	
 

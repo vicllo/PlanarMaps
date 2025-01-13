@@ -59,7 +59,11 @@ class PlanarMap:
 		else:
 			self._build_from_adj(adj)
 	
-	
+	def __eq__(self,other):
+		if isinstance(other,self.__class__):
+			return self.sigma == other.sigma and self.alpha == other.alpha
+		return False
+
 	def _build_from_permutations(self, sigma, alpha):
 		r"""
 		Initializes the planar map from the underlying permutations.
@@ -225,7 +229,7 @@ class PlanarMap:
 			ax.set_xlim(-0.1,1.1)
 			ax.set_ylim(-0.1,1.1)
 
-			ig.plot(gg, layout = layout, target = ax, vertex_size = vertex_size)
+			igraph.plot(gg, layout = layout, target = ax, vertex_size = vertex_size)
 			fig.tight_layout()
 			plt.show()
 
@@ -408,10 +412,11 @@ class PlanarMap:
 		return PlanarMap(derivedSigma,derivedAlpha)
 	
 
+
 	def quadrangulation(self):
 		""" 
 		There is bijection between rooted map with m edge and bipartite quadrangulation rooted map with m vertices ,
-		this function  return a labelled map(say Q) representant of a rooted quadrangulation associated to self rooted,
+		this function  return a labelled map(say Q) representant of a rooted quadrangulation associated to self if rooted,
 		the coloration is given as follow,a node is black ( i.e a cycle of Q.sigma ) if every demi-edge 
 		inside it have label <=2*m otherwise it is white.
 		-------
@@ -422,7 +427,7 @@ class PlanarMap:
 		where m is the number of edges
 		"""
 		return self.incidenceMap()
-	
+
 
 	def incidenceMap(self):
 		""" 
@@ -480,7 +485,8 @@ class PlanarMap:
 
 		for quadDemiEdge in range(1,numberOfQuadEdge+1):
 			relabelList[quadDemiEdge-1] = corres[quadDemiEdge]
-		
+			relabelList[quadDemiEdge+numberOfQuadEdge-1] = relabelList[quadDemiEdge-1]+numberOfQuadEdge
+
 		relabelPerm = Permutation(relabelList)
 		return PlanarMap(sigmaQuad,alphaQuad).relabel(relabelPerm)
 	
@@ -570,7 +576,7 @@ class PlanarMap:
 	def tetravalance(self):
 		""" 
 		There is bijection between rooted map with m edge and face-bicolored tetravalant rooted map with m vertices ,
-		this function  return a labelled map(say T) representant of a face-bicolored rooted tetravalance associated to self rooted,
+		this function  return a labelled map(say T) representant of a face-bicolored rooted tetravalance associated to self if rooted,
 		the coloration is given as follow,a face ( i.e a cycle of T.phi ) is black if every demi-edge 
 		inside it have label <=2*m otherwise it is white.
 		-------
@@ -639,4 +645,3 @@ class PlanarMap:
 		where m is the number of edges
 		"""
 		return self.numberOfFaces()==1 and self.numberOfEdges() == self.numberOfNodes()-1
-	
