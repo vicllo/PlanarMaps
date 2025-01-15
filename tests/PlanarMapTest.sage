@@ -690,6 +690,17 @@ def test_relabel():
     assert relabelMap_1.sigma == Permutation([2,1,3,5,4,6])
     assert relabelMap_1.alpha == Permutation([4,3,2,1,6,5])
 
+#Test the getRandomDyckPath method
+def test_getRandomDyckPath():
+    dyckPath = getRandomDyckPath(50)
+    negative = False 
+    level = 0
+    for step in dyckPath:
+        level += step
+        if level < 0: 
+            negative = True
+    assert (negative is False) and (level == 0)  
+
 if __name__ == "__main__":
     #Test init method
     test_init_planar_map()
@@ -741,4 +752,8 @@ if __name__ == "__main__":
 
     #Test the getRootedMapCorrespondance method
     test_getRootedMapCorrespondace()
-    print("test_getRootedMapCorrespondance method")
+    print("test_getRootedMapCorrespondance passed")
+
+    #Test the getRandomDyckPath method
+    test_getRandomDyckPath()
+    print("test_getRandomDyckPath passed")

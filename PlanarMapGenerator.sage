@@ -26,7 +26,7 @@ def getRandomDyckPath(n):
     Args: 
 		int n : size of path
     """
-    N = 2 * n + 1
+	N = 2 * n + 1
     dyck = [1] * n + [-1] * (n + 1) 
     random.shuffle(dyck)
 
@@ -35,8 +35,8 @@ def getRandomDyckPath(n):
     posmin = 0
 
     for i in range(N):
-        level += dyck[i]
-        if level < minlevel:
+    	level += dyck[i]
+    	if level < minlevel:
             posmin = i + 1
             minlevel = level
 
