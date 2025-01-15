@@ -6,7 +6,7 @@ This project is a SageMath library for working with planar maps. Planar maps are
 
 The implementation of the Planar Maps is mostly based on the following documentation :
 
-- [1] : An introduction to map enumeration, Guillaume Chapuy, 2014 [Website](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
+- [1] : An introduction to map enumeration, Guillaume Chapuy, 2014 [(Website)](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
 
 - [2] : Handbook on Enumerative Combinatorics, Gilles Schaeffer, Chapter 5, 2015
 
