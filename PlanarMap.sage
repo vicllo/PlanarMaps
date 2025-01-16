@@ -30,6 +30,7 @@ class PlanarMap:
 		r"""
 		Initializes the planar map from either the permutations alpha and sigma, or an adjacency list (giving for
 				vertex a list of its neighbors in order; vertices must be numbered from 1 to n).
+		Note that it is not possible to build a map with multiedges from an adjacency list.
 
 		INPUT:
 
@@ -72,7 +73,7 @@ class PlanarMap:
 		self.alpha = alpha
 		self.phi = self.alpha.right_action_product(self.sigma)
 		self.size = self.sigma.size()
-		self.m = self.size / 2 
+		self.m = self.size // 2 
 
 		if self.sigma.size() != self.alpha.size():
 			raise ValueError("The two permutations does not have the same size")
@@ -83,7 +84,7 @@ class PlanarMap:
 		if self.alpha.number_of_fixed_points() != 0:
 			raise ValueError("The permutation alpha should not have fixed points")
 
-		seen = [False] * (self.size + 1 )
+		seen = [False] * (self.size + 1)
 		seen[0] = True  # On s'évite les décalages d'indices de la sorte
 
 		def dfs(i):
@@ -160,34 +161,71 @@ class PlanarMap:
 
 		return Graph(edges, loops = True, multiedges = True)
 
-	def show(self, show_vertices = True, use_sage_viewer = False, weight = 1):
+	def show(self, use_sage_viewer = True, show_vertices = True, show_labels = True):
 		"""
-		Show the planar map, using igraph if possible and the default sage viewer otherwise.
-		Does not work (yet) if the map contains loops or multiedges.
+		Show the planar map, using the default sage viewer (unless use_sage_viewer is set to False, in which case igraph is used).
 
-		Note that the fancy igraph viewer might display crossing edges for large graphes.
-		In this case, increase the weight parameter (a bigger value will decrease the odds of introducing crossing edges,
-				but will also reduce the overall display quality); you may also re-run the method until the result is satisfying.
+		Red nodes are actual graph nodes; black nodes are artificial nodes added to draw graphs with multiedges or loops.
+
+		Note that the fancy igraph viewer might display crossing edges for large graphes, and sometimes will not
+			display the correct map (ie. change the order of edges around a node).
+		The default sage viewer is guaranteed to be correct, but will often display ugly graphs.
 		"""
-
-		# todo: allow multiedges & loops by adding imaginary nodes wherever necessary
 
 		vertices = self.sigma.to_cycles()
-		embedding = {}
-		corres = [0] * int(2 * self.m + 1)			# associe à une demi-arête le sommet correspondant
+
+		real_n_vertices = len(vertices)				# all the new vertices are added to remove multiedges and loops
+													# and thus should not be drawn
+
+		alpha = self.alpha
+		sigma = self.sigma
+		m = self.m
+
+		corres = [0] * int(2 * self.m + 1)			# corres[i] is the vertex corresponding to the half-edge i 
 		for i in range(1, len(vertices)+1):
 			for k in vertices[i-1]:
 				corres[k] = i
 
-		for i in range(1, len(vertices)+1):			# pour chaque sommet, on construit som embedding (liste des voisins dans le sens horaire)
-			embedding[i] = list(corres[self.alpha(k)] for k in vertices[i-1])
-			embedding[i].reverse()					# sens horaire
+		def break_down(i):
+			nonlocal alpha, sigma, corres, vertices, m
+
+			# add a new vertex v, and break down the edge whose half-edges are i & alpha(i) by 2 edges (i, 2*m+1) and (2*m+2, alpha(i)) 
+			alpha *= Permutation((alpha(i), 2*m+1, i, 2*m+2))
+			sigma *= Permutation((2*m+1, 2*m+2))
+
+			corres.append(len(vertices) + 1)		# the two new half-edges 2*m+1 and 2*m+2 are linked to the new vertex
+			corres.append(len(vertices) + 1)
+
+			vertices.append((2*m+1, 2*m+2))
+
+			m += 1
+
+		# for each loop a-a, add a new vertex v and replace the edge a-a with two edges a-v, v-a
+
+		for i in range(1, 2*m+1):
+			if corres[i] == corres[alpha(i)]:
+				break_down(i)
+
+		# for each vertex v, for each half-edge of v, break down the corresponding edge if there is already an edge between these two vertices
+		for v in range(1, len(vertices) + 1):
+			seen_vertices = set()
+			for i in vertices[v-1]:
+				if corres[alpha(i)] in seen_vertices:
+					break_down(i)
+				else:
+					seen_vertices.add(corres[alpha(i)])
+
+		embedding = {}
+
+		for i in range(1, len(vertices)+1):			# build the embedding (list of the neighbors of each edge, in clockwise order)
+			embedding[i] = list(corres[alpha(k)] for k in vertices[i-1])
+			embedding[i].reverse()					# clockwise order!
 
 		edges = []
 
-		for i in range(1, 2*self.m+1):				# pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
-			if i < self.alpha(i):					# on évite d'ajouter les arêtes en double
-				edges.append((corres[i], corres[self.alpha(i)]))
+		for i in range(1, 2*m+1):				# for each half-edge i, add an edge between corres[i] and corres[alpha(i)]
+			if i < alpha(i):					# should not add the same edge twice
+				edges.append((corres[i], corres[alpha(i)]))
 
 		g = Graph(edges, loops = False, multiedges = False)
 		g.set_embedding(embedding)
@@ -209,11 +247,9 @@ class PlanarMap:
 				layout = "planar"
 			else:
 				layout = "spring"
-			g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = False, vertex_color = "red")
+			g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = show_labels, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "black": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
 
 		else:
-			if weight is None:
-				weight = 10**len(vertices)
 			if self.genus() == 0:
 				layout_dict = g.layout_planar()
 			else:
@@ -222,14 +258,14 @@ class PlanarMap:
 			layout_seed = [layout_dict[i] for i in range(1, len(layout_dict)+1)]
 
 			gg = g.igraph_graph()
-			layout = gg.layout_davidson_harel(seed = layout_seed, weight_edge_crossings = float(1e40) * len(vertices)**3 * weight)
+			layout = gg.layout_davidson_harel(seed = layout_seed, weight_edge_crossings = float(1e30) * len(vertices)**3)
 			layout.fit_into((0,0,1,1))
 			
 			fig, ax = plt.subplots()
 			ax.set_xlim(-0.1,1.1)
 			ax.set_ylim(-0.1,1.1)
 
-			igraph.plot(gg, layout = layout, target = ax, vertex_size = vertex_size)
+			igraph.plot(gg, layout = layout, target = ax, vertex_size = vertex_size, vertex_label = list(range(1, len(vertices)+1)), vertex_colors = ["red"] * (real_n_vertices+1) + ["black"] * (len(vertices) - real_n_vertices))
 			fig.tight_layout()
 			plt.show()
 
@@ -263,7 +299,6 @@ class PlanarMap:
 		"""
 		return len(self.sigma.to_cycles())
 	
-
 
 	def numberOfEdges(self):
 		"""
@@ -313,6 +348,38 @@ class PlanarMap:
 
 		return PlanarMap(adj = adj)
 
+
+	def contractEdge(self, iEdge):
+		"""
+		Contracts the given half-edge (i. e. merge the two nodes that it links, and removes the edge itself).
+		"""
+
+		if iEdge < 1 or iEdge > 2 * self.m:
+			raise ValueError("Invalid half-edge number.")
+
+		def buildTransp(l):			# build a permutation from a list of possibly null transpositions
+			return Permutation(list(filter(lambda t: t[0] != t[1], l)))		# ie. buildTransp([(1,1),(2,4),(3,3)]) = (1,4,3,2)
+		
+		# swaps the iEdge and its dual with the half-edges 2*self.m-1 and 2*self.m to allow easily removing them
+
+		swap = buildTransp([(iEdge, 2*self.m-1), (self.alpha(iEdge), 2*self.m)])
+
+		self.alpha = swap * self.alpha * swap
+		self.sigma = swap * self.sigma * swap
+
+		# merge the two neighbors lists
+
+		swp = buildTransp([(2*self.m-1, self.sigma(2*self.m)), (2*self.m, self.sigma(2*self.m-1))])
+		
+		self.sigma = self.sigma * swp
+
+		# now sigma is correct; we just have to delete the leftover (2*m-1, 2*m) transposition
+
+		self.sigma = Permutation(self.sigma.to_cycles()[:-1])
+		self.alpha = Permutation(self.alpha.to_cycles()[:-1])
+
+		self.m -= 1
+	
 	def getSpanningTree(self):
 		"""
 		A method that returns any spanning tree of the planar map
