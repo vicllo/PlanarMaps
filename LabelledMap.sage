@@ -169,7 +169,7 @@ class LabelledMap:
         """
         Show the planar map, using the default sage viewer (unless use_sage_viewer is set to False, in which case igraph is used).
 
-        Red nodes are actual graph nodes; black nodes are artificial nodes added to draw graphs with multiedges or loops.
+        Red nodes are actual graph nodes; white nodes are artificial nodes added to draw graphs with multiedges or loops.
 
         Note that the fancy igraph viewer might display crossing edges for large graphes, and sometimes will not
             display the correct map (ie. change the order of edges around a node).
