@@ -76,7 +76,7 @@ class PlanarMap:
 		self.m = self.size // 2 
 
 		if self.sigma.size() != self.alpha.size():
-			raise ValueError("The two permutations does not have the same size")
+			raise ValueError("The two permutations do not have the same size")
 
 		if self.alpha.right_action_product(self.alpha) != Permutations(self.size).identity():
 			raise ValueError("The permutation alpha is not an involution")
@@ -85,15 +85,17 @@ class PlanarMap:
 			raise ValueError("The permutation alpha should not have fixed points")
 
 		seen = [False] * (self.size + 1)
-		seen[0] = True  # On s'évite les décalages d'indices de la sorte
+		seen[0] = seen[1] = True			# half-edges are numbered from 1 to size, included
 
-		def dfs(i):
-			seen[i] = True
+		todo = [1]
+		while todo:
+			i = todo.pop()
 			if not seen[self.alpha(i)]:
-				dfs(self.alpha(i))
+				todo.append(self.alpha(i))
+				seen[self.alpha(i)] = True
 			if not seen[self.sigma(i)]:
-				dfs(self.sigma(i))
-		dfs(1)
+				todo.append(self.sigma(i))
+				seen[self.sigma(i)] = True
 
 		if False in seen:
 			raise ValueError("The graph is not connected")

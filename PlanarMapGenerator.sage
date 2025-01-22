@@ -1,5 +1,9 @@
-load("PlanarMap.sage")
 import random
+
+try:
+	load("PlanarMap.sage")
+except OSError:				# if this file is loaded from another folder, this command won't work
+	pass					# we thus assume that it has already been loaded elsewhere; otherwise, there will be NameErrors
 
 def cube():
 	"""Returns the standard cube map."""
@@ -20,26 +24,26 @@ def complete_map(n):
 	return m
 
 def getRandomDyckPath(n):
-    """
-    Returns a random dyck path of size n (uniform random generation)
+	"""
+	Returns a random dyck path of size n (uniform random generation)
 
-    Args: 
+	Args: 
 		int n : size of path
-    """
+	"""
 	N = 2 * n + 1
-    dyck = [1] * n + [-1] * (n + 1) 
-    random.shuffle(dyck)
+	dyck = [1] * n + [-1] * (n + 1) 
+	random.shuffle(dyck)
 
-    level = 0
-    minlevel = 0
-    posmin = 0
+	level = 0
+	minlevel = 0
+	posmin = 0
 
-    for i in range(N):
-    	level += dyck[i]
-    	if level < minlevel:
-            posmin = i + 1
-            minlevel = level
+	for i in range(N):
+		level += dyck[i]
+		if level < minlevel:
+			posmin = i + 1
+			minlevel = level
 
-    Dyckfinal = [dyck[(posmin + i) % N] for i in range(N - 1)]
-    return Dyckfinal
+	Dyckfinal = [dyck[(posmin + i) % N] for i in range(N - 1)]
+	return Dyckfinal
 

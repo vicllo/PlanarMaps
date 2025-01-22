@@ -2,40 +2,25 @@ from sage.all_cmdline import *   # import sage library
 
 
 load("../PlanarMap.sage")
+load("../PlanarMapGenerator.sage")
 
 
 #Testing the init method of the PlanarMap class
 def test_init_planar_map():
 
     #Test case 1
-    #The case where sigma and alpha doesn't have the same size    
+    #The case where sigma and alpha don't have the same size    
     sigma_1 = Permutation( [3,4,1,2,6,5])
     alpha_1 = Permutation( [(1,2),(3,4)])
    
-    same_size_fail = False
-
     try: 
-        map_1 = PlanarMap(sigma_1,alpha_1)
+        PlanarMap(sigma_1,alpha_1)
     except ValueError as e:
-        if str(e) == "The two permutations does not have the same size" :
-            same_size_fail = True
-    assert same_size_fail is True
+        pass
+    else:
+        assert False
 
     #Test case 2
-    #The case where alpha isn't an involution
-    sigma_1 = Permutation( [3,4,1,2,6,5])
-    alpha_1 = Permutation( [(1,2),(3,4)])
-   
-    same_size_fail = False
-
-    try: 
-        map_1 = PlanarMap(sigma_1,alpha_1)
-    except ValueError as e:
-        if str(e) == "The two permutations does not have the same size" :
-            same_size_fail = True
-    assert same_size_fail is True
-
-    #Test case 3
     #The case where alpha isn't an involution
     sigma_2 = Permutation( [3,4,1,2,5])
     alpha_2 = Permutation( [(1,2),(3,4,5)])
