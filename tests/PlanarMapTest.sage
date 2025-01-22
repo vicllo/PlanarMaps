@@ -1,11 +1,11 @@
 from sage.all_cmdline import *   # import sage library
 
 
-load("../PlanarMap.sage")
-load("../PlanarMapGenerator.sage")
+load("../LabelledMap.sage")
+load("../MapGenerator.sage")
 
 
-#Testing the init method of the PlanarMap class
+#Testing the init method of the LabelledMap class
 def test_init_planar_map():
 
     #Test case 1
@@ -14,7 +14,7 @@ def test_init_planar_map():
     alpha_1 = Permutation( [(1,2),(3,4)])
    
     try: 
-        PlanarMap(sigma_1,alpha_1)
+            LabelledMap(sigma_1,alpha_1)
     except ValueError as e:
         pass
     else:
@@ -29,7 +29,7 @@ def test_init_planar_map():
     involution_fail = False
 
     try: 
-        map_2 = PlanarMap(sigma_2,alpha_2)
+        map_2 =     LabelledMap(sigma_2,alpha_2)
     except ValueError as e:
         if str(e) == "The permutation alpha is not an involution" :
             involution_fail = True
@@ -43,7 +43,7 @@ def test_init_planar_map():
     fixed_point_fail = False
 
     try: 
-        map_3 = PlanarMap(sigma_3,alpha_3)
+        map_3 =     LabelledMap(sigma_3,alpha_3)
     except ValueError as e:
         if str(e) == "The permutation alpha should not have fixed points" :
             fixed_point_fail = True
@@ -58,7 +58,7 @@ def test_init_planar_map():
     connected_fail = False
 
     try: 
-        map_4 = PlanarMap(sigma_4,alpha_4)
+        map_4 =     LabelledMap(sigma_4,alpha_4)
     except ValueError:
         connected_fail = True
     assert connected_fail is True
@@ -71,7 +71,7 @@ def test_init_planar_map():
     correct_graph = True
 
     try: 
-        map_5 = PlanarMap(sigma_5,alpha_5)   
+        map_5 =     LabelledMap(sigma_5,alpha_5)   
     except:
         correct_graph = False
     assert correct_graph is True
@@ -82,7 +82,7 @@ def test_init_planar_map():
     invalid_adj_fail = False
 
     try:
-        map_6 = PlanarMap(adj = adj_1)
+        map_6 =     LabelledMap(adj = adj_1)
     except ValueError:
         invalid_adj_fail = True
     assert invalid_adj_fail
@@ -92,7 +92,7 @@ def test_init_planar_map():
     invalid_args_fail = False
 
     try:
-        map_7 = PlanarMap(sigma_5, adj = adj_1)
+        map_7 =     LabelledMap(sigma_5, adj = adj_1)
     except ValueError:
         invalid_args_fail = True
     assert invalid_args_fail
@@ -102,7 +102,7 @@ def test_repr_map():
     #Test case 1
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 =     LabelledMap(sigma_1,alpha_1)
     correct_repr = "Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]"
     assert str(map_1) == correct_repr
 
@@ -112,21 +112,21 @@ def test_number_of_faces():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 =     LabelledMap(sigma_1,alpha_1)
     assert map_1.numberOfFaces()==1
 
     #Test case 2
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 =     LabelledMap(sigma_2,alpha_2)
     assert map_2.numberOfFaces()==2
 
     #Test case 3
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 =     LabelledMap(sigma_3,alpha_3)
     
     assert map_3.numberOfFaces() == 1
 
@@ -134,7 +134,7 @@ def test_number_of_faces():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 =     LabelledMap(sigma_4,alpha_4)
 
     assert map_4.numberOfFaces() == 1
 
@@ -142,7 +142,7 @@ def test_number_of_faces():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 =     LabelledMap(sigma_5,alpha_5)
     
     assert map_5.numberOfFaces() == 2
 
@@ -150,7 +150,7 @@ def test_number_of_faces():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 =     LabelledMap(sigma_6,alpha_6)
     
     assert map_6.numberOfFaces() == 3
 
@@ -159,7 +159,7 @@ def test_number_of_faces():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 =     LabelledMap(sigma_7,alpha_7)
     
     assert map_7.numberOfFaces() == 4
     
@@ -170,21 +170,21 @@ def test_number_of_nodes():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 =     LabelledMap(sigma_1,alpha_1)
     assert map_1.numberOfNodes()==4
 
     #Test case 2
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 =     LabelledMap(sigma_2,alpha_2)
     assert map_2.numberOfNodes()==3
 
     #Test case 3
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 =     LabelledMap(sigma_3,alpha_3)
     
     assert map_3.numberOfNodes() == 2
 
@@ -192,7 +192,7 @@ def test_number_of_nodes():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 =     LabelledMap(sigma_4,alpha_4)
 
     assert map_4.numberOfNodes() == 3
 
@@ -200,7 +200,7 @@ def test_number_of_nodes():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 =     LabelledMap(sigma_5,alpha_5)
     
     assert map_5.numberOfNodes() == 1
 
@@ -208,7 +208,7 @@ def test_number_of_nodes():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 =     LabelledMap(sigma_6,alpha_6)
     
     assert map_6.numberOfNodes() == 2
 
@@ -217,7 +217,7 @@ def test_number_of_nodes():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 =     LabelledMap(sigma_7,alpha_7)
     
     assert map_7.numberOfNodes() == 2
 
@@ -227,14 +227,14 @@ def test_number_of_edges():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 =     LabelledMap(sigma_1,alpha_1)
     assert map_1.numberOfEdges()==3
 
     #Test case 2
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 =     LabelledMap(sigma_2,alpha_2)
     
     assert map_2.numberOfEdges()==3
 
@@ -242,7 +242,7 @@ def test_number_of_edges():
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 =     LabelledMap(sigma_3,alpha_3)
     
     assert map_3.numberOfEdges() == 1
 
@@ -250,7 +250,7 @@ def test_number_of_edges():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 =     LabelledMap(sigma_4,alpha_4)
 
     assert map_4.numberOfEdges() == 2
 
@@ -258,7 +258,7 @@ def test_number_of_edges():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 =     LabelledMap(sigma_5,alpha_5)
     
     assert map_5.numberOfEdges() == 1
 
@@ -266,7 +266,7 @@ def test_number_of_edges():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 =     LabelledMap(sigma_6,alpha_6)
     
     assert map_6.numberOfEdges() == 3
 
@@ -275,7 +275,7 @@ def test_number_of_edges():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 =     LabelledMap(sigma_7,alpha_7)
     
     assert map_7.numberOfEdges() == 4
 
@@ -287,7 +287,7 @@ def test_build_graph():
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 =     LabelledMap(sigma_1,alpha_1)
     
     graph_1= map_1.buildGraph()
     edges_1 = graph_1.edges(labels = False)
@@ -305,7 +305,7 @@ def test_build_graph():
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 =     LabelledMap(sigma_2,alpha_2)
     
     graph_2 = map_2.buildGraph()
     edges_2 = graph_2.edges(labels = False)
@@ -322,17 +322,17 @@ def test_build_graph():
 #Test the genus method
 def test_genus():
     # Test case 1: basic planar graph
-    assert PlanarMap(Permutation([(2,3,1,5),(4,),(6,)]),Permutation([(1,2),(3,4),(5,6)])).genus() == 0
+    assert     LabelledMap(Permutation([(2,3,1,5),(4,),(6,)]),Permutation([(1,2),(3,4),(5,6)])).genus() == 0
 
     # Test case 2: cube graph
-    assert PlanarMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]).genus() == 0
+    assert     LabelledMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]).genus() == 0
 
     # Test case 2: complete bipartite graph with 2 * 3 nodes
-    assert PlanarMap(adj = [(4,5,6),(4,5,6),(4,5,6),(1,2,3),(1,2,3),(1,2,3)]).genus() == 1
+    assert LabelledMap(adj = [(4,5,6),(4,5,6),(4,5,6),(1,2,3),(1,2,3),(1,2,3)]).genus() == 1
 
 #Test the contract_edge method
 def test_contract_edge():
-    cube = PlanarMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)])
+    cube = LabelledMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)])
     
     cube.contractEdge(1)
     cube.contractEdge(3)
@@ -347,7 +347,7 @@ def test_dual():
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
     
     dualMap_1 = map_1.dual()
 
@@ -369,7 +369,7 @@ def test_dual():
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 = LabelledMap(sigma_2,alpha_2)
 
     dualMap_2 = map_2.dual()
 
@@ -392,7 +392,7 @@ def test_diameter():
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
 
     assert map_1.diameter() == 3
 
@@ -401,7 +401,7 @@ def test_diameter():
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
     
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 = LabelledMap(sigma_2,alpha_2)
 
     assert map_2.diameter() == 1
 
@@ -421,7 +421,7 @@ def test_derivedMap():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
     derived_1 = map_1.derivedMap()
     assert derived_1.numberOfFaces() == 6
     assert derived_1.numberOfEdges() == 12
@@ -431,7 +431,7 @@ def test_derivedMap():
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 = LabelledMap(sigma_2,alpha_2)
     derived_2 = map_2.derivedMap()
     assert derived_2.numberOfFaces() == 6
     assert derived_2.numberOfEdges() == 12
@@ -441,7 +441,7 @@ def test_derivedMap():
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 = LabelledMap(sigma_3,alpha_3)
     derived_3 = map_3.derivedMap()
     assert derived_3.numberOfFaces() == 2
     assert derived_3.numberOfEdges() == 4
@@ -451,7 +451,7 @@ def test_derivedMap():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 = LabelledMap(sigma_4,alpha_4)
     derived_4 = map_4.derivedMap()
 
     assert derived_4.numberOfNodes() == 6
@@ -462,7 +462,7 @@ def test_derivedMap():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 = LabelledMap(sigma_5,alpha_5)
     derived_5 = map_5.derivedMap()
     
     assert derived_5.numberOfNodes() == 4
@@ -473,7 +473,7 @@ def test_derivedMap():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 = LabelledMap(sigma_6,alpha_6)
     derived_6 = map_6.derivedMap()
     assert derived_6.numberOfNodes() == 8
     assert derived_6.numberOfEdges() == 12
@@ -483,7 +483,7 @@ def test_derivedMap():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 = LabelledMap(sigma_7,alpha_7)
     derived_7 = map_7.derivedMap()
 
     assert derived_7.numberOfFaces() == 8
@@ -497,7 +497,7 @@ def test_incidenceMap():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [_sage_const_1 ,_sage_const_3 ,_sage_const_2 ,_sage_const_5 ,_sage_const_4 ,_sage_const_6 ])
     alpha_1 = Permutation( [(_sage_const_1 ,_sage_const_2 ),(_sage_const_3 ,_sage_const_4 ),(_sage_const_5 ,_sage_const_6 )])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
     
     incidence_1 = map_1.incidenceMap()
 
@@ -510,7 +510,7 @@ def test_incidenceMap():
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 = LabelledMap(sigma_2,alpha_2)
 
     incidence_2 = map_2.incidenceMap()
 
@@ -524,7 +524,7 @@ def test_incidenceMap():
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 = LabelledMap(sigma_3,alpha_3)
 
     incidence_3 = map_3.incidenceMap()
 
@@ -536,7 +536,7 @@ def test_incidenceMap():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 = LabelledMap(sigma_4,alpha_4)
     incidence_4 = map_4.incidenceMap()
 
 
@@ -549,7 +549,7 @@ def test_incidenceMap():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 = LabelledMap(sigma_5,alpha_5)
     
     incidence_5 = map_5.incidenceMap()
 
@@ -561,7 +561,7 @@ def test_incidenceMap():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 = LabelledMap(sigma_6,alpha_6)
     
     incidence_6 = map_6.incidenceMap()
 
@@ -573,7 +573,7 @@ def test_incidenceMap():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 = LabelledMap(sigma_7,alpha_7)
     
     incidence_7 = map_7.incidenceMap()
 
@@ -587,7 +587,7 @@ def test_edgeMap():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
 
     edgeMap_1 = map_1.edgeMap()
 
@@ -599,7 +599,7 @@ def test_edgeMap():
     #Correspond to a triangle
     sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
     alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    map_2 = PlanarMap(sigma_2,alpha_2)
+    map_2 = LabelledMap(sigma_2,alpha_2)
 
     edgeMap_2 = map_2.edgeMap()
 
@@ -612,7 +612,7 @@ def test_edgeMap():
     #Correspond to a segment
     sigma_3 = Permutation( [1,2])
     alpha_3 = Permutation( [(1,2)])
-    map_3 = PlanarMap(sigma_3,alpha_3)
+    map_3 = LabelledMap(sigma_3,alpha_3)
     
     edgeMap_3 = map_3.edgeMap()
 
@@ -624,7 +624,7 @@ def test_edgeMap():
     #Correspond to a linear tree of 3 nodes
     sigma_4 = Permutation( [1,3,2,4])
     alpha_4 = Permutation( [(1,2),(3,4)])
-    map_4 = PlanarMap(sigma_4,alpha_4)
+    map_4 = LabelledMap(sigma_4,alpha_4)
     edgeMap_4 = map_4.edgeMap()
 
     assert edgeMap_4.numberOfNodes() == 2
@@ -636,7 +636,7 @@ def test_edgeMap():
     #Correspond to a loop on a node
     sigma_5 = Permutation( [2,1])
     alpha_5 =Permutation( [(1,2)])
-    map_5 = PlanarMap(sigma_5,alpha_5)
+    map_5 = LabelledMap(sigma_5,alpha_5)
     
     edgeMap_5 = map_5.edgeMap()
 
@@ -648,7 +648,7 @@ def test_edgeMap():
     #Correspond to two nodes link by 3 edges
     sigma_6 = Permutation( [(1,3,5),(2,6,4)])
     alpha_6 =Permutation( [(1,2),(3,4),(5,6)])
-    map_6 = PlanarMap(sigma_6,alpha_6)
+    map_6 = LabelledMap(sigma_6,alpha_6)
     
     edgeMap_6 = map_6.edgeMap()
 
@@ -660,7 +660,7 @@ def test_edgeMap():
     #Correspond to two nodes link with 4 edges
     sigma_7 = Permutation( [(1,7,3,5),(2,6,4,8)])
     alpha_7 = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-    map_7 = PlanarMap(sigma_7,alpha_7)
+    map_7 = LabelledMap(sigma_7,alpha_7)
     
     edgeMap_7 = map_7.edgeMap()
 
@@ -674,7 +674,7 @@ def test_getRootedMapCorrespondace():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
 
     tau_1 = Permutation((1,3))
     relabelMap_1 = map_1.relabel(tau_1)
@@ -687,7 +687,7 @@ def test_relabel():
     #Correspond to a linear tree with 4 nodes
     sigma_1 = Permutation( [1,3,2,5,4,6])
     alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = PlanarMap(sigma_1,alpha_1)
+    map_1 = LabelledMap(sigma_1,alpha_1)
 
     tau_1 = Permutation((1,3))
 

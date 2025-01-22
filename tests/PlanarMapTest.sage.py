@@ -7,7 +7,7 @@ _sage_const_3 = Integer(3); _sage_const_4 = Integer(4); _sage_const_1 = Integer(
 from sage.all_cmdline import *   # import sage library
 
 
-load("../PlanarMap.sage")
+load("../LabelledMap.sage")
 load("../PlanarMapGenerator.sage")
 
 
