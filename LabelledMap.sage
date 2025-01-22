@@ -43,7 +43,15 @@ class LabelledMap:
         sage: alpha = Permutation([(1,2),(3,4),(5,6)])
         sage: p = LabelledMap(sigma, alpha)
         sage: p
-        Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+        Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+
+        TESTS::
+            sage: sigma = Permutation( [3,4,1,2,6,5])
+            sage: alpha = Permutation( [(1,2),(3,4)])
+            sage: map = LabelledMap(sigma,alpha)
+            Traceback (most recent call last):
+            ...
+            ValueError: The two permutations do not have the same size
         
         """
         
@@ -80,7 +88,7 @@ class LabelledMap:
             raise ValueError("The permutation alpha should not have fixed points")
 
         seen = [False] * (self.size + 1)
-        seen[0] = seen[1] = True			# half-edges are numbered from 1 to size, included
+        seen[0] = seen[1] = True            # half-edges are numbered from 1 to size, included
 
         todo = [1]
         while todo:
@@ -102,8 +110,8 @@ class LabelledMap:
             raise ValueError("Invalid adjacency list")
 
         self.m = sum(map(len, adj)) // 2
-        pairs = []		# pairs of half-edges corresponding to a single edge (ie. the transpositions of alpha)
-        cycles = []		# lists of outgoing half-edges for each vertex (ie. the cycles of sigma)
+        pairs = []        # pairs of half-edges corresponding to a single edge (ie. the transpositions of alpha)
+        cycles = []        # lists of outgoing half-edges for each vertex (ie. the cycles of sigma)
 
         edges = {}
         iEdge = 1
@@ -113,7 +121,7 @@ class LabelledMap:
 
             for v in adj[u-1]:
                 other = None
-                if (v, u) in edges:				# the test must be done before setting (u, v) to account for loops
+                if (v, u) in edges:                # the test must be done before setting (u, v) to account for loops
                     other = edges[(v, u)]
                     edges.pop((v, u))
 
@@ -144,15 +152,15 @@ class LabelledMap:
         where m is the number of edges
         """
         vertices = self.sigma.to_cycles()
-        corres = [0] * int(2 * self.m + 1)			# associe à une demi-arête le sommet correspondant
+        corres = [0] * int(2 * self.m + 1)            # associe à une demi-arête le sommet correspondant
         for i in range(1, len(vertices)+1):
             for k in vertices[i-1]:
                 corres[k] = i
         
         edges = []
 
-        for i in range(1, 2*self.m+1):				# pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
-            if i < self.alpha(i):					# on évite d'ajouter les arêtes en double
+        for i in range(1, 2*self.m+1):                # pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
+            if i < self.alpha(i):                    # on évite d'ajouter les arêtes en double
                 edges.append((corres[i], corres[self.alpha(i)]))
 
         return Graph(edges, loops = True, multiedges = True)
@@ -170,14 +178,14 @@ class LabelledMap:
 
         vertices = self.sigma.to_cycles()
 
-        real_n_vertices = len(vertices)				# all the new vertices are added to remove multiedges and loops
+        real_n_vertices = len(vertices)                # all the new vertices are added to remove multiedges and loops
                                                     # and thus should not be drawn
 
         alpha = self.alpha
         sigma = self.sigma
         m = self.m
 
-        corres = [0] * int(2 * self.m + 1)			# corres[i] is the vertex corresponding to the half-edge i 
+        corres = [0] * int(2 * self.m + 1)            # corres[i] is the vertex corresponding to the half-edge i 
         for i in range(1, len(vertices)+1):
             for k in vertices[i-1]:
                 corres[k] = i
@@ -189,7 +197,7 @@ class LabelledMap:
             alpha *= Permutation((int(alpha(i)), int(2*m+1), int(i), int(2*m+2)))
             sigma *= Permutation((int(2*m+1), int(2*m+2)))
 
-            corres.append(len(vertices) + 1)		# the two new half-edges 2*m+1 and 2*m+2 are linked to the new vertex
+            corres.append(len(vertices) + 1)        # the two new half-edges 2*m+1 and 2*m+2 are linked to the new vertex
             corres.append(len(vertices) + 1)
 
             vertices.append((2*m+1, 2*m+2))
@@ -213,14 +221,14 @@ class LabelledMap:
 
         embedding = {}
 
-        for i in range(1, len(vertices)+1):			# build the embedding (list of the neighbors of each edge, in clockwise order)
+        for i in range(1, len(vertices)+1):            # build the embedding (list of the neighbors of each edge, in clockwise order)
             embedding[i] = list(corres[alpha(int(k))] for k in vertices[i-1])
-            embedding[i].reverse()					# clockwise order!
+            embedding[i].reverse()                    # clockwise order!
 
         edges = []
 
-        for i in range(1, 2*m+1):				# for each half-edge i, add an edge between corres[i] and corres[alpha(i)]
-            if i < alpha(i):					# should not add the same edge twice
+        for i in range(1, 2*m+1):                # for each half-edge i, add an edge between corres[i] and corres[alpha(i)]
+            if i < alpha(i):                    # should not add the same edge twice
                 edges.append((corres[i], corres[alpha(i)]))
 
         g = Graph(edges, loops = False, multiedges = False)
@@ -538,7 +546,7 @@ class LabelledMap:
                 invCorres[demiEdge] = quadDemiEdge
                 quadDemiEdge+=1
 
-            sigmaQuadList.append(startQuadDemiEdge) 			
+            sigmaQuadList.append(startQuadDemiEdge)             
         
         numberOfQuadEdge = quadDemiEdge-1
 
@@ -817,7 +825,7 @@ class LabelledMap:
             u = p.popleft()
             if not seen[sigma(u)-1]:
                 seen[sigma(u)-1] = True
-                p.append(sigma(u))		
+                p.append(sigma(u))        
                 relabelList[sigma(u)-1] = cnt
                 cnt+=1
 
@@ -851,8 +859,8 @@ class LabelledMap:
         if iEdge < 1 or iEdge > 2 * self.m:
             raise ValueError("Invalid half-edge number.")
 
-        def buildTransp(l):			# build a permutation from a list of possibly null transpositions
-            return Permutation(list(filter(lambda t: t[0] != t[1], l)))		# ie. buildTransp([(1,1),(2,4),(3,3)]) = (1,4,3,2)
+        def buildTransp(l):            # build a permutation from a list of possibly null transpositions
+            return Permutation(list(filter(lambda t: t[0] != t[1], l)))        # ie. buildTransp([(1,1),(2,4),(3,3)]) = (1,4,3,2)
         
         # swaps the iEdge and its dual with the half-edges 2*self.m-1 and 2*self.m to allow easily removing them
 
@@ -1062,7 +1070,7 @@ class LabelledMap:
             -returnMarkedDemiEdge : a parameter indicating whether or not to return the markedDemiEdge default to true
         Returns:
             -(quadA,quadB,markedDemiEdgeA,markedDemiEdgeB) as in the above description if returnMarkedDemiEdge = True otherwise (quadA,quadB) corresponding to the above description
-            ,if self isn't a one face map it will raise an error	
+            ,if self isn't a one face map it will raise an error    
         -------
         O(m)
         where m is the number of edges
@@ -1151,7 +1159,7 @@ class LabelledMap:
         for i in range(2*self.m):
             curLabel = labelled[curDemiEdge]
             if curLabel>1:
-                otherDemiEdge = partner[curDemiEdge]	
+                otherDemiEdge = partner[curDemiEdge]    
                 corres[curDemiEdge] = cnt
 
                 sigmaQuadCycleDemiEdge[curDemiEdge].appendleft(cnt)
@@ -1196,7 +1204,7 @@ class LabelledMap:
 
             otherDemiEdge = backPartner[curDemiEdge]
             
-            P = len(restDemiEdgeQuad)					
+            P = len(restDemiEdgeQuad)                    
 
             for i in range(P):
                 if alphaQuadList[restDemiEdgeQuad[i]-1] == corres[otherDemiEdge]:
@@ -1225,7 +1233,7 @@ class LabelledMap:
         
         
         sigmaQuad = Permutation(sigmaQuadCycle)
-        alphaQuad = Permutation(alphaQuadList)		
+        alphaQuad = Permutation(alphaQuadList)        
         quad = LabelledMap(sigma = sigmaQuad,alpha = alphaQuad)
         numberOfQuadDemiEdge = len(alphaQuadList)
 
@@ -1249,7 +1257,7 @@ class LabelledMap:
             U = corres[alpha(root)]
             X,W,V = phiQuad(U),phiQuad(phiQuad(U)),phiQuad(phiQuad(phiQuad(U)))
             tauA = Permutations(numberOfQuadDemiEdge).reflection((W,root))
-            tauB = Permutations(numberOfQuadDemiEdge).reflection((X,root))		
+            tauB = Permutations(numberOfQuadDemiEdge).reflection((X,root))        
             
 
 
@@ -1277,7 +1285,7 @@ class LabelledMap:
         return quadA.canonicalRepresentant(),quadB.canonicalRepresentant()
     
     def nodes(self):
-        """	
+        """    
         This function return the nodes of self as cycle of self.sigma
         ----
         Returns :
@@ -1288,7 +1296,7 @@ class LabelledMap:
         return self.sigma.to_cycles()
     
     def faces(self):
-        """	
+        """    
         This function return the faces of self as cycle of self.phi
         ----
         Returns : 
