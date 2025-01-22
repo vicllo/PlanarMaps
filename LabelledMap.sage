@@ -234,7 +234,7 @@ class LabelledMap:
             use_sage_viewer = True
 
         if show_vertices:
-            vertex_size = 90 / max(1, len(vertices))**.5
+            vertex_size = 140 / max(1, len(vertices))**.5
         else:
             vertex_size = 0
 
@@ -243,7 +243,7 @@ class LabelledMap:
                 layout = "planar"
             else:
                 layout = "spring"
-            g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = show_labels, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "black": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
+            g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = {i: str(i) if i <= real_n_vertices and show_labels else "" for i in range(1, len(vertices)+1)}, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "white": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
 
         else:
             if self.genus() == 0:
