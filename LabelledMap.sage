@@ -275,7 +275,7 @@ class LabelledMap:
 
 
     def __repr__(self):
-        return "Labelled  map | Sigma : " + str(self.sigma) + ", Alpha : " + str(self.alpha)
+        return "Labelled map | Sigma : " + str(self.sigma) + ", Alpha : " + str(self.alpha)
 
 
     def numberOfFaces(self):
