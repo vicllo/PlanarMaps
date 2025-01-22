@@ -41,8 +41,7 @@ class LabelledMap:
         EXAMPLES:
         sage: sigma = Permutation( [1,3,2,5,4,6])
         sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-        sage: p = LabelledMap(sigma, alpha)
-        sage: p
+        sage: LabelledMap(sigma, alpha)
         Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
 
         TESTS::
