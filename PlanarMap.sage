@@ -42,10 +42,16 @@ class PlanarMap:
         EXAMPLES:
         sage: sigma = Permutation( [1,3,2,5,4,6])
         sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-        sage: p = PlanarMap(sigma, alpha)
-        sage: p
+        sage: PlanarMap(sigma, alpha)
         Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
-        
+
+        TESTS::
+            sage: sigma_1 = Permutation( [3,4,1,2,6,5])
+            sage: alpha_1 = Permutation( [(1,2),(3,4)])
+            sage: map_1 = PlanarMap(sigma_1,alpha_1)
+            Traceback (most recent call last):
+            ...
+            ValueError: The two permutations does not have the same size
         """
         
         if sigma == None and alpha == None and adj == None:
