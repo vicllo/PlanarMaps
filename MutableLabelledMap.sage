@@ -4,6 +4,20 @@ class MutableLabelledMap(LabelledMap):
     def contractEdge(self, iEdge):
         """
         Contracts the given half-edge (i. e. merge the two nodes that it links, and removes the edge itself).
+
+        INPUT:
+
+        - ``iEdge`` integer; the index of the half-edge to contract
+
+        TESTS::
+            sage: adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]
+            sage: cube = MutableLabelledMap(adj = adj)
+            sage: cube.contractEdge(1)
+            sage: cube.contractEdge(3)
+            sage: cube.numberOfEdges()
+            10
+            sage: cub.numberOfNodes()
+            6
         """
 
         if iEdge < 1 or iEdge > 2 * self.m:

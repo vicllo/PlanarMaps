@@ -5,16 +5,6 @@ load("LabelledMap.sage")
 load("MutableLabelledMap.sage")
 load("MapGenerator.sage")
 
-#Test the contract_edge method
-def test_contract_edge():
-    cube = MutableLabelledMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)])
-    
-    cube.contractEdge(1)
-    cube.contractEdge(3)
-    
-    assert cube.numberOfEdges() == 10
-    assert cube.numberOfNodes() == 6
-
 #Test the dual method
 def test_dual():
     #Test case 1
