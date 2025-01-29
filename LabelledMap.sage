@@ -379,13 +379,50 @@ class LabelledMap:
 
     def numberOfNodes(self):
         """
-        A method that returns the number of vertices of the map
-        -------
-        Returns:
-             The number of nodes of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that returns the number of nodes, or vertices, of this labelled map
+        
+        OUTPUT: The number of nodes of this labelled map
+
+        EXAMPLES::
+
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            4
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            3
+
+        TESTS::
+            sage: sigma = Permutation([1,2])
+            sage: alpha = Permutation([(1,2)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            2
+
+            sage: sigma = Permutation([1,3,2,4])
+            sage: alpha = Permutation([(1,2),(3,4)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            3
+
+            sage: sigma = Permutation([2,1])
+            sage: alpha = Permutation([(1,2)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            1
+
+            sage: sigma = Permutation([(1,3,5),(2,6,4)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            2
+
+            sage: sigma = Permutation([(1,7,3,5),(2,6,4,8)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6),(7,8)])
+            sage: LabelledMap(sigma, alpha).numberOfNodes()
+            2
+
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         return len(self.sigma.to_cycles())
     
