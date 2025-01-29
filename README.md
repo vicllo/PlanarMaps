@@ -1,7 +1,6 @@
 # Planar Maps Library for SageMath
 
-This project is a **SageMath library** for manipulating **planar maps**.  
-Maps are **embeddings of graphs on surfaces**, commonly used in **graph theory, combinatorics, and topology**.  
+This project is a **SageMath library** for manipulating **planar maps**.  Maps are **embeddings of graphs on surfaces**, commonly used in **graph theory, combinatorics, and topology**.  
 This library provides **tools for creating, visualizing, and manipulating planar maps** within the SageMath environment.
 
 ---
@@ -10,12 +9,9 @@ This library provides **tools for creating, visualizing, and manipulating planar
 
 The implementation of planar maps is primarily based on the following references:
 
-- **[1]** *Handbook on Enumerative Combinatorics*, Gilles Schaeffer, 2015  
-  [🔗 Website](https://www.taylorfrancis.com/chapters/edit/10.1201/b18255-11/planar-maps-gillesschaeffer)
-- **[2]** *An Introduction to Map Enumeration*, Guillaume Chapuy, 2014  
-  [🔗 Website](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
-- **[3]** *Enumeration and Random Generation of Planar Maps*, Ivan Geffner, Master’s Final Thesis, Universitat Politècnica de Catalunya, 2014  
-  [🔗 Website](https://upcommons.upc.edu/handle/2099.1/23114)
+- **[1]** *Handbook on Enumerative Combinatorics*, Gilles Schaeffer, 2015 [Website](https://www.taylorfrancis.com/chapters/edit/10.1201/b18255-11/planar-maps-gillesschaeffer)
+- **[2]** *An Introduction to Map Enumeration*, Guillaume Chapuy, 2014 [Website](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
+- **[3]** *Enumeration and Random Generation of Planar Maps*, Ivan Geffner, Master’s Final Thesis, Universitat Politècnica de Catalunya, 2014 [Website](https://upcommons.upc.edu/handle/2099.1/23114)
 
 ---
 
@@ -66,7 +62,7 @@ This class provides **two constructors**:
 A **Rooted Map** is an **equivalence class of labelled maps** under relabelling of `[1 ... 2n]`, preserving the **root half-edge** (labelled as `1`).  
 The **half-edge labelled `1`** serves as the **root** of the map.
 
-This class **inherits** from `LabelledMap`, extending its functionalities while enforcing root invariance.
+This class **inherits** from `LabelledMap`.
 
 ---
 
@@ -79,17 +75,13 @@ This class **inherits** from `LabelledMap` and provides **methods for modifying*
 - **Contracting edges**.
 - **Contracting faces**.
 
-It allows dynamic structural modifications, making it useful for algorithms requiring incremental transformations of planar maps.
-
 ---
 
 ## Map Generator
 
-An **abstraction class** that provides methods for **generating maps**, including:
+Provides methods for **generating maps**, including:
 
 - A method for generating a **uniformly random rooted map** with a fixed number of edges.
-
-This class will be extended in future updates to support additional random generation techniques.
 
 ---
 
