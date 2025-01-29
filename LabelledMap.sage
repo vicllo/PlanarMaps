@@ -84,6 +84,12 @@ class LabelledMap:
             ...
             ValueError: Invalid adjacency list
 
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: adj = [(3,),(1,3),(2,)]
+            sage: LabelledMap(sigma, adj = adj)
+            Traceback (most recent call last):
+            ...
+            ValueError: Cannot build the map from both an adjacency list and permutations
         """
         
         if sigma == None and alpha == None and adj == None:
