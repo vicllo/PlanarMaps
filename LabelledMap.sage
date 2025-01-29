@@ -114,7 +114,9 @@ class LabelledMap:
         self.phi = self.alpha.right_action_product(self.sigma)
         self.size = self.sigma.size()
         self.m = self.size // 2 
-
+        self.f = len(self.phi.to_cycles())
+        self.n = len(self.sigma.to_cycles())
+        
         if self.sigma.size() != self.alpha.size():
             raise ValueError("The two permutations do not have the same size")
 
@@ -326,6 +328,17 @@ class LabelledMap:
         """
         return "Labelled map | Sigma : " + str(self.sigma) + ", Alpha : " + str(self.alpha)
 
+    def _numberOfFaces(self):
+        """
+        A method that return the number of faces of the  map
+        -------
+        Returns:
+             The number of faces of self
+        -------
+        O(m)
+        where m is the number of edges
+        """
+        return len(self.phi.to_cycles())
 
     def numberOfFaces(self):
         """
@@ -371,11 +384,22 @@ class LabelledMap:
             4
 
         NOTE::
-            Complexity is O(m) where m is the number of edges
+            Complexity is O(1) where m is the number of edges
 
         """
-        return len(self.phi.to_cycles())
-    
+        return self.f
+
+    def _numberOfNodes(self):
+        """
+        A method that returns the number of vertices of the map
+        -------
+        Returns:
+             The number of nodes of self
+        -------
+        O(m)
+        where m is the number of edges
+        """
+        return len(self.sigma.to_cycles())    
 
     def numberOfNodes(self):
         """
@@ -424,7 +448,7 @@ class LabelledMap:
         NOTE::
             Complexity is O(m) where m is the number of edges
         """
-        return len(self.sigma.to_cycles())
+        return self.n
     
 
 
