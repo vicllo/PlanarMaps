@@ -66,7 +66,24 @@ class LabelledMap:
             ...
             ValueError: The permutation alpha should not have fixed points
 
-            
+            sage: sigma = Permutation([1,2,3,4,5,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha)
+            Traceback (most recent call last):
+            ...
+            ValueError: The graph is not connected
+
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha)
+            Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+
+            sage: adj = [(3,),(1,3),(2,)]
+            sage: LabelledMap(adj = adj)
+            Traceback (most recent call last):
+            ...
+            ValueError: Invalid adjacency list
+
         """
         
         if sigma == None and alpha == None and adj == None:
