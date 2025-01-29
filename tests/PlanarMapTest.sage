@@ -5,17 +5,6 @@ load("LabelledMap.sage")
 load("MutableLabelledMap.sage")
 load("MapGenerator.sage")
 
-#Test the genus method
-def test_genus():
-    # Test case 1: basic planar graph
-    assert LabelledMap(Permutation([(2,3,1,5),(4,),(6,)]),Permutation([(1,2),(3,4),(5,6)])).genus() == 0
-
-    # Test case 2: cube graph
-    assert LabelledMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]).genus() == 0
-
-    # Test case 2: complete bipartite graph with 2 * 3 nodes
-    assert LabelledMap(adj = [(4,5,6),(4,5,6),(4,5,6),(1,2,3),(1,2,3),(1,2,3)]).genus() == 1
-
 #Test the contract_edge method
 def test_contract_edge():
     cube = MutableLabelledMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)])

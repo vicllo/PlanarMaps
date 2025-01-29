@@ -517,13 +517,27 @@ class LabelledMap:
     
     def genus(self):
         """
-        A method that returns the genus of a map
-        -------
-        Returns:
-             The genus of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that returns the genus of this labelled map map, i.e. the minimum number of handles that must be added to a sphere to embed the map without edge crossings
+        
+        OUTPUT:
+             The genus of this labelled map
+        
+        EXAMPLES:
+            sage: sigma = Permutation([(2,3,1,5),(4,),(6,)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).genus()
+            0
+
+            sage: adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]
+            sage: LabelledMap(adj=adj).genus()
+            0
+
+            sage: adj = [(4,5,6),(4,5,6),(4,5,6),(1,2,3),(1,2,3),(1,2,3)]
+            sage: LabelledMap(adj=adj).genus()
+            1
+
+        NOTE::
+            Complexity is  O(m) where m is the number of edges
         """
 
         return (self.numberOfEdges() + 2 - self.numberOfFaces() - self.numberOfNodes()) // 2
