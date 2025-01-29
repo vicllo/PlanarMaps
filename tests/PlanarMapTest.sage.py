@@ -8,6 +8,7 @@ from sage.all_cmdline import *   # import sage library
 
 
 load("LabelledMap.sage")
+load("MutableLabelledMap.sage")
 load("MapGenerator.sage")
 
 
@@ -340,7 +341,7 @@ def test_genus():
 
 #Test the contract_edge method
 def test_contract_edge():
-    cube = LabelledMap(adj = [(_sage_const_5 ,_sage_const_4 ,_sage_const_2 ),(_sage_const_1 ,_sage_const_3 ,_sage_const_6 ),(_sage_const_4 ,_sage_const_7 ,_sage_const_2 ),(_sage_const_8 ,_sage_const_3 ,_sage_const_1 ),(_sage_const_8 ,_sage_const_1 ,_sage_const_6 ),(_sage_const_5 ,_sage_const_2 ,_sage_const_7 ),(_sage_const_3 ,_sage_const_8 ,_sage_const_6 ),(_sage_const_7 ,_sage_const_4 ,_sage_const_5 )])
+    cube = MutableLabelledMap(adj = [(_sage_const_5 ,_sage_const_4 ,_sage_const_2 ),(_sage_const_1 ,_sage_const_3 ,_sage_const_6 ),(_sage_const_4 ,_sage_const_7 ,_sage_const_2 ),(_sage_const_8 ,_sage_const_3 ,_sage_const_1 ),(_sage_const_8 ,_sage_const_1 ,_sage_const_6 ),(_sage_const_5 ,_sage_const_2 ,_sage_const_7 ),(_sage_const_3 ,_sage_const_8 ,_sage_const_6 ),(_sage_const_7 ,_sage_const_4 ,_sage_const_5 )])
     
     cube.contractEdge(_sage_const_1 )
     cube.contractEdge(_sage_const_3 )
