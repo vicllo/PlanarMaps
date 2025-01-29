@@ -52,6 +52,21 @@ class LabelledMap:
             ...
             ValueError: The two permutations do not have the same size
         
+            sage: sigma = Permutation([3, 4, 1, 2, 5])
+            sage: alpha = Permutation([(1,2),(3,4,5)])
+            sage: LabelledMap(sigma, alpha)
+            Traceback (most recent call last):
+            ...
+            ValueError: The permutation alpha is not an involution
+
+            sage: sigma = Permutation([3, 4, 1, 2, 5])
+            sage: alpha = Permutation([2, 1, 3, 5, 4])
+            sage: LabelledMap(sigma, alpha)
+            Traceback (most recent call last):
+            ...
+            ValueError: The permutation alpha should not have fixed points
+
+            
         """
         
         if sigma == None and alpha == None and adj == None:
