@@ -5,47 +5,6 @@ load("LabelledMap.sage")
 load("MutableLabelledMap.sage")
 load("MapGenerator.sage")
 
-
-#Test the buildGraph method
-def test_build_graph():
-
-    #Test case 1
-    #Correspond to a linear tree with 4 nodes
-    sigma_1 = Permutation( [1,3,2,5,4,6])
-    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    
-    map_1 = LabelledMap(sigma_1,alpha_1)
-    
-    graph_1= map_1.buildGraph()
-    edges_1 = graph_1.edges(labels = False)
-    
-    correctEdges_1  = [(1,2),(2,3),(3,4)]
-
-    passed_test_1 = True
-    for k in range(map_1.numberOfEdges()):
-        passed_test_1 &= edges_1[k]==correctEdges_1[k]
-
-    assert passed_test_1 is True
-
-    #Test case 2
-    #Correspond to a triangle
-    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
-    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    
-    map_2 = LabelledMap(sigma_2,alpha_2)
-    
-    graph_2 = map_2.buildGraph()
-    edges_2 = graph_2.edges(labels = False)
-
-    correctEdges_2 = [(1,2),(1,3),(2,3)]
-    
-    passed_test_2 = True
-
-    for k in range(map_2.numberOfEdges()):
-        passed_test_2 &= edges_2[k]==correctEdges_2[k]
-
-    assert passed_test_2 is True
-
 #Test the genus method
 def test_genus():
     # Test case 1: basic planar graph

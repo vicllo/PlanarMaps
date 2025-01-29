@@ -181,14 +181,27 @@ class LabelledMap:
 
     def buildGraph(self):
         """
-        A method that build the multigraph corresponding to the  map.
+        A method that build the multigraph corresponding to this labelled map.
         Vertices are numbered from 1 to n.
-        -------
-        Returns:
+        
+        OUTPUT:
             A multigraph corresponding to self
-        -------
-        O(m)
-        where m is the number of edges
+
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: graph = LabelledMap(sigma, alpha).buildGraph()
+            sage: graph.edges(labels = False)
+            [(1, 2), (2, 3), (3, 4)]
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: graph = LabelledMap(sigma, alpha).buildGraph()
+            sage: graph.edges(labels = False)
+            [(1, 2), (1, 3), (2, 3)]
+
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         vertices = self.sigma.to_cycles()
         corres = [0] * int(2 * self.m + 1)            # associe à une demi-arête le sommet correspondant
