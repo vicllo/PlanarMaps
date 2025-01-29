@@ -254,7 +254,7 @@ class MapGenerator():
     
     def getRandomPlanarMap(self,numberOfEdge,seed = None):
         """
-        This generate a uniformly random planar rooted rooted planar map  with numberOfEdge edges
+        This generate a uniformly random rooted planar map  with numberOfEdge edges
         ----
         Args:
             numberOfEdge: The number of edge of the rooted map
