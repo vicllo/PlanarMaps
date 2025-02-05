@@ -644,7 +644,7 @@ class LabelledMap:
             sage: alpha = Permutation([(1,2),(3,4),(5,6)])
             sage: LabelledMap(sigma, alpha).diameter()
             1
-            
+
         NOTE::
             Complexity is O(m*n) where m is the number of edges and n is the number of nodes.
 
@@ -656,13 +656,100 @@ class LabelledMap:
     def derivedMap(self):
 
         """ 
-        A method that return the derived Map of the  map
-        -------
-        Returns:
-             The canonical representant of the derived map of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that return the derived map of this map
+
+        OUTPUT:
+            The canonical representant of the derived map of this map
+        
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            6
+            sage: derivedMap.numberOfEdges()
+            12
+            sage: derivedMap.numberOfNodes()
+            8
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (2, 3), (2, 3), (2, 4), (3, 5), (3, 5), (3, 6), (3, 6), (4, 5), (5, 7), (6, 7), (6, 8)]
+            
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            6
+            sage: derivedMap.numberOfEdges()
+            12
+            sage: derivedMap.numberOfNodes()
+            8
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 7), (4, 8), (5, 8), (6, 8), (7, 8)]
+
+        TESTS::
+            sage: sigma = Permutation([1,2])
+            sage: alpha = Permutation([(1,2)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            2
+            sage: derivedMap.numberOfEdges()
+            4
+            sage: derivedMap.numberOfNodes()
+            4
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (2, 3), (2, 3), (2, 4)]
+
+            sage: alpha = Permutation([(1,2),(3,4)])
+            sage: sigma = Permutation([1,2])
+            sage: alpha = Permutation([(1,2)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            2
+            sage: derivedMap.numberOfEdges()
+            4
+            sage: derivedMap.numberOfNodes()
+            4
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (2, 3), (2, 3), (2, 4)]
+
+            sage: sigma = Permutation([2,1])
+            sage: alpha = Permutation([(1,2)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            2
+            sage: derivedMap.numberOfEdges()
+            4
+            sage: derivedMap.numberOfNodes()
+            4
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (2, 3), (2, 4)]
+
+            sage: sigma = Permutation([(1,3,5),(2,6,4)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            6
+            sage: derivedMap.numberOfEdges()
+            12
+            sage: derivedMap.numberOfNodes()
+            8
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (2, 7), (3, 6), (3, 7), (3, 8), (4, 5), (4, 7), (4, 8)]
+
+            sage: sigma = Permutation( [(1,7,3,5),(2,6,4,8)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+            sage: derivedMap = LabelledMap(sigma, alpha).derivedMap()
+            sage: derivedMap.numberOfFaces()
+            8
+            sage: derivedMap.numberOfEdges()
+            16
+            sage: derivedMap.numberOfNodes()
+            10
+            sage: derivedMap.buildGraph().edges(labels=False)
+            [(4, 10), (6, 10), (1, 2), (1, 3), (1, 4), (1, 6), (2, 5), (2, 7), (2, 8), (3, 7), (3, 8), (3, 9), (4, 8), (4, 9), (5, 6), (6, 8)]
+            
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         K = 8*self.m+1
         
