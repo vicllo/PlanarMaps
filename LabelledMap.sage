@@ -600,20 +600,36 @@ class LabelledMap:
 
     def dual(self):
         """
-        A method that return the dual of the  map
-        -------
-        Returns:
-             The dual of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that return the dual of this map
+
+        OUTPUT:
+            The dual map of this map.
+
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: dualMap = Map.dual()
+            sage: dualMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 1), (1, 1)]
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: dualMap = Map.dual()
+            sage: dualMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (1, 2)]
+
+        NOTE::
+            Complexity is O(m) where m is the number of edges
+
         """
         return LabelledMap(self.phi.inverse(),self.alpha)
     
 
     def diameter(self):
         """
-        A method that return the diameter of the  map
+        A method that return the diameter of the map
         -------
         Returns:
              The diameter of self
@@ -1257,6 +1273,19 @@ class LabelledMap:
         -------
         O(m)
         where m is the number of edges
+        -------
+        TESTS::
+            sage: sigma = Permutation( [(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
+            sage: tri = LabelledMap(sigma,alpha)
+            sage: bigQuad = tri.derivedMap().derivedMap().derivedMap().derivedMap().quadrangulation()
+            sage: bigQuad.numberOfEdges()
+            1536
+            sage: markedDemiEdge = 750
+            sage: sct,labelled = bigQuad.schaefferTree(markedDemiEdge = markedDemiEdge)
+            sage: quadA,quadB,markedDemiEdgeA,markedDemiEdgeB = sct.inverseShaefferTree(labelled)
+            sage: quadA.schaefferTree(markedDemiEdge = markedDemiEdgeA)[0] == sct.canonicalRepresentant() and quadB.schaefferTree(markedDemiEdge = markedDemiEdgeB)[0] == sct.canonicalRepresentant()
+            True
         """
         alpha = self.alpha
         sigma = self.sigma
