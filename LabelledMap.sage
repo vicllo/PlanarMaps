@@ -1273,6 +1273,19 @@ class LabelledMap:
         -------
         O(m)
         where m is the number of edges
+        -------
+        TESTS::
+            sage: sigma = Permutation( [(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
+            sage: tri = LabelledMap(sigma,alpha)
+            sage: bigQuad = tri.derivedMap().derivedMap().derivedMap().derivedMap().quadrangulation()
+            sage: bigQuad.numberOfEdges()
+            1536
+            sage: markedDemiEdge = 750
+            sage: sct,labelled = bigQuad.schaefferTree(markedDemiEdge = markedDemiEdge)
+            sage: quadA,quadB,markedDemiEdgeA,markedDemiEdgeB = sct.inverseShaefferTree(labelled)
+            sage: quadA.schaefferTree(markedDemiEdge = markedDemiEdgeA)[0] == sct.canonicalRepresentant() and quadB.schaefferTree(markedDemiEdge = markedDemiEdgeB)[0] == sct.canonicalRepresentant()
+            True
         """
         alpha = self.alpha
         sigma = self.sigma
