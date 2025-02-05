@@ -629,13 +629,25 @@ class LabelledMap:
 
     def diameter(self):
         """
-        A method that return the diameter of the map
-        -------
-        Returns:
-             The diameter of self
-        -------
-        O(m*n)
-        where m is the number of edges and n is the number of nodes
+        A method that return the diameter of this map, i.e. the maximum length of a simple path in the map.
+        
+        OUTPUT:
+            The diameter of this map
+        
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).diameter()
+            3
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: LabelledMap(sigma, alpha).diameter()
+            1
+            
+        NOTE::
+            Complexity is O(m*n) where m is the number of edges and n is the number of nodes.
+
         """
         graph = self.buildGraph()
         return Graph.diameter(graph)

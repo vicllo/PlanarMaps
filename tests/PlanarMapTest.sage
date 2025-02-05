@@ -5,27 +5,6 @@ load("LabelledMap.sage")
 load("MutableLabelledMap.sage")
 load("MapGenerator.sage")
 
-#Test the diameter method
-def test_diameter():
-    #Test case 1
-    #Correspond to a linear tree with 4 nodes
-    sigma_1 = Permutation( [1,3,2,5,4,6])
-    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    
-    map_1 = LabelledMap(sigma_1,alpha_1)
-
-    assert map_1.diameter() == 3
-
-    #Test case 2    
-    #Correspond to a triangle
-    sigma_2 = Permutation( [(1,6),(2,3),(4,5)])
-    alpha_2 = Permutation( [(1,2),(3,4),(5,6)])
-    
-    map_2 = LabelledMap(sigma_2,alpha_2)
-
-    assert map_2.diameter() == 1
-
-
 
 def printVEF(pMap):
     print("V: ",pMap.numberOfNodes(),"E: ",pMap.numberOfEdges(),"F: ",pMap.numberOfFaces())
