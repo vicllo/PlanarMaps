@@ -991,18 +991,31 @@ class LabelledMap:
 
     def getRootedMapCorrespondance(self,otherMap,rootDemiEdge):
         """ 
-        A method that return a labelling of the demi-edge of self giving otherMap while letting rootDemiEdge 
-        invariant if self and otherMap represent the same rooted map at rootDemiEdge otherwise None
-        -------
-        Args:
-              otherMap: The other  map
-            rootDemiEdge: The edge on which to root
-        Returns:
-             t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
+        A method that return a labelling of the demi-edge of this map giving otherMap while letting rootDemiEdge 
+        invariant if this map and otherMap represent the same rooted map at rootDemiEdge otherwise None
+        
+        INPUT:
+        
+        - ``sigma`` -- Permutation; Fixed-point free involution whose cycles are given by the edges
+
+        - ``otherMap`` -- LabelledMap; The other  map
+        - ``rootDemiEdge`` int; the edge on which to root
+        
+        OUTPUT:
+            t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
             t is a permutaion mapping the demi-edge of self to the one of otherMap 
-        -------
-        O(m)
-        where m is the number of edges
+        
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: tau = Permutation((1,3))
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: relabelMap = Map.relabel(tau)
+            sage: Map.getRootedMapCorrespondance(relabelMap, 2)
+            [3, 2, 1, 4, 5, 6]
+
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         if otherMap.numberOfEdges() != self.numberOfEdges():
             return None
@@ -1051,15 +1064,24 @@ class LabelledMap:
     
     def relabel(self,tau):
         """ 
-        A method that return a relabel LabelledMap , relabelling the demi-edge i by tau(i)
-        -------
-        Args:
-              tau:  A permutation on the demi-edges representing the relabelling
-        Returns:
+        A method that return this map with the demi-edge i by relabelled by tau(i)
+        
+        INPUT:
+        
+        - ``tau`` -- Permutation;  A permutation on the demi-edges representing the relabelling
+        
+        OUTPUT:
              The relabeled map
-        -------
-        O(m)
-        where m is the number of edges
+
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: tau = Permutation((1,3))
+            sage: LabelledMap(sigma, alpha).relabel(tau)
+            Labelled map | Sigma : [2, 1, 3, 5, 4, 6], Alpha : [4, 3, 2, 1, 6, 5]
+        
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         
         invTau = tau.inverse()
