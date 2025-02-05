@@ -934,7 +934,7 @@ class LabelledMap:
             8
             sage: incidenceMap.buildGraph().edges(labels=False)
             [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)]
-            
+
         NOTE::
             Complexity is O(m) where m is the number of edges
         """
@@ -1093,13 +1093,99 @@ class LabelledMap:
 
     def edgeMap(self):
         """ 
-        A method that return the edge map of the map as its canonical representant 
-        -------
-        Returns:
-             A canonical representant of the edge map of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that return the edge map of this map as its canonical representant 
+        
+        OUTPUT:
+            A canonical representant of the edge map of self
+        
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            3
+            sage: edgeMap.numberOfFaces()
+            5
+            sage: edgeMap.numberOfEdges()
+            6
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 2), (1, 2), (2, 3), (2, 3), (3, 3)]
+
+            sage: sigma = Permutation( [(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            3
+            sage: edgeMap.numberOfFaces()
+            5
+            sage: edgeMap.numberOfEdges()
+            6
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (1, 3), (1, 3), (2, 3), (2, 3)]
+
+        TESTS::
+            sage: sigma = Permutation([1,2])
+            sage: alpha = Permutation([(1,2)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            1
+            sage: edgeMap.numberOfFaces()
+            3
+            sage: edgeMap.numberOfEdges()
+            2
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 1)]
+
+            sage: sigma = Permutation([1,3,2,4])
+            sage: alpha = Permutation([(1,2),(3,4)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            2
+            sage: edgeMap.numberOfFaces()
+            4
+            sage: edgeMap.numberOfEdges()
+            4
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 2), (1, 2), (2, 2)]
+
+            sage: sigma = Permutation([2,1])
+            sage: alpha = Permutation([(1,2)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            1
+            sage: edgeMap.numberOfFaces()
+            3
+            sage: edgeMap.numberOfEdges()
+            2
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 1)]
+
+            sage: sigma = Permutation( [(1,3,5),(2,6,4)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            3
+            sage: edgeMap.numberOfFaces()
+            5
+            sage: edgeMap.numberOfEdges()
+            6
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (1, 3), (1, 3), (2, 3), (2, 3)]
+
+            sage: sigma = Permutation( [(1,7,3,5),(2,6,4,8)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+            sage: edgeMap = LabelledMap(sigma, alpha).edgeMap()
+            sage: edgeMap.numberOfNodes()
+            4
+            sage: edgeMap.numberOfFaces()
+            6
+            sage: edgeMap.numberOfEdges()
+            8
+            sage: edgeMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (1, 3), (1, 3), (2, 4), (2, 4), (3, 4), (3, 4)]
+            
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
 
         invSigma = self.sigma.inverse()
