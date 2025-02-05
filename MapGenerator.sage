@@ -45,14 +45,26 @@ class MapGenerator:
         """
         Returns a random Dyck path of size n (uniform random generation).
 
-        Args:
-            n : Size of the path.
-            seed : A random seed; if None is used, no random seed will be 
-                   set.
+        INPUT:
+            - ``n`` -- int; size of the path
+            - ``seed`` -- int; A random seed; if None is used, no random seed will be set.
 
-        Returns:
-            A list of size 2*n with +1 for up and 
-            -1 for down steps in the Dyck path.
+        OUTPUT:
+            A list of size 2*n with +1 for up and -1 for down steps in the Dyck path.
+
+        EXAMPLE::
+            sage: dyckPath = MapGenerator().getRandomDyckPath(10)
+            sage: dyckPath
+            [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1]
+
+        TESTS::
+            sage: dyckPath = MapGenerator().getRandomDyckPath(50)
+            sage: level = 0
+            sage: for step in dyckPath:
+            ....:     level += step
+            ....:     assert level >= 0
+            ....: 
+            sage: assert level == 0
         """
         rng = random.Random()
         if not seed is None:
