@@ -1,38 +1,58 @@
 load("RootedMap.sage")
 from collections import deque
-
 import random
 
-class MapGenerator():
+
+class MapGenerator:
     """
-    This class representant an abstraction containing methods to generate Map
+    This class represents an abstraction containing methods to generate a 
+    Map.
     """
+
     def __init__(self):
         pass
-        
+
     def cube():
         """Returns the standard cube map."""
-        return RootedMap(adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)])
+        return RootedMap(
+            adj=[
+                (5, 4, 2),
+                (1, 3, 6),
+                (4, 7, 2),
+                (8, 3, 1),
+                (8, 1, 6),
+                (5, 2, 7),
+                (3, 8, 6),
+                (7, 4, 5),
+            ]
+        )
 
     def complete_map(n):
         """
-        Returns an arbitrary rooted map corresponding to the complete graph with n nodes.
-        The genus is guaranteed to be zero if the graph is planar (i.e. n <= 4).
+        Returns an arbitrary rooted map corresponding to the complete 
+        graph with n nodes. The genus is guaranteed to be zero if the 
+        graph is planar (i.e., n <= 4).
         """
-        adj = list(tuple((j+i)%n + 1 for j in range(1,n)) for i in range(n))
-        m = RootedMap(adj = adj)
+        adj = list(
+            tuple((j + i) % n + 1 for j in range(1, n)) for i in range(n)
+        )
+        m = RootedMap(adj=adj)
         if n <= 4:
             m = m.force_planar()
         return m
 
-    def getRandomDyckPath(self,n,seed = None):
+    def getRandomDyckPath(self, n, seed=None):
         """
-        Returns a random dyck path of size n (uniform random generation)
-        Args: 
-            n : size of path
-            seed : a random seed if None is used no random seed will be set
+        Returns a random Dyck path of size n (uniform random generation).
+
+        Args:
+            n : Size of the path.
+            seed : A random seed; if None is used, no random seed will be 
+                   set.
+
         Returns:
-            A list of size 2*n +1 for up and  -1 for down in the dyck path
+            A list of size 2*n with +1 for up and 
+            -1 for down steps in the Dyck path.
         """
         rng = random.Random()
         if not seed is None:
@@ -50,97 +70,102 @@ class MapGenerator():
                 minlevel = level
         Dyckfinal = [dyck[(posmin + i) % N] for i in range(N - 1)]
         return Dyckfinal
-    def getRandomPermutation(self,n,seed = None):
+
+    def getRandomPermutation(self, n, seed=None):
         """
+        Returns a random permutation of size n.
+
         Args:
-            -n the size of the permutation
-            -seed a random seed if None is used no random seed will be set
+            n : The size of the permutation.
+            seed : A random seed; if None is used, no random seed will be 
+                   set.
+
         Returns:
-            A random permutation of size n
+            A random permutation of size n.
         """
         rng = random.Random()
         if not seed is None:
             rng.seed(int(seed))
-        
-        lst = [i+1 for i in range(n)]
+        lst = [i + 1 for i in range(n)]
         rng.shuffle(lst)
         return Permutation(lst)
 
-    def isValidDyckPath(self,dyckPathCandidate):
+    def isValidDyckPath(self, dyckPathCandidate):
         """
-        Args:
-            dyckPathCandidate: A list representing a potential dyckPath
-        Returns: 
-            A boolean indicating whether or not dyckPathCandidate is a correct dyck path 
-        """
+        Checks whether the given Dyck path candidate is valid.
 
-        if len(dyckPathCandidate) == 0 or len(dyckPathCandidate)%2 == 1:
+        Args:
+            dyckPathCandidate : A list representing a potential Dyck path.
+
+        Returns:
+            A boolean indicating whether or not dyckPathCandidate is a 
+            correct Dyck path.
+        """
+        if len(dyckPathCandidate) == 0 or len(dyckPathCandidate) % 2 == 1:
             return False
 
         for e in dyckPathCandidate:
-            if e!=-1 and e!=1:
+            if e != -1 and e != 1:
                 return False
-        
-        S = 0
 
+        S = 0
         for e in dyckPathCandidate:
-            S+=e 
-            if S<0:
+            S += e
+            if S < 0:
                 return False
         return S == 0
 
-    def getTreeFromDyckPath(self,dyckPath):
+    def getTreeFromDyckPath(self, dyckPath):
         """
-        Given a dyckPath this function will return the associated
-        ----
+        Given a Dyck path, this function returns the associated rooted tree.
+
         Args:
-            dyckPath: A list representing a dyckPath +1 for up and  -1 for down in the dyck path 
+            dyckPath : A list representing a Dyck path, with +1 for up and 
+                       -1 for down.
+
         Returns:
-            The corresponding rooted plane tree if dyckPath is a valid dyckPath otherwise it will raise an error
-        ----
-        O(k) where k = len(dyckPath) 
+            The corresponding rooted plane tree if dyckPath is valid; 
+            otherwise, raises an error.
+
+        Complexity:
+            O(k), where k = len(dyckPath)
         """
         if not self.isValidDyckPath(dyckPath):
-            raise ValueError("The given list isn't a dyck path")
+            raise ValueError("The given list isn't a Dyck path")
 
-
-        phiCycle= []
+        phiCycle = []
         alphaCycle = []
-
         p = []
 
         for i in range(len(dyckPath)):
-            
-            phiCycle.append(i+1)
-
-            if dyckPath[i]<0:
+            phiCycle.append(i + 1)
+            if dyckPath[i] < 0:
                 otherDemiEdge = p.pop()
-                alphaCycle.append((i+1,otherDemiEdge))
+                alphaCycle.append((i + 1, otherDemiEdge))
             else:
-                p.append(i+1)
+                p.append(i + 1)
 
-
-        
         phi = Permutation([tuple(phiCycle)])
         alpha = Permutation(alphaCycle)
-        
         sigma = phi.left_action_product(alpha)
-        
-        return RootedMap(alpha = alpha,sigma = sigma)
-    
-    def getRandomLabellingTree(self,tree,seed = None):
+
+        return RootedMap(alpha=alpha, sigma=sigma)
+
+    def getRandomLabellingTree(self, tree, seed=None):
         """
-        This generate a  uniformly random labelling( i.e function with value in Z on the demi edge constant taking the same value for each 
-        demi edge on the same node and such that if u and v are adjacents nodes abs(f(u)-f(v))<=1 considered up to common translation) of tree.
-        It is guaranted that the root demiEdge(i.e 1) has value 0.
-        ----
+        Generates a uniformly random labelling of a tree.
+
         Args:
-            dyckPath: A list representing a dyckPath +1 for up and  -1 for down in the dyck path 
+            tree : The input rooted tree.
+            seed : A random seed; if None is used, no random seed will be set.
+
         Returns:
-            labelling : A list of size 2*tree.m+1 such that labelling[i] for i>=1 represent the label of the demi edge i , labelling[0] = -1
-            but it doesn't have any meaning
-        ----
-        O(m) where m is the number of edge of tree
+            A list of size 2*tree.m + 1 where labelling[i] (for i >= 1) 
+            represents the label of demi-edge i. The first value 
+            (labelling[0]) is set to -1 but has no meaning.
+
+        Complexity:
+            O(m), where m is the number of edges in the tree.
         """
         rng = random.Random()
         if not seed is None:
@@ -148,35 +173,28 @@ class MapGenerator():
 
         sigma = tree.sigma
         alpha = tree.alpha
-        
-        p = deque()
 
+        p = deque()
         nodes = tree.nodes()
 
-        demiEdgeToNodeId = [-1 for i in range(2*tree.m+1)]
+        demiEdgeToNodeId = [-1 for _ in range(2 * tree.m + 1)]
 
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
                 demiEdgeToNodeId[nodes[i][j]] = i
 
-        labelling = [-1 for i in range(2*tree.m+1)] 
-
+        labelling = [-1 for _ in range(2 * tree.m + 1)]
         startNodeId = demiEdgeToNodeId[1]
 
         p.append(startNodeId)
-
-        labellingNodes = [-1 for i in range(len(nodes))]
-
-
-        seen = [False for i in range(len(nodes))]
+        labellingNodes = [-1 for _ in range(len(nodes))]
+        seen = [False for _ in range(len(nodes))]
 
         seen[startNodeId] = True
-        
-        transition = [-1,1,0]
-
+        transition = [-1, 1, 0]
         labellingNodes[startNodeId] = 0
 
-        while len(p)>0:
+        while len(p) > 0:
             nodeId = p.popleft()
 
             for demiEdge in nodes[nodeId]:
@@ -185,86 +203,95 @@ class MapGenerator():
                 alphaDemiEdge = alpha(demiEdge)
                 alphaNodeId = demiEdgeToNodeId[alphaDemiEdge]
                 if not seen[alphaNodeId]:
-                    dLabel = rng.sample(transition,1)[0]
-                    labellingNodes[alphaNodeId] = dLabel+labellingNodes[nodeId]
+                    dLabel = rng.sample(transition, 1)[0]
+                    labellingNodes[alphaNodeId] = (
+                        dLabel + labellingNodes[nodeId]
+                    )
                     seen[alphaNodeId] = True
                     p.append(alphaNodeId)
-        
+
         return labelling
-    
-    def getRandomTree(self,numberOfEdge,seed = None):
+
+    def getRandomTree(self, numberOfEdge, seed=None):
         """
-        This generate a random random rooted tree uniformly
-        ----
+        Generates a uniformly random rooted tree.
+
         Args:
-            numberOfEdges: The number of edge the tree
-            seed: a random seed if None no random seed will be set
+            numberOfEdge : The number of edges in the tree.
+            seed : A random seed; if None is used, no random seed will be set.
+
         Returns:
-            A uniformly selected rooted tree with numberOfEdges edges
-        ----
-        O(numberOfEdge) 
-        """
+            A randomly selected rooted tree with numberOfEdge edges.
 
-        return self.getTreeFromDyckPath(self.getRandomDyckPath(numberOfEdge,seed = seed))
-
-    def getRandomLabelledTree(self,numberOfEdge,seed =None):
+        Complexity:
+            O(numberOfEdge)
         """
-        This generate a random rooted tree and a labelling(a function with value in Z on the demi edge constant taking the same value for each 
-        demi edge on the same node and such that if u and v are adjacents nodes abs(f(u)-f(v))<=1 considered up to common translation) uniformly on
-        rooted tree of size numberOfEdge
-        ----
+        return self.getTreeFromDyckPath(
+            self.getRandomDyckPath(numberOfEdge, seed=seed)
+        )
+
+    def getRandomLabelledTree(self, numberOfEdge, seed=None):
+        """
+        Generates a uniformly random rooted tree along with a labelling.
+
         Args:
-            numberOfEdges: The number of edge the tree
-            seed: a random seed if None no random seed will be set
-        Returns:
-            (tree,labelling) a uniformly selected tuple of tree and labelling on tree demi edges such that tree has numberOfEdge edges
-            -tree :  A rooted tree
-            -labelling : A list of size 2*numberOfEdge+1 such that labelling[i] for i>=1 represent the label of the demi edge i , labelling[0] = -1
-            but it doesn't have any meaning
-        ----
-        O(numberOfEdge) 
-        """
-        tree = self.getRandomTree(numberOfEdge,seed = seed)
-        return tree,self.getRandomLabellingTree(tree,seed = seed)
+            numberOfEdge : The number of edges in the tree.
+            seed : A random seed; if None is used, no random seed will be set.
 
-    def getRandomPlanarQuadrangulation(self,numberOfFace,seed = None):
+        Returns:
+            A tuple (tree, labelling) where:
+            - tree : A randomly selected rooted tree with numberOfEdge edges.
+            - labelling : A list of labels for the tree’s demi-edges.
+
+        Complexity:
+            O(numberOfEdge)
         """
-        This generate a uniformly random planar rooted quadrangulation  with numberOfFace faces
-        ----
+        tree = self.getRandomTree(numberOfEdge, seed=seed)
+        return tree, self.getRandomLabellingTree(tree, seed=seed)
+
+    def getRandomPlanarQuadrangulation(self, numberOfFace, seed=None):
+        """
+        Generates a uniformly random rooted planar quadrangulation with a 
+        specified number of faces.
+
         Args:
-            numberOfFace: The number of the quadrangulation
-            seed: a random seed if None no random seed will be set
-        Returns:
-            A uniformly selected rooted planar quadrangulation with numberOfFace faces
-        ----
-        O(numberOfFace) 
-        """
-        tree,labelling = self.getRandomLabelledTree(numberOfFace,seed = seed)
+            numberOfFace : The number of faces in the quadrangulation.
+            seed : A random seed; if None is used, no random seed will be set.
 
-        quadA,quadB = tree.inverseShaefferTree(returnMarkedDemiEdge = False,labelled = labelling)
+        Returns:
+            A randomly selected rooted planar quadrangulation with 
+            numberOfFace faces.
+
+        Complexity:
+            O(numberOfFace)
+        """
+        tree, labelling = self.getRandomLabelledTree(numberOfFace, seed=seed)
+        quadA, quadB = tree.inverseShaefferTree(
+            returnMarkedDemiEdge=False, labelled=labelling
+        )
 
         rng = random.Random()
-
         if not seed is None:
             rng.seed(int(seed))
-        
-        if rng.random()<0.5:
+
+        if rng.random() < 0.5:
             return quadB
         return quadA
-    
-    def getRandomPlanarMap(self,numberOfEdge,seed = None):
-        """
-        This generate a uniformly random rooted planar map  with numberOfEdge edges
-        ----
-        Args:
-            numberOfEdge: The number of edge of the rooted map
-            seed: a random seed if None no random seed will be set
-        Returns:
-            A uniformly selected rooted planar map with numberOfEdge edge
-        ----
-        O(numberOfEdge) 
-        """
-        
-        quad = self.getRandomPlanarQuadrangulation(numberOfEdge,seed = seed)
 
+    def getRandomPlanarMap(self, numberOfEdge, seed=None):
+        """
+        Generates a uniformly random rooted planar map with a specified 
+        number of edges.
+
+        Args:
+            numberOfEdge : The number of edges in the rooted map.
+            seed : A random seed; if None is used, no random seed will be set.
+
+        Returns:
+            A randomly selected rooted planar map with numberOfEdge edges.
+
+        Complexity:
+            O(numberOfEdge)
+        """
+        quad = self.getRandomPlanarQuadrangulation(numberOfEdge, seed=seed)
         return quad.inverseQuadrangulation()
