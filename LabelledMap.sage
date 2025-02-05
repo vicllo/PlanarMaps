@@ -600,20 +600,36 @@ class LabelledMap:
 
     def dual(self):
         """
-        A method that return the dual of the  map
-        -------
-        Returns:
-             The dual of self
-        -------
-        O(m)
-        where m is the number of edges
+        A method that return the dual of this map
+
+        OUTPUT:
+            The dual map of this map.
+
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: dualMap = Map.dual()
+            sage: dualMap.buildGraph().edges(labels=False)
+            [(1, 1), (1, 1), (1, 1)]
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: dualMap = Map.dual()
+            sage: dualMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 2), (1, 2)]
+
+        NOTE::
+            Complexity is O(m) where m is the number of edges
+
         """
         return LabelledMap(self.phi.inverse(),self.alpha)
     
 
     def diameter(self):
         """
-        A method that return the diameter of the  map
+        A method that return the diameter of the map
         -------
         Returns:
              The diameter of self
