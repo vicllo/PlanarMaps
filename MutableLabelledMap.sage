@@ -1,6 +1,17 @@
 load("LabelledMap.sage")
 
 class MutableLabelledMap(LabelledMap):
+    def _updateAttributes(self):
+        """
+        Recompute the attributes m, n, f and phi from sigma and alpha.
+        """
+
+        self.phi = self.alpha.right_action_product(self.sigma)
+        self.size = self.sigma.size()
+        self.m = self.size // 2 
+        self.f = len(self.phi.to_cycles())
+        self.n = len(self.sigma.to_cycles())
+
     def contractEdge(self, iEdge):
         """
         Contracts the given half-edge (i. e. merge the two nodes that it links, and removes the edge itself).
@@ -16,7 +27,7 @@ class MutableLabelledMap(LabelledMap):
             sage: cube.contractEdge(3)
             sage: cube.numberOfEdges()
             10
-            sage: cub.numberOfNodes()
+            sage: cube.numberOfNodes()
             6
         """
 
@@ -44,9 +55,7 @@ class MutableLabelledMap(LabelledMap):
         self.sigma = Permutation(self.sigma.to_cycles()[:-1])
         self.alpha = Permutation(self.alpha.to_cycles()[:-1])
 
-        self.phi = self.alpha.right_action_product(self.sigma)
-        self.m -= 1
-        self.size -= 2
+        self._updateAttributes()
 
     def addEdge(self, iEdge1, iEdge2, keepGenus = True):
         """
@@ -98,7 +107,4 @@ class MutableLabelledMap(LabelledMap):
         else:
             self.sigma = Permutation([(self.sigma.inverse()(iEdge1), h1, h2)]) * self.sigma
         
-        self.m += 1
-        self.size += 2
-        
-        self.phi = self.alpha.right_action_product(self.sigma)
+        self._updateAttributes()
