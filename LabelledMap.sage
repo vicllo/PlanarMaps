@@ -747,7 +747,7 @@ class LabelledMap:
             10
             sage: derivedMap.buildGraph().edges(labels=False)
             [(4, 10), (6, 10), (1, 2), (1, 3), (1, 4), (1, 6), (2, 5), (2, 7), (2, 8), (3, 7), (3, 8), (3, 9), (4, 8), (4, 9), (5, 6), (6, 8)]
-            
+
         NOTE::
             Complexity is O(m) where m is the number of edges
         """
@@ -844,13 +844,99 @@ class LabelledMap:
 
     def incidenceMap(self):
         """ 
-        A method that return the incidence map of the  map as its canonical representant
-        -------
-        Returns:
+        A method that return the incidence map of this map as its canonical representant
+        
+        OUTPUT:
              Incidence map of self 
-        -------
-        O(m)
-        where m is the number of edges
+
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            5
+            sage: incidenceMap.numberOfFaces()
+            3
+            sage: incidenceMap.numberOfEdges()
+            6
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (1, 3), (1, 4), (1, 4), (1, 5)]
+
+            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            5
+            sage: incidenceMap.numberOfFaces()
+            3
+            sage: incidenceMap.numberOfEdges()
+            6
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (1, 4), (2, 5), (3, 5), (4, 5)]
+
+        TESTS::
+            sage: sigma = Permutation([1,2])
+            sage: alpha = Permutation([(1,2)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            3
+            sage: incidenceMap.numberOfFaces()
+            1
+            sage: incidenceMap.numberOfEdges()
+            2
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3)]
+
+            sage: sigma = Permutation([1,3,2,4])
+            sage: alpha = Permutation([(1,2),(3,4)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            4
+            sage: incidenceMap.numberOfFaces()
+            2
+            sage: incidenceMap.numberOfEdges()
+            4
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (1, 3), (1, 4)]
+
+            sage: sigma = Permutation([2,1])
+            sage: alpha = Permutation([(1,2)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            3
+            sage: incidenceMap.numberOfFaces()
+            1
+            sage: incidenceMap.numberOfEdges()
+            2
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (2, 3)]
+
+            sage: sigma = Permutation( [(1,3,5),(2,6,4)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            5
+            sage: incidenceMap.numberOfFaces()
+            3
+            sage: incidenceMap.numberOfEdges()
+            6
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (2, 4), (2, 5), (3, 4), (3, 5)]
+
+            sage: sigma = Permutation( [(1,7,3,5),(2,6,4,8)])
+            sage: alpha = Permutation( [(1,2),(3,4),(5,6),(7,8)])
+            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
+            sage: incidenceMap.numberOfNodes()
+            6
+            sage: incidenceMap.numberOfFaces()
+            4
+            sage: incidenceMap.numberOfEdges()
+            8
+            sage: incidenceMap.buildGraph().edges(labels=False)
+            [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)]
+            
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         
         invPhi = self.phi.inverse()
