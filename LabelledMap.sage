@@ -991,18 +991,28 @@ class LabelledMap:
 
     def getRootedMapCorrespondance(self,otherMap,rootDemiEdge):
         """ 
-        A method that return a labelling of the demi-edge of self giving otherMap while letting rootDemiEdge 
-        invariant if self and otherMap represent the same rooted map at rootDemiEdge otherwise None
-        -------
-        Args:
-              otherMap: The other  map
+        A method that return a labelling of the demi-edge of this map giving otherMap while letting rootDemiEdge 
+        invariant if this map and otherMap represent the same rooted map at rootDemiEdge otherwise None
+        
+        INPUT:
+            otherMap: The other  map
             rootDemiEdge: The edge on which to root
-        Returns:
-             t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
+        
+        OUTPUT:
+            t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
             t is a permutaion mapping the demi-edge of self to the one of otherMap 
-        -------
-        O(m)
-        where m is the number of edges
+        
+        EXAMPLES::
+            sage: sigma = Permutation([1,3,2,5,4,6])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: tau = Permutation((1,3))
+            sage: Map = LabelledMap(sigma, alpha)
+            sage: relabelMap = Map.relabel(tau)
+            sage: Map.getRootedMapCorrespondance(relabelMap, 2)
+            [3, 2, 1, 4, 5, 6]
+            
+        NOTE::
+            Complexity is O(m) where m is the number of edges
         """
         if otherMap.numberOfEdges() != self.numberOfEdges():
             return None

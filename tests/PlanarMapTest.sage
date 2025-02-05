@@ -14,19 +14,6 @@ def printSigmaAlphaPhi(pMap):
     print("Sigma:",pMap.alpha.to_cycles())
     print("Phi",pMap.phi.to_cycles())
 
-#Test the getRootedMapCorrespondance method
-def test_getRootedMapCorrespondace():
-    #Test case 1
-    #Correspond to a linear tree with 4 nodes
-    sigma_1 = Permutation( [1,3,2,5,4,6])
-    alpha_1 = Permutation( [(1,2),(3,4),(5,6)])
-    map_1 = LabelledMap(sigma_1,alpha_1)
-
-    tau_1 = Permutation((1,3))
-    relabelMap_1 = map_1.relabel(tau_1)
-
-    map_1.getRootedMapCorrespondance(relabelMap_1,2) == tau_1
-
 #Test the relabel method
 def test_relabel():
     #Test case 1
