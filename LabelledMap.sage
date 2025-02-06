@@ -2,9 +2,9 @@ from sage.all_cmdline import *   # import sage library
 import warnings
 from collections import deque
 try:
-    import igraph
+    import networkx as nx
 except:
-    igraph = None
+    nx = None
 
 try:
     import matplotlib.pyplot as plt
@@ -217,33 +217,51 @@ class LabelledMap:
 
         return Graph(edges, loops = True, multiedges = True)
 
-    def show(self, use_sage_viewer = True, show_vertices = True, show_labels = True):
+    def show(self, show_halfedges = True, show_vertices = False, ax = None, use_sage_viewer = False):
         """
-        Show the planar map, using the default sage viewer (unless use_sage_viewer is set to False, in which case igraph is used).
+        Show the planar map, using networkx (unless unavailable or use_sage_viewer is set to True, in which case the default sage viewer is used).
+        Half-edges numbers are (conventionally) displayed closest to the node they depart from.
+        
+        Note that the order of the edges may not be displayed correctly if the genus is not 0.
+        For halfedges to be shown, the networkx viewer must be used.
 
-        Red nodes are actual graph nodes; white nodes are artificial nodes added to draw graphs with multiedges or loops.
+        INPUT:
 
-        Note that the fancy igraph viewer might display crossing edges for large graphes, and sometimes will not
-            display the correct map (ie. change the order of edges around a node).
-        The default sage viewer is guaranteed to be correct, but will often display ugly graphs.
+        - ``show_halfedges`` -- bool; whether to show half-edges numbers on the plot (default: True)
+        - ``show_vertices`` -- bool; index of the second half-edge before which the edge should be added (default: False)
+        - ``ax`` -- matplotlib.axes._axes.Axes; if specified, draw the graph into the given matplotlib axes (default: None)
+        - ``use_sage_viewer`` -- bool; whether to use the default sage viewer (less practical, but does not need networkx) (default: False)
         """
 
         vertices = self.sigma.to_cycles()
 
         real_n_vertices = len(vertices)                # all the new vertices are added to remove multiedges and loops
-                                                    # and thus should not be drawn
+                                                       # and thus should not be drawn
+        real_n_halfedges = self.m                      # the new half-edges should not be drawn either
 
         alpha = self.alpha
         sigma = self.sigma
         m = self.m
+
+        def minmax(i, j):
+            return min(i, j), max(i, j)         # ensures edges always go from the lowest vertex id to the highest vertex id
+
+        # three dicts which store the half-edge id
+        edge_labels_head = {}       # (i,j): half-edge from i to j
+        edge_labels_tail = {}       # (i, j): half-edge from j to i
+        edge_labels_middle = {}     # used for loops
 
         corres = [0] * int(2 * self.m + 1)            # corres[i] is the vertex corresponding to the half-edge i 
         for i in range(1, len(vertices)+1):
             for k in vertices[i-1]:
                 corres[k] = i
 
-        def break_down(i):
+        def break_down(i, write_labels):
             nonlocal alpha, sigma, corres, vertices, m
+
+            if write_labels:                   # do not write down half-edges numbers if this is the first step to breaking a loop
+                edge_labels_middle[(corres[i], len(vertices)+1)] = i 
+                edge_labels_middle[(corres[alpha(i)], len(vertices)+1)] = alpha(i)
 
             # add a new vertex v, and break down the edge whose half-edges are i & alpha(i) by 2 edges (i, 2*m+1) and (2*m+2, alpha(i)) 
             alpha *= Permutation((int(alpha(i)), int(2*m+1), int(i), int(2*m+2)))
@@ -252,24 +270,48 @@ class LabelledMap:
             corres.append(len(vertices) + 1)        # the two new half-edges 2*m+1 and 2*m+2 are linked to the new vertex
             corres.append(len(vertices) + 1)
 
+            #print (edge_labels_head, edge_labels_tail)
+            #print ("removing edge from", corres[i], "to", corres[alpha(i)])
+
             vertices.append((2*m+1, 2*m+2))
 
             m += 1
+
+        def break_loop(i):
+            j = alpha(i)
+            vertex = len(vertices)
+
+            break_down(i, False)            # add a new vertex v and replace the edge a-a (half-edges i & j) with two edges a-v, v-a
+                                            # (half-edges i & 2m+1, 2m+2 & j)
+
+            break_down(2*m, False)          # add a new vertex w and replace the edge v-a (half-edges 2m+2 & j) with two edges a-w, w-v
+                                            # (half-edges 2m+2 & 2m+3, 2m+4 & j) ; note that m here is equal to the original value + 2
+
+            edge_labels_middle[(corres[i], vertex+1)] = i
+            edge_labels_middle[(corres[j], vertex+2)] = j       # since we're breaking down a loop, corres[i] = corres[j]
+    
 
         # for each loop a-a, add a new vertex v and replace the edge a-a with two edges a-v, v-a
 
         for i in range(1, 2*m+1):
             if corres[i] == corres[alpha(i)]:
-                break_down(i)
+                break_loop(i)
 
         # for each vertex v, for each half-edge of v, break down the corresponding edge if there is already an edge between these two vertices
         for v in range(1, len(vertices) + 1):
             seen_vertices = set()
             for i in vertices[v-1]:
                 if corres[alpha(int(i))] in seen_vertices:
-                    break_down(i)
+                    break_down(i, True)
                 else:
                     seen_vertices.add(corres[alpha(int(i))])
+
+                    if corres[i] <= real_n_vertices and corres[alpha(i)] <= real_n_vertices:        # only add it if it hasn't been broken down yet
+                        if corres[i] < corres[alpha(i)]:
+                            edge_labels_head[minmax(corres[i], corres[alpha(i)])] = i
+                        else:
+                            edge_labels_tail[minmax(corres[i], corres[alpha(i)])] = i
+
 
         embedding = {}
 
@@ -286,8 +328,8 @@ class LabelledMap:
         g = Graph(edges, loops = False, multiedges = False)
         g.set_embedding(embedding)
 
-        if not use_sage_viewer and igraph is None:
-            warnings.warn("Package igraph not found; falling back to default sage viewer. Consider installing igraph using sage --pip install igraph")
+        if not use_sage_viewer and nx is None:
+            warnings.warn("Package networkx not found; falling back to default sage viewer. Consider installing networkx using sage --pip install networkx")
             use_sage_viewer = True
         if not use_sage_viewer and plt is None:
             warnings.warn("Package matplotlib not found; falling back to default sage viewer. Consider installing matplotlib using sage --pip install matplotlib")
@@ -303,28 +345,23 @@ class LabelledMap:
                 layout = "planar"
             else:
                 layout = "spring"
-            g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = {i: str(i) if i <= real_n_vertices and show_labels else "" for i in range(1, len(vertices)+1)}, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "white": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
+            g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = {i: str(i) if i <= real_n_vertices and show_vertices else "" for i in range(1, len(vertices)+1)}, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "white": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
 
         else:
             if self.genus() == 0:
-                layout_dict = g.layout_planar()
+                layout = g.layout_planar()
             else:
-                layout_dict = g.layout()
-            
-            layout_seed = [layout_dict[i] for i in range(1, len(layout_dict)+1)]
+                layout = g.layout()
+            G = nx.DiGraph()
+            G.add_edges_from([minmax(i, j) for (i, j, _) in g.edges()])
 
-            gg = g.igraph_graph()
-            layout = gg.layout_davidson_harel(seed = layout_seed, weight_edge_crossings = float(1e30) * len(vertices)**3)
-            layout.fit_into((0,0,1,1))
-            
-            fig, ax = plt.subplots()
-            ax.set_xlim(-0.1,1.1)
-            ax.set_ylim(-0.1,1.1)
-
-            igraph.plot(gg, layout = layout, target = ax, vertex_size = vertex_size, vertex_label = list(range(1, len(vertices)+1)), vertex_colors = ["red"] * (real_n_vertices+1) + ["black"] * (len(vertices) - real_n_vertices))
-            fig.tight_layout()
-            plt.show()
-
+            nx.draw(G, layout, ax = ax, labels = {i: str(i) if i <= real_n_vertices else "" for i in range(1, len(vertices)+1)}, node_size = [300] * real_n_vertices + [0] * (len(vertices) - real_n_vertices), nodelist = list(range(1, len(vertices)+1)), arrows = False, with_labels = show_vertices, node_color = "red")
+            if show_halfedges:
+                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_head, label_pos = 0.7)
+                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_tail, label_pos = 0.3)
+                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_middle, label_pos = 0.5)
+            if ax == None:
+                plt.show()
 
     def __repr__(self):
         r"""
