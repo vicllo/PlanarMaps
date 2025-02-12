@@ -109,13 +109,21 @@ class MutableLabelledMap(LabelledMap):
         
         self._updateAttributes()
     def deleteEdge(self, iEdge):
-    """ Delete the given half-edge
+        """ Delete the given half-edge
     
         INPUT:
 
-        - ``iEdge`` integer; the index of the half-edge to contract
+        - ``iEdge`` integer; the index of the half-edge to delete
         
         TEST::
+            sage: sigma = Permutation([(8,1),(2,3),(4,5),(6,7)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6),(7,8)])
+            sage: P = MutableLabelledMap(sigma,alpha)
+            sage: P.deleteEdge(8)
+            sage: P.sigma.to_cycles()
+            [(1,), (2, 3), (4, 5), (6,)]
+            sage: P.alpha.to_cycles()
+            [(1, 2), (3, 4), (5, 6)]
         """
         if iEdge < 1 or iEdge > 2 * self.m:
             raise ValueError("Invalid half-edge number.")
