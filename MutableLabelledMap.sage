@@ -127,7 +127,7 @@ class MutableLabelledMap(LabelledMap):
         """
         if iEdge < 1 or iEdge > 2 * self.m:
             raise ValueError("Invalid half-edge number.")
-        sigma =self.sigma
+        sigma = self.sigma
         alpha = self.alpha
         # Swap iEdge with 2*m if it is not already 2*m
         if iEdge != 2*self.m :
@@ -145,10 +145,12 @@ class MutableLabelledMap(LabelledMap):
 
         inverseSigma = sigma.inverse()
         #Apply two permutations to sigma to update its structure
-        t1 = Permutation ([(2*self.m-1 , inverseSigma(2*self.m-1) ),(2*self.m,)])
-        t2 = Permutation ([(2*self.m , inverseSigma(2*self.m) )])
-        sigma = sigma.left_action_product(t1)
-        sigma = sigma.left_action_product(t2)
+        if 2*self.m-1 != sigma(2*self.m-1):
+            t1 = Permutation ([(2*self.m-1 , inverseSigma(2*self.m-1) ),(2*self.m,)])
+            sigma = sigma.left_action_product(t1)
+        if 2*self.m!=sigma(2*self.m):
+            t2 = Permutation ([(2*self.m , inverseSigma(2*self.m) )])
+            sigma = sigma.left_action_product(t2)
 
         # Construct the new alpha and sigma
         new_domain = list(range(1, 2*self.m-1 ))
@@ -173,4 +175,37 @@ class MutableLabelledMap(LabelledMap):
             raise ValueError("The graph is not connected")
         self.alpha = new_alpha
         self.sigma = new_sigma
+        self._updateAttributes()
+    def deleteVertex(self,iEdge):
+        sigma = self.sigma
+        alpha = self.alpha
+        m=self.m
+        def transposition(i,j):
+            if i!=2*m and j!=2*m:
+                return Permutation([(i,j),(2*m,)])
+            else :
+                return Permutation([(min(i,j),2*m)])
+        for cycle in sigma.to_cycles():
+            if iEdge in cycle:
+                Cycle = cycle
+                break
+        for i in range(len(Cycle)):
+            # swap (Cycle[i],alpha(Cycle[i)) --> (2m-2i,2m-2i-1)
+            swap1=Permutation([i for i in range(1, 2*m+1)])
+            swap2=Permutation([i for i in range(1, 2*m+1)])
+            if Cycle[i]!=2*m-2*i:
+                swap1 = transposition(Cycle[i],2*m-2*i)
+            if alpha(Cycle[i])!=2*m-2*i-1:
+                swap2 = transposition(alpha(Cycle[i]),2*m-2*i-1)
+            sigma = swap1 * sigma * swap1
+            alpha = swap1 * alpha * swap1
+            sigma = swap2 * sigma * swap2
+            alpha = swap2 * alpha * swap2
+            
+            
+        self.sigma=sigma
+        self.alpha=alpha
+
+        for i in range(len(Cycle)):
+            self.deleteEdge(2*m-2*i)
         self._updateAttributes()
