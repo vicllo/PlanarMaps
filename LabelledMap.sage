@@ -1,15 +1,17 @@
-from sage.all_cmdline import *   # import sage library
+from sage.all_cmdline import *  # Import sage library
 import warnings
 from collections import deque
+
 try:
     import networkx as nx
-except:
+except ImportError:
     nx = None
 
 try:
     import matplotlib.pyplot as plt
-except:
+except ImportError:
     plt = None
+
 
 class LabelledMap:
     """
@@ -18,116 +20,130 @@ class LabelledMap:
     Attributes
     ----------
     sigma : Permutation
-        Fixed-point free involution whose cycles are given by the edges
+        Fixed-point free involution whose cycles are given by the edges.
     alpha : Permutation
-        Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, around the vertex it belongs to.
-    
-    Methods:
+        Permutation that maps a half-edge to the half-edge incident to
+        it in a clockwise direction around the vertex it belongs to.
+
+    Methods
     -------
     """
-    
-    def __init__(self, sigma:Permutation = None, alpha:Permutation = None, adj = None):
+
+    def __init__(
+        self,
+        sigma: Permutation = None,
+        alpha: Permutation = None,
+        adj=None,
+    ):
         r"""
-        Initializes the labelled map from either the permutations alpha and sigma, or an adjacency list (giving for
-                vertex a list of its neighbors in order; vertices must be numbered from 1 to n).
+        Initializes the labelled map from either the permutations alpha 
+        and sigma, or an adjacency list (giving each vertex a list of 
+        its neighbors in order; vertices must be numbered from 1 to n).
 
         INPUT:
+        - ``sigma`` -- Permutation; Fixed-point free involution whose 
+          cycles are given by the edges.
+        - ``alpha`` -- Permutation; Permutation that maps a half-edge
+          to the half-edge incident to it in clockwise direction around 
+          the vertex it belongs to.
 
-        - ``sigma`` -- Permutation; Fixed-point free involution whose cycles are given by the edges
+        EXAMPLES::
 
-        - ``alpha`` -- Permutation; Permutation that maps a half-edge to the half-edge incident to it in clockwise direction, 
-          around the vertex it belongs to.
-
-        EXAMPLES:
-        sage: sigma = Permutation( [1,3,2,5,4,6])
-        sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+        sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
+        sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
         sage: LabelledMap(sigma, alpha)
-        Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+        Labelled map | Sigma : [1, 3, 2, 5, 4, 6], 
+                       Alpha : [2, 1, 4, 3, 6, 5]
 
         TESTS::
-            sage: sigma = Permutation( [3,4,1,2,6,5])
-            sage: alpha = Permutation( [(1,2),(3,4)])
-            sage: map = LabelledMap(sigma,alpha)
-            Traceback (most recent call last):
-            ...
-            ValueError: The two permutations do not have the same size
-        
-            sage: sigma = Permutation([3, 4, 1, 2, 5])
-            sage: alpha = Permutation([(1,2),(3,4,5)])
-            sage: LabelledMap(sigma, alpha)
-            Traceback (most recent call last):
-            ...
-            ValueError: The permutation alpha is not an involution
 
-            sage: sigma = Permutation([3, 4, 1, 2, 5])
-            sage: alpha = Permutation([2, 1, 3, 5, 4])
-            sage: LabelledMap(sigma, alpha)
-            Traceback (most recent call last):
-            ...
-            ValueError: The permutation alpha should not have fixed points
+        sage: sigma = Permutation([3, 4, 1, 2, 6, 5])
+        sage: alpha = Permutation([(1, 2), (3, 4)])
+        sage: map = LabelledMap(sigma, alpha)
+        Traceback (most recent call last):
+        ...
+        ValueError: The two permutations do not have the same size.
 
-            sage: sigma = Permutation([1,2,3,4,5,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: LabelledMap(sigma, alpha)
-            Traceback (most recent call last):
-            ...
-            ValueError: The graph is not connected
+        sage: sigma = Permutation([3, 4, 1, 2, 5])
+        sage: alpha = Permutation([(1, 2), (3, 4, 5)])
+        sage: LabelledMap(sigma, alpha)
+        Traceback (most recent call last):
+        ...
+        ValueError: The permutation alpha is not an involution.
 
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: LabelledMap(sigma, alpha)
-            Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]
+        sage: sigma = Permutation([3, 4, 1, 2, 5])
+        sage: alpha = Permutation([2, 1, 3, 5, 4])
+        sage: LabelledMap(sigma, alpha)
+        Traceback (most recent call last):
+        ...
+        ValueError: The permutation alpha should not have fixed points.
 
-            sage: adj = [(3,),(1,3),(2,)]
-            sage: LabelledMap(adj = adj)
-            Traceback (most recent call last):
-            ...
-            ValueError: Invalid adjacency list
+        sage: sigma = Permutation([1, 2, 3, 4, 5, 6])
+        sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
+        sage: LabelledMap(sigma, alpha)
+        Traceback (most recent call last):
+        ...
+        ValueError: The graph is not connected.
 
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: adj = [(3,),(1,3),(2,)]
-            sage: LabelledMap(sigma, adj = adj)
-            Traceback (most recent call last):
-            ...
-            ValueError: Cannot build the map from both an adjacency list and permutations
+        sage: adj = [(3,), (1, 3), (2,)]
+        sage: LabelledMap(adj=adj)
+        Traceback (most recent call last):
+        ...
+        ValueError: Invalid adjacency list.
+
+        sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
+        sage: adj = [(3,), (1, 3), (2,)]
+        sage: LabelledMap(sigma, adj=adj)
+        Traceback (most recent call last):
+        ...
+        ValueError: Cannot build the map from both an adjacency list
+        and permutations.
         """
-        
-        if sigma == None and alpha == None and adj == None:
+
+        if sigma is None and alpha is None and adj is None:
             sigma = Permutation()
             alpha = Permutation()
 
-        if adj != None and (sigma != None or alpha != None):
-            raise ValueError("Cannot build the map from both an adjacency list and permutations")
+        if adj is not None and (sigma is not None or alpha is not None):
+            raise ValueError(
+                "Cannot build the map from both an adjacency list 
+                 and permutations."
+            )
 
-        if adj == None:
+        if adj is None:
             self._build_from_permutations(sigma, alpha)
         else:
             self._build_from_adj(adj)
-    
-    
+       
     def _build_from_permutations(self, sigma, alpha):
         r"""
-        Initializes the labelled  map from the underlying permutations.
+        Initializes the labelled map from the underlying permutations.
         """
         self.sigma = sigma
         self.alpha = alpha
         self.phi = self.alpha.right_action_product(self.sigma)
         self.size = self.sigma.size()
-        self.m = self.size // 2 
+        self.m = self.size // 2
         self.f = len(self.phi.to_cycles())
         self.n = len(self.sigma.to_cycles())
-        
+
         if self.sigma.size() != self.alpha.size():
             raise ValueError("The two permutations do not have the same size")
 
-        if self.alpha.right_action_product(self.alpha) != Permutations(self.size).identity():
+        if (
+            self.alpha.right_action_product(self.alpha)
+            != Permutations(self.size).identity()
+        ):
             raise ValueError("The permutation alpha is not an involution")
-        
+
         if self.alpha.number_of_fixed_points() != 0:
-            raise ValueError("The permutation alpha should not have fixed points")
+            raise ValueError(
+                "The permutation alpha should not have any fixed points."
+            )
 
         seen = [False] * (self.size + 1)
-        seen[0] = seen[1] = True            # half-edges are numbered from 1 to size, included
+        seen[0] = seen[1] = True  
+        # Half-edges are numbered from 1 to size, included
 
         todo = [1]
         while todo:
@@ -143,25 +159,31 @@ class LabelledMap:
             raise ValueError("The graph is not connected")
 
     def _build_from_adj(self, adj):
+        """
+        Initializes the labelled map from an adjacency list.
+
+        Raises:
+            ValueError if the adjacency list is invalid.
+        """
         n = len(adj)
-        
+
         if sum(map(len, adj)) % 2 != 0:
             raise ValueError("Invalid adjacency list")
 
         self.m = sum(map(len, adj)) // 2
-        pairs = []        # pairs of half-edges corresponding to a single edge (ie. the transpositions of alpha)
-        cycles = []        # lists of outgoing half-edges for each vertex (ie. the cycles of sigma)
+        pairs = []  # Pairs of half-edges representing the edges
+        cycles = []  # Cycles of outgoing half-edges for each vertex 
 
         edges = {}
         iEdge = 1
-        
-        for u in range(1, n+1):
-            c = []
 
-            for v in adj[u-1]:
+        for u in range(1, n + 1):
+            c = []
+            for v in adj[u - 1]:
                 other = None
-                if (v, u) in edges:                # the test must be done before setting (u, v) to account for loops
-                    other = edges[(v, u)]
+                if (v, u) in edges:
+                    # Check before setting (u, v) for loops
+                    other = edges[(v, u)]  
                     edges.pop((v, u))
 
                 if other:
@@ -171,196 +193,236 @@ class LabelledMap:
 
                 c.append(iEdge)
                 iEdge += 1
-            
+
             cycles.append(tuple(c))
-        
-        if edges != {}:
+
+        if edges:
             raise ValueError("Invalid adjacency list")
 
         self._build_from_permutations(Permutation(cycles), Permutation(pairs))
 
+
     def buildGraph(self):
         """
-        A method that build the multigraph corresponding to this labelled map.
+        Builds the multigraph corresponding to this labelled map.
         Vertices are numbered from 1 to n.
-        
-        OUTPUT:
-            A multigraph corresponding to self
 
-        EXAMPLES::
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: graph = LabelledMap(sigma, alpha).buildGraph()
-            sage: graph.edges(labels = False)
-            [(1, 2), (2, 3), (3, 4)]
-
-            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: graph = LabelledMap(sigma, alpha).buildGraph()
-            sage: graph.edges(labels = False)
-            [(1, 2), (1, 3), (2, 3)]
-
-        NOTE::
-            Complexity is O(m) where m is the number of edges
+        Returns:
+            A multigraph corresponding to the labelled map.
         """
         vertices = self.sigma.to_cycles()
-        corres = [0] * int(2 * self.m + 1)            # associe à une demi-arête le sommet correspondant
-        for i in range(1, len(vertices)+1):
-            for k in vertices[i-1]:
+        corres = [0] * (2 * self.m + 1)  # Associates a vertex to each half-edge
+        for i in range(1, len(vertices) + 1):
+            for k in vertices[i - 1]:
                 corres[k] = i
-        
-        edges = []
 
-        for i in range(1, 2*self.m+1):                # pour chaque demi-arête, on ajoute une arête entre corres[i] et corres[alpha(i)]
-            if i < self.alpha(i):                    # on évite d'ajouter les arêtes en double
+        edges = []
+        for i in range(1, 2 * self.m + 1):
+            if i < self.alpha(i):  # Avoid adding edges twice
                 edges.append((corres[i], corres[self.alpha(i)]))
 
-        return Graph(edges, loops = True, multiedges = True)
+        return Graph(edges, loops=True, multiedges=True)
 
-    def show(self, show_halfedges = True, show_vertices = False, ax = None, use_sage_viewer = False):
+    def show(
+        self,
+        show_halfedges=True,
+        show_vertices=False,
+        ax=None,
+        use_sage_viewer=False
+    ):
         """
-        Show the planar map, using networkx (unless unavailable or use_sage_viewer is set to True, in which case the default sage viewer is used).
-        Half-edges numbers are (conventionally) displayed closest to the node they depart from.
-        
-        Note that the order of the edges may not be displayed correctly if the genus is not 0.
-        For halfedges to be shown, the networkx viewer must be used.
+        Show the planar map using networkx (unless unavailable or 
+        use_sage_viewer is set to True, in which case the default 
+        sage viewer is used). Half-edges numbers are displayed 
+        closest to the node they depart from.
+
+        Note: The order of the edges may not be displayed correctly 
+        if the genus is not 0. For half-edges to be shown, the 
+        networkx viewer must be used.
 
         INPUT:
 
-        - ``show_halfedges`` -- bool; whether to show half-edges numbers on the plot (default: True)
-        - ``show_vertices`` -- bool; index of the second half-edge before which the edge should be added (default: False)
-        - ``ax`` -- matplotlib.axes._axes.Axes; if specified, draw the graph into the given matplotlib axes (default: None)
-        - ``use_sage_viewer`` -- bool; whether to use the default sage viewer (less practical, but does not need networkx) (default: False)
+        - ``show_halfedges`` -- bool; whether to show half-edges 
+        numbers on the plot (default: True).
+        - ``show_vertices`` -- bool; whether to show vertex labels 
+        (default: False).
+        - ``ax`` -- matplotlib.axes._axes.Axes; if specified, draw 
+        the graph into the given matplotlib axes (default: None).
+        - ``use_sage_viewer`` -- bool; use the default sage viewer 
+        if True (default: False).
         """
-
         vertices = self.sigma.to_cycles()
 
-        real_n_vertices = len(vertices)                # all the new vertices are added to remove multiedges and loops
-                                                       # and thus should not be drawn
-        real_n_halfedges = self.m                      # the new half-edges should not be drawn either
+        real_n_vertices = len(vertices)  # Remove multiedges and loops
+        real_n_halfedges = self.m        # These half-edges should not be drawn
 
         alpha = self.alpha
         sigma = self.sigma
         m = self.m
 
         def minmax(i, j):
-            return min(i, j), max(i, j)         # ensures edges always go from the lowest vertex id to the highest vertex id
+            """Ensure edges always go from lowest to highest vertex id."""
+            return min(i, j), max(i, j)
 
-        # three dicts which store the half-edge id
-        edge_labels_head = {}       # (i,j): half-edge from i to j
-        edge_labels_tail = {}       # (i, j): half-edge from j to i
-        edge_labels_middle = {}     # used for loops
+        # Three dictionaries to store half-edge IDs
+        edge_labels_head = {}  # (i, j): half-edge from i to j
+        edge_labels_tail = {}  # (i, j): half-edge from j to i
+        edge_labels_middle = {}  # Used for loops
 
-        corres = [0] * int(2 * self.m + 1)            # corres[i] is the vertex corresponding to the half-edge i 
-        for i in range(1, len(vertices)+1):
-            for k in vertices[i-1]:
+        corres = [0] * (2 * self.m + 1)  # Map half-edge i to its corresponding vertex
+        for i in range(1, len(vertices) + 1):
+            for k in vertices[i - 1]:
                 corres[k] = i
 
         def break_down(i, write_labels):
             nonlocal alpha, sigma, corres, vertices, m
+            if write_labels:
+                # Avoid writing half-edge numbers during the first step
+                edge_labels_middle[(corres[i], len(vertices) + 1)] = i
+                edge_labels_middle[(corres[alpha(i)], len(vertices) + 1)] = alpha(i)
 
-            if write_labels:                   # do not write down half-edges numbers if this is the first step to breaking a loop
-                edge_labels_middle[(corres[i], len(vertices)+1)] = i 
-                edge_labels_middle[(corres[alpha(i)], len(vertices)+1)] = alpha(i)
+            # Add a new vertex v, and break down the edge whose half-edges 
+            # are i & alpha(i) into 2 edges (i, 2*m+1) and (2*m+2, alpha(i)).
+            alpha *= Permutation((alpha(i), 2 * m + 1, i, 2 * m + 2))
+            sigma *= Permutation((2 * m + 1, 2 * m + 2))
 
-            # add a new vertex v, and break down the edge whose half-edges are i & alpha(i) by 2 edges (i, 2*m+1) and (2*m+2, alpha(i)) 
-            alpha *= Permutation((int(alpha(i)), int(2*m+1), int(i), int(2*m+2)))
-            sigma *= Permutation((int(2*m+1), int(2*m+2)))
-
-            corres.append(len(vertices) + 1)        # the two new half-edges 2*m+1 and 2*m+2 are linked to the new vertex
             corres.append(len(vertices) + 1)
-
-            #print (edge_labels_head, edge_labels_tail)
-            #print ("removing edge from", corres[i], "to", corres[alpha(i)])
-
-            vertices.append((2*m+1, 2*m+2))
-
+            corres.append(len(vertices) + 1)
+            vertices.append((2 * m + 1, 2 * m + 2))
             m += 1
 
         def break_loop(i):
             j = alpha(i)
             vertex = len(vertices)
 
-            break_down(i, False)            # add a new vertex v and replace the edge a-a (half-edges i & j) with two edges a-v, v-a
-                                            # (half-edges i & 2m+1, 2m+2 & j)
+            break_down(i, False)
+            break_down(2 * m, False)
 
-            break_down(2*m, False)          # add a new vertex w and replace the edge v-a (half-edges 2m+2 & j) with two edges a-w, w-v
-                                            # (half-edges 2m+2 & 2m+3, 2m+4 & j) ; note that m here is equal to the original value + 2
+            edge_labels_middle[(corres[i], vertex + 1)] = i
+            edge_labels_middle[(corres[j], vertex + 2)] = j
 
-            edge_labels_middle[(corres[i], vertex+1)] = i
-            edge_labels_middle[(corres[j], vertex+2)] = j       # since we're breaking down a loop, corres[i] = corres[j]
-    
-
-        # for each loop a-a, add a new vertex v and replace the edge a-a with two edges a-v, v-a
-
-        for i in range(1, 2*m+1):
+        # For each loop a-a, add a new vertex v and replace the edge a-a
+        # with two edges a-v, v-a.
+        for i in range(1, 2 * m + 1):
             if corres[i] == corres[alpha(i)]:
                 break_loop(i)
 
-        # for each vertex v, for each half-edge of v, break down the corresponding edge if there is already an edge between these two vertices
+        # Handle each vertex and break down edges if needed.
         for v in range(1, len(vertices) + 1):
             seen_vertices = set()
-            for i in vertices[v-1]:
-                if corres[alpha(int(i))] in seen_vertices:
+            for i in vertices[v - 1]:
+                if corres[alpha(i)] in seen_vertices:
                     break_down(i, True)
                 else:
-                    seen_vertices.add(corres[alpha(int(i))])
-
-                    if corres[i] <= real_n_vertices and corres[alpha(i)] <= real_n_vertices:        # only add it if it hasn't been broken down yet
+                    seen_vertices.add(corres[alpha(i)])
+                    if (
+                        corres[i] <= real_n_vertices
+                        and corres[alpha(i)] <= real_n_vertices
+                    ):
                         if corres[i] < corres[alpha(i)]:
                             edge_labels_head[minmax(corres[i], corres[alpha(i)])] = i
                         else:
                             edge_labels_tail[minmax(corres[i], corres[alpha(i)])] = i
 
+        # Build the graph embedding
+        embedding = {
+            i: list(corres[alpha(k)] for k in vertices[i - 1])[::-1]
+            for i in range(1, len(vertices) + 1)
+        }
 
-        embedding = {}
+        edges = [
+            (corres[i], corres[alpha(i)]) for i in range(1, 2 * m + 1) if i < alpha(i)
+        ]
 
-        for i in range(1, len(vertices)+1):            # build the embedding (list of the neighbors of each edge, in clockwise order)
-            embedding[i] = list(corres[alpha(int(k))] for k in vertices[i-1])
-            embedding[i].reverse()                    # clockwise order!
-
-        edges = []
-
-        for i in range(1, 2*m+1):                # for each half-edge i, add an edge between corres[i] and corres[alpha(i)]
-            if i < alpha(i):                    # should not add the same edge twice
-                edges.append((corres[i], corres[alpha(i)]))
-
-        g = Graph(edges, loops = False, multiedges = False)
+        g = Graph(edges, loops=False, multiedges=False)
         g.set_embedding(embedding)
 
         if not use_sage_viewer and nx is None:
-            warnings.warn("Package networkx not found; falling back to default sage viewer. Consider installing networkx using sage --pip install networkx")
+            warnings.warn(
+                "Package networkx not found; falling back to default sage viewer. "
+                "Consider installing networkx using sage --pip install networkx"
+            )
             use_sage_viewer = True
         if not use_sage_viewer and plt is None:
-            warnings.warn("Package matplotlib not found; falling back to default sage viewer. Consider installing matplotlib using sage --pip install matplotlib")
+            warnings.warn(
+                "Package matplotlib not found; falling back to default sage viewer. "
+                "Consider installing matplotlib using sage --pip install matplotlib"
+            )
             use_sage_viewer = True
 
-        if show_vertices:
-            vertex_size = 140 / max(1, len(vertices))**.5
-        else:
-            vertex_size = 0
+        vertex_size = 140 / max(1, len(vertices))**0.5 if show_vertices else 0
 
         if use_sage_viewer:
-            if self.genus() == 0:
-                layout = "planar"
-            else:
-                layout = "spring"
-            g.show(layout = layout, vertex_size = vertex_size * 8, vertex_labels = {i: str(i) if i <= real_n_vertices and show_vertices else "" for i in range(1, len(vertices)+1)}, vertex_colors = {"red": list(range(1, real_n_vertices+1)), "white": list(range(real_n_vertices+1, len(vertices)+1))}, figsize = (8, 8))
-
+            layout = "planar" if self.genus() == 0 else "spring"
+            g.show(
+                layout=layout,
+                vertex_size=vertex_size * 8,
+                vertex_labels={
+                    i: str(i)
+                    if i <= real_n_vertices and show_vertices
+                    else ""
+                    for i in range(1, len(vertices) + 1)
+                },
+                vertex_colors={
+                    "red": list(range(1, real_n_vertices + 1)),
+                    "white": list(
+                        range(real_n_vertices + 1, len(vertices) + 1)
+                    ),
+                },
+                figsize=(8, 8),
+            )
         else:
-            if self.genus() == 0:
-                layout = g.layout_planar()
-            else:
-                layout = g.layout()
+            layout = g.layout_planar() if self.genus() == 0 else g.layout()
             G = nx.DiGraph()
-            G.add_edges_from([minmax(i, j) for (i, j, _) in g.edges()])
+            G.add_edges_from(
+                minmax(i, j) for (i, j, _) in g.edges()
+            )
 
-            nx.draw(G, layout, ax = ax, labels = {i: str(i) if i <= real_n_vertices else "" for i in range(1, len(vertices)+1)}, node_size = [300] * real_n_vertices + [0] * (len(vertices) - real_n_vertices), nodelist = list(range(1, len(vertices)+1)), arrows = False, with_labels = show_vertices, node_color = "red")
+            nx.draw(
+                G,
+                layout,
+                ax=ax,
+                labels={
+                    i: str(i)
+                    if i <= real_n_vertices
+                    else ""
+                    for i in range(1, len(vertices) + 1)
+                },
+                node_size=[300] * real_n_vertices
+                + [0] * (len(vertices) - real_n_vertices),
+                nodelist=list(range(1, len(vertices) + 1)),
+                arrows=False,
+                with_labels=show_vertices,
+                node_color="red",
+            )
+
             if show_halfedges:
-                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_head, label_pos = 0.7)
-                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_tail, label_pos = 0.3)
-                nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_middle, label_pos = 0.5)
-            if ax == None:
+                nx.draw_networkx_edge_labels(
+                    G,
+                    layout,
+                    ax=ax,
+                    rotate=False,
+                    edge_labels=edge_labels_head,
+                    label_pos=0.7,
+                )
+                nx.draw_networkx_edge_labels(
+                    G,
+                    layout,
+                    ax=ax,
+                    rotate=False,
+                    edge_labels=edge_labels_tail,
+                    label_pos=0.3,
+                )
+                nx.draw_networkx_edge_labels(
+                    G,
+                    layout,
+                    ax=ax,
+                    rotate=False,
+                    edge_labels=edge_labels_middle,
+                    label_pos=0.5,
+                )
+
+            if ax is None:
                 plt.show()
 
     def __repr__(self):
@@ -453,7 +515,8 @@ class LabelledMap:
 
     def numberOfNodes(self):
         """
-        A method that returns the number of nodes, or vertices, of this labelled map
+        A method that returns the number of nodes
+        or vertices of this labelled map
         
         OUTPUT: The number of nodes of this labelled map
 
@@ -554,54 +617,73 @@ class LabelledMap:
     
     def genus(self):
         """
-        A method that returns the genus of this labelled map map, i.e. the minimum number of handles that must be added to a sphere to embed the map without edge crossings
-        
+        Returns the genus of this labelled map.
+
+        The genus is the minimum number of handles that must be added
+        to a sphere to embed the map without edge crossings.
+
         OUTPUT:
-             The genus of this labelled map
-        
-        EXAMPLES:
-            sage: sigma = Permutation([(2,3,1,5),(4,),(6,)])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            int: The genus of this labelled map.
+
+        EXAMPLES::
+
+            sage: sigma = Permutation([(2, 3, 1, 5), (4,), (6,)])
+            sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
             sage: LabelledMap(sigma, alpha).genus()
             0
 
-            sage: adj = [(5,4,2),(1,3,6),(4,7,2),(8,3,1),(8,1,6),(5,2,7),(3,8,6),(7,4,5)]
+            sage: adj = [(5, 4, 2), (1, 3, 6), (4, 7, 2), (8, 3, 1),  
+            ...         (8, 1, 6), (5, 2, 7), (3, 8, 6), (7, 4, 5)]
             sage: LabelledMap(adj=adj).genus()
             0
 
-            sage: adj = [(4,5,6),(4,5,6),(4,5,6),(1,2,3),(1,2,3),(1,2,3)]
+            sage: adj = [(4, 5, 6), (4, 5, 6), (4, 5, 6), (1, 2, 3),
+            ...         (1, 2, 3), (1, 2, 3)]
             sage: LabelledMap(adj=adj).genus()
             1
 
         NOTE::
-            Complexity is  O(m) where m is the number of edges
+            Complexity is O(m), where m is the number of edges.
         """
+        return (
+            self.numberOfEdges() 
+            + 2 
+            - self.numberOfFaces() 
+            - self.numberOfNodes()
+            ) // 2
 
-        return (self.numberOfEdges() + 2 - self.numberOfFaces() - self.numberOfNodes()) // 2
-
-    
     def force_planar(self):
         """
-        If the underlying graph is planar, returns a map of genus 0 with the same underlying graph.
-        For example, the adjacency list [(2,3,4),(3,4,1),(4,1,2),(1,2,3)] is a valid adjacency list
-            for the complete graph with 4 nodes, but its genus is 1; this method could, for example,
-            build a map from the list [(2,4,3),(3,4,1),(4,2,1),(1,2,3)] which is the same graph, of genus 0.
-        Raises an error if the underlying graph is not planar.
-        -------
-        Returns:
-             Another map corresponding to the above description.
-        -------
-        """
+        Returns a map of genus 0 with the same underlying graph 
+        if it is planar.
 
+        For example, the adjacency list [(2, 3, 4), (3, 4, 1), 
+        (4, 1, 2), (1, 2, 3)] is a valid adjacency list for the 
+        complete graph with 4 nodes, but its genus is 1. 
+        This method could, for instance, build a map from the list 
+        [(2, 4, 3), (3, 4, 1), (4, 2, 1), (1, 2, 3)], 
+        which is the same graph  but with genus 0.
+
+        Raises an error if the underlying graph is not planar.
+
+        Returns
+        -------
+        LabelledMap
+            Another map corresponding to the above description.
+        """
         g = self.buildGraph()
 
-        if not g.is_planar(set_embedding = True):
-            raise ValueError("The force_planar method can be used on maps whose underlying graph is planar.")
-        
-        e = g.get_embedding()
-        adj = [tuple(reversed(e[i])) for i in range(1, len(e)+1)]
+        if not g.is_planar(set_embedding=True):
+            raise ValueError(
+                "The force_planar method can only be used on maps 
+                 whose underlying graph is planar."
+            )
 
-        return LabelledMap(adj = adj)
+        e = g.get_embedding()
+        adj = [tuple(reversed(e[i])) for i in range(1, len(e) + 1)]
+
+        return LabelledMap(adj=adj)
+
 
     def getSpanningTree(self):
         """
@@ -666,7 +748,8 @@ class LabelledMap:
 
     def diameter(self):
         """
-        A method that return the diameter of this map, i.e. the maximum length of a simple path in the map.
+        A method that return the diameter of this map, 
+        i.e. the maximum length of a simple path in the map.
         
         OUTPUT:
             The diameter of this map
@@ -683,7 +766,8 @@ class LabelledMap:
             1
 
         NOTE::
-            Complexity is O(m*n) where m is the number of edges and n is the number of nodes.
+            Complexity is O(m*n) where m is the number of edges 
+            and n is the number of nodes.
 
         """
         graph = self.buildGraph()
@@ -709,7 +793,8 @@ class LabelledMap:
             sage: derivedMap.numberOfNodes()
             8
             sage: derivedMap.buildGraph().edges(labels=False)
-            [(1, 2), (2, 3), (2, 3), (2, 4), (3, 5), (3, 5), (3, 6), (3, 6), (4, 5), (5, 7), (6, 7), (6, 8)]
+            [(1, 2), (2, 3), (2, 3), (2, 4), (3, 5), (3, 5), 
+            (3, 6), (3, 6), (4, 5), (5, 7), (6, 7), (6, 8)]
             
             sage: sigma = Permutation([(1,6),(2,3),(4,5)])
             sage: alpha = Permutation([(1,2),(3,4),(5,6)])
@@ -721,7 +806,8 @@ class LabelledMap:
             sage: derivedMap.numberOfNodes()
             8
             sage: derivedMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 7), (4, 8), (5, 8), (6, 8), (7, 8)]
+            [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), 
+            (3, 5), (3, 7), (4, 8), (5, 8), (6, 8), (7, 8)]
 
         TESTS::
             sage: sigma = Permutation([1,2])
@@ -771,7 +857,8 @@ class LabelledMap:
             sage: derivedMap.numberOfNodes()
             8
             sage: derivedMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (2, 7), (3, 6), (3, 7), (3, 8), (4, 5), (4, 7), (4, 8)]
+            [(1, 2), (1, 3), (1, 4), (2, 5), (2, 6), (2, 7), (3, 6),
+             (3, 7), (3, 8), (4, 5), (4, 7), (4, 8)]
 
             sage: sigma = Permutation( [(1,7,3,5),(2,6,4,8)])
             sage: alpha = Permutation( [(1,2),(3,4),(5,6),(7,8)])
@@ -783,7 +870,9 @@ class LabelledMap:
             sage: derivedMap.numberOfNodes()
             10
             sage: derivedMap.buildGraph().edges(labels=False)
-            [(4, 10), (6, 10), (1, 2), (1, 3), (1, 4), (1, 6), (2, 5), (2, 7), (2, 8), (3, 7), (3, 8), (3, 9), (4, 8), (4, 9), (5, 6), (6, 8)]
+            [(4, 10), (6, 10), (1, 2), (1, 3), (1, 4), (1, 6), (2, 5), 
+            (2, 7), (2, 8), (3, 7), (3, 8), (3, 9), (4, 8), (4, 9), 
+            (5, 6), (6, 8)]
 
         NOTE::
             Complexity is O(m) where m is the number of edges
@@ -819,76 +908,80 @@ class LabelledMap:
 
     def quadrangulation(self):
         """ 
-        There is bijection between rooted map with m edge of genus g and bipartite quadrangulation rooted map
-        of genus g with m faces ,
-        this function  return the canonical representant of the rooted bipartite quadrangulation associated 
-        to self if rooted.
-        -------
+        There is a bijection between rooted maps with m edges of genus
+        g and bipartite quadrangulations with m faces and genus g.
+        This function returns the canonical representant of the rooted 
+        bipartite quadrangulation associated to self.
+        
         Returns:
-             The canonical representant of the bipartite rooted quadrangulation associated to rooted(self)
-        -------
-        O(m)
-        where m is the number of edges
+            The canonical representant of the bipartite rooted 
+            quadrangulation associated to rooted(self).
+        
+        Complexity: O(m), where m is the number of edges.
         """
         return self.incidenceMap()
 
     def inverseQuadrangulation(self):
         """
-        This function is the inverse of quadrangulation give that self is a bipartite quadrangulation,
-        it will return a M a labelled  map such that M.quadrangulation() = self.canonicalRepresentant() 
-        and M = M.canonicalRepresentant(), if self isn't a bipartite quadrangulation it will raise an error.
-        -------
+        This function is the inverse of quadrangulation, assuming self 
+        is a bipartite quadrangulation. It returns a map M such that 
+        M.quadrangulation() = self.canonicalRepresentant() and 
+        M = M.canonicalRepresentant(). If self isn't a bipartite 
+        quadrangulation, it raises an error.
+        
         Returns:
-             The canonical representant of inverse of rooted(self) by quadrangulation if self is a bipartite quadrangulation
-            otherwise it will raise an error
-        -------
-        O(m)
-        where m is the number of edges
+            The canonical representant of the inverse of rooted(self) 
+            by quadrangulation, if self is a bipartite quadrangulation. 
+            Otherwise, it raises an error.
+
+        Complexity: O(m), where m is the number of edges.
         """
         bipartition = self.getBipartition()
-        
-        if bipartition == None or not self.isQuandrangulation():
-            raise ValueError("Self isn't a bipartite quadrangulation")
-        
-        alpha = self.alpha
-        sigma = self.sigma
-        phi = self.phi
 
-        alphaInvList = [-1 for i in range(self.m)]
-        sigmaInvList = [-1 for i in range(self.m)]
-        
+        if bipartition is None or not self.isQuandrangulation():
+            raise ValueError("Self isn't a bipartite quadrangulation")
+
+        alpha, sigma, phi = self.alpha, self.sigma, self.phi
+        alphaInvList = [-1 for _ in range(self.m)]
+        sigmaInvList = [-1 for _ in range(self.m)]
         colorFace = bipartition[1]
-        
-        corres = [-1 for i in range(self.m+1)]
-        invCorres = [-1 for i in range(2*self.m+1)] 
-        
-        corres[1] = 1
-        invCorres[1] = 1
-        
+
+        corres = [-1 for _ in range(self.m + 1)]
+        invCorres = [-1 for _ in range(2 * self.m + 1)]
+        corres[1], invCorres[1] = 1, 1
+
         cnt = 2
-        for i in range(2,2*self.m+1):
+        for i in range(2, 2 * self.m + 1):
             if bipartition[i] == colorFace:
-                corres[cnt] = i
-                invCorres[i] = cnt
-                cnt+=1
-        
-        for invDemiEdge in range(1,self.m+1):
-            alphaInvList[invDemiEdge-1] = invCorres[sigma(alpha(sigma(alpha(corres[invDemiEdge]))))]
-            sigmaInvList[invDemiEdge-1] = invCorres[alpha(sigma(alpha(corres[invDemiEdge])))]
+                corres[cnt], invCorres[i] = i, cnt
+                cnt += 1
+
+        for invDemiEdge in range(1, self.m + 1):
+            alphaInvList[invDemiEdge - 1] = invCorres[
+                sigma(alpha(sigma(alpha(corres[invDemiEdge]))))
+            ]
+            sigmaInvList[invDemiEdge - 1] = invCorres[
+                alpha(sigma(alpha(corres[invDemiEdge])))
+            ]
+
         alphaInv = Permutation(alphaInvList)
         sigmaInv = Permutation(sigmaInvList)
-        return LabelledMap(sigma = sigmaInv,alpha = alphaInv).canonicalRepresentant()
+
+        return LabelledMap(
+            sigma=sigmaInv, 
+            alpha=alphaInv).canonicalRepresentant()
 
     def incidenceMap(self):
         """ 
-        A method that return the incidence map of this map as its canonical representant
+        A method that returns the incidence map of this map 
+        as its canonical representant.
         
         OUTPUT:
-             Incidence map of self 
+             Incidence map of self.
 
         EXAMPLES::
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
+            sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
+            sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
             sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
             sage: incidenceMap.numberOfNodes()
             5
@@ -899,260 +992,184 @@ class LabelledMap:
             sage: incidenceMap.buildGraph().edges(labels=False)
             [(1, 2), (1, 3), (1, 3), (1, 4), (1, 4), (1, 5)]
 
-            sage: sigma = Permutation([(1,6),(2,3),(4,5)])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            5
-            sage: incidenceMap.numberOfFaces()
-            3
-            sage: incidenceMap.numberOfEdges()
-            6
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (1, 4), (2, 5), (3, 5), (4, 5)]
-
-        TESTS::
-            sage: sigma = Permutation([1,2])
-            sage: alpha = Permutation([(1,2)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            3
-            sage: incidenceMap.numberOfFaces()
-            1
-            sage: incidenceMap.numberOfEdges()
-            2
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3)]
-
-            sage: sigma = Permutation([1,3,2,4])
-            sage: alpha = Permutation([(1,2),(3,4)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            4
-            sage: incidenceMap.numberOfFaces()
-            2
-            sage: incidenceMap.numberOfEdges()
-            4
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (1, 3), (1, 4)]
-
-            sage: sigma = Permutation([2,1])
-            sage: alpha = Permutation([(1,2)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            3
-            sage: incidenceMap.numberOfFaces()
-            1
-            sage: incidenceMap.numberOfEdges()
-            2
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (2, 3)]
-
-            sage: sigma = Permutation( [(1,3,5),(2,6,4)])
-            sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            5
-            sage: incidenceMap.numberOfFaces()
-            3
-            sage: incidenceMap.numberOfEdges()
-            6
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (2, 4), (2, 5), (3, 4), (3, 5)]
-
-            sage: sigma = Permutation( [(1,7,3,5),(2,6,4,8)])
-            sage: alpha = Permutation( [(1,2),(3,4),(5,6),(7,8)])
-            sage: incidenceMap = LabelledMap(sigma, alpha).incidenceMap()
-            sage: incidenceMap.numberOfNodes()
-            6
-            sage: incidenceMap.numberOfFaces()
-            4
-            sage: incidenceMap.numberOfEdges()
-            8
-            sage: incidenceMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6)]
-
         NOTE::
-            Complexity is O(m) where m is the number of edges
+            Complexity is O(m), where m is the number of edges.
         """
         
         invPhi = self.phi.inverse()
         invPhiCycles = invPhi.to_cycles()
 
         quadDemiEdge = 1
-
         corres = [-1]
-        invCorres = list(range(2*self.m+1))
-
+        invCorres = list(range(2 * self.m + 1))
         sigmaQuadList = []
 
-        for k in range(len(invPhiCycles)):
+        for cycle in invPhiCycles:
             startQuadDemiEdge = quadDemiEdge
-            for demiEdge in invPhiCycles[k]:
-                if quadDemiEdge!=startQuadDemiEdge:
+            for demiEdge in cycle:
+                if quadDemiEdge != startQuadDemiEdge:
                     sigmaQuadList.append(quadDemiEdge)
-
                 corres.append(demiEdge)
-
                 invCorres[demiEdge] = quadDemiEdge
-                quadDemiEdge+=1
+                quadDemiEdge += 1
+            sigmaQuadList.append(startQuadDemiEdge)
 
-            sigmaQuadList.append(startQuadDemiEdge)             
-        
-        numberOfQuadEdge = quadDemiEdge-1
+        numberOfQuadEdge = quadDemiEdge - 1
+        alphaQuadList = list(range(2 * numberOfQuadEdge))
 
-        alphaQuadList = list(range(2*numberOfQuadEdge))
-
-        for quadDemiEdge in range(1,numberOfQuadEdge+1):
+        for quadDemiEdge in range(1, numberOfQuadEdge + 1):
             demiEdge = corres[quadDemiEdge]
             turnedDemiEdge = self.sigma(demiEdge)
-
             quadDemiEdgePrime = invCorres[turnedDemiEdge]
 
-            sigmaQuadList.append(quadDemiEdgePrime+numberOfQuadEdge)
-
-            alphaQuadList[quadDemiEdge-1] = quadDemiEdge+numberOfQuadEdge
-            alphaQuadList[quadDemiEdge+numberOfQuadEdge-1] = quadDemiEdge
+            sigmaQuadList.append(quadDemiEdgePrime + numberOfQuadEdge)
+            alphaQuadList[quadDemiEdge - 1] = quadDemiEdge + numberOfQuadEdge
+            alphaQuadList[quadDemiEdge + numberOfQuadEdge - 1] = quadDemiEdge
 
         alphaQuad = Permutation(alphaQuadList)
         sigmaQuad = Permutation(sigmaQuadList)
+        relabelList = [i + 1 for i in range(2 * numberOfQuadEdge)]
 
-        relabelList = [i+1 for i in range(2*numberOfQuadEdge)]
-
-        for quadDemiEdge in range(1,numberOfQuadEdge+1):
-            relabelList[quadDemiEdge-1] = corres[quadDemiEdge]
-            relabelList[quadDemiEdge+numberOfQuadEdge-1] = relabelList[quadDemiEdge-1]+numberOfQuadEdge
+        for quadDemiEdge in range(1, numberOfQuadEdge + 1):
+            relabelList[quadDemiEdge - 1] = corres[quadDemiEdge]
+            relabelList[quadDemiEdge + numberOfQuadEdge - 1] = (
+                relabelList[quadDemiEdge - 1] + numberOfQuadEdge
+            )
 
         relabelPerm = Permutation(relabelList)
-        return LabelledMap(sigmaQuad,alphaQuad).relabel(relabelPerm).canonicalRepresentant()
+        return LabelledMap(sigmaQuad, alphaQuad).relabel(
+            relabelPerm
+        ).canonicalRepresentant()
 
-    def getRootedMapCorrespondance(self,otherMap,rootDemiEdge):
+    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge):
         """ 
-        A method that return a labelling of the demi-edge of this map giving otherMap while letting rootDemiEdge 
-        invariant if this map and otherMap represent the same rooted map at rootDemiEdge otherwise None
+        A method that returns a labelling of the demi-edges of this map
+        giving `otherMap` while keeping `rootDemiEdge` invariant. 
+        It checks if this map and `otherMap` represent the same 
+        rooted map at `rootDemiEdge`.
         
         INPUT:
-        
-        - ``sigma`` -- Permutation; Fixed-point free involution whose cycles are given by the edges
-
-        - ``otherMap`` -- LabelledMap; The other  map
-        - ``rootDemiEdge`` int; the edge on which to root
+        - ``otherMap`` -- LabelledMap; the other map
+        - ``rootDemiEdge`` -- int; the edge on which to root
         
         OUTPUT:
-            t where t is None if they don't represent the same rooted map at rootDemiEdge otherwise 
-            t is a permutaion mapping the demi-edge of self to the one of otherMap 
+            Returns `t`, a permutation mapping the demi-edges of `self` 
+            to those of `otherMap`, or None if they don't represent 
+            the same rooted map at `rootDemiEdge`.
         
         EXAMPLES::
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: tau = Permutation((1,3))
+            sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
+            sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
+            sage: tau = Permutation((1, 3))
             sage: Map = LabelledMap(sigma, alpha)
             sage: relabelMap = Map.relabel(tau)
             sage: Map.getRootedMapCorrespondance(relabelMap, 2)
             [3, 2, 1, 4, 5, 6]
 
         NOTE::
-            Complexity is O(m) where m is the number of edges
+            Complexity is O(m), where m is the number of edges.
         """
         if otherMap.numberOfEdges() != self.numberOfEdges():
             return None
         
         m = self.numberOfEdges()
-
-        tList = [-1 for k in range(2*m)]
-        seen = [ False for k in range(2*m)]
-
+        tList = [-1 for _ in range(2 * m)]
+        seen = [False for _ in range(2 * m)]
 
         alpha = self.alpha
-        sigma = self.sigma 
-
+        sigma = self.sigma
         sigmaOther = otherMap.sigma
         alphaOther = otherMap.alpha
 
-        tList[rootDemiEdge-1] = rootDemiEdge
+        tList[rootDemiEdge - 1] = rootDemiEdge
+        p = [rootDemiEdge]
+        seen[rootDemiEdge - 1] = True
 
-        p = []
-
-        p.append(rootDemiEdge)
-
-        seen[rootDemiEdge-1] = True
-
-        while len(p)>0:
+        while p:
             u = p.pop()
-            if not seen[alpha(u)-1]:
-                seen[alpha(u)-1] = True
-                tList[alpha(u)-1] = alphaOther(tList[u-1])
+            if not seen[alpha(u) - 1]:
+                seen[alpha(u) - 1] = True
+                tList[alpha(u) - 1] = alphaOther(tList[u - 1])
                 p.append(alpha(u))
-
-            if not seen[sigma(u)-1]:
-                seen[sigma(u)-1] = True
-                tList[sigma(u)-1] = sigmaOther(tList[u-1])
+            if not seen[sigma(u) - 1]:
+                seen[sigma(u) - 1] = True
+                tList[sigma(u) - 1] = sigmaOther(tList[u - 1])
                 p.append(sigma(u))
 
         try:
             t = Permutation(tList)
-        except:
+        except ValueError:
             return None
 
-        if self.relabel(t) != otherMap: 
+        if self.relabel(t) != otherMap:
             return None
 
         return t
-    
-    def relabel(self,tau):
+
+
+    def relabel(self, tau):
         """ 
-        A method that return this map with the demi-edge i by relabelled by tau(i)
+        A method that returns this map with demi-edge `i` 
+        relabeled by `tau(i)`.
         
         INPUT:
-        
-        - ``tau`` -- Permutation;  A permutation on the demi-edges representing the relabelling
+        - ``tau`` -- Permutation; a permutation on the demi-edges
+        representing the relabelling.
         
         OUTPUT:
-             The relabeled map
-
+            The relabeled map.
+        
         EXAMPLES::
-            sage: sigma = Permutation([1,3,2,5,4,6])
-            sage: alpha = Permutation([(1,2),(3,4),(5,6)])
-            sage: tau = Permutation((1,3))
+            sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
+            sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
+            sage: tau = Permutation((1, 3))
             sage: LabelledMap(sigma, alpha).relabel(tau)
-            Labelled map | Sigma : [2, 1, 3, 5, 4, 6], Alpha : [4, 3, 2, 1, 6, 5]
+            Labelled map | Sigma : [2, 1, 3, 5, 4, 6], 
+            Alpha : [4, 3, 2, 1, 6, 5]
         
         NOTE::
-            Complexity is O(m) where m is the number of edges
+            Complexity is O(m), where m is the number of edges.
         """
-        
         invTau = tau.inverse()
+        relabeledSigma = tau.left_action_product(
+            invTau.right_action_product(self.sigma)
+        )
+        relabeledAlpha = tau.left_action_product(
+            invTau.right_action_product(self.alpha)
+        )
+        return LabelledMap(relabeledSigma, relabeledAlpha)
 
-        relabeledSigma = tau.left_action_product(invTau.right_action_product(self.sigma))
-
-        relabeledAlpha = tau.left_action_product(invTau.right_action_product(self.alpha))
-
-        return LabelledMap(relabeledSigma,relabeledAlpha)
-
-    def __eq__(self,other):
-        if isinstance(other,self.__class__):
+    def __eq__(self, other):
+        """Checks equality between two LabelledMap instances."""
+        if isinstance(other, self.__class__):
             return self.sigma == other.sigma and self.alpha == other.alpha
         return False
 
+
     def tetravalance(self):
         """ 
-        There is bijection between rooted map with m edge of genus g and face-bicolorable tetravalant rooted map of genus g 
-        with m vertices ,
-        this function  return a the canonical representant of the rooted face-bicolorable tetravalance 
-        associated to rooted(self).
-        -------
-        Returns:
-             The canonical representant of a tetravalent bicolorable rooted map associated to rooted(self)
-        -------
-        O(m)
-        where m is the number of edges
+        Returns the canonical representative of the rooted, 
+        face-bicolorable tetravalent map associated with the current map.
+        
+        There is a bijection between rooted maps with m edges of 
+        genus g and face-bicolorable tetravalent rooted maps of 
+        genus g with m vertices.
+        
+        OUTPUT:
+            The canonical representative of a tetravalent 
+            bicolorable rooted map.
+        
+        NOTE::
+            Complexity is O(m), where m is the number of edges.
         """
         return self.edgeMap()
 
 
+
     def edgeMap(self):
         """ 
-        A method that return the edge map of this map as its canonical representant 
+        A method that return the edge map of this map 
+        as its canonical representant 
         
         OUTPUT:
             A canonical representant of the edge map of self
@@ -1241,7 +1258,8 @@ class LabelledMap:
             sage: edgeMap.numberOfEdges()
             8
             sage: edgeMap.buildGraph().edges(labels=False)
-            [(1, 2), (1, 2), (1, 3), (1, 3), (2, 4), (2, 4), (3, 4), (3, 4)]
+            [(1, 2), (1, 2), (1, 3), (1, 3), (2, 4), (2, 4),
+            (3, 4), (3, 4)]
             
         NOTE::
             Complexity is O(m) where m is the number of edges
@@ -1304,14 +1322,19 @@ class LabelledMap:
 
     def getBipartition(self):
         """
-        If self isn't bipartite this method will return none otherwise
-        it will return a tab clr such that clr[i](=0,1) for a demi edge i give the color of 
-        the node on which it is attached.So a node (i.e a  cycle of sigma) will be white(resp black) if 
-        all of his element are of color 0(resp 1).clr[0] = -1 cause 0 isn't a valid demi-edge.
+        If self isn't bipartite this method will return None. 
+        Otherwise, it will return a tab clr such that clr[i](=0,1) 
+        for a demi-edge i gives the color of the node on which it is 
+        attached. A node (i.e., a cycle of sigma) will be white 
+        (resp. black) if all its elements are of color 0 (resp. 1). 
+        clr[0] = -1 because 0 isn't a valid demi-edge.
         -------
         Returns:
-             clr None if self isn't bipartite otherwise give by the above description.
+            clr: None if self isn't bipartite; otherwise, it gives 
+            the color description mentioned above.
         -------
+    """
+
         O(m)
         where m is the number of edges
         """
@@ -1354,9 +1377,9 @@ class LabelledMap:
 
     def canonicalRepresentant(self):
         """
-        This function return the canonical representant of rooted(self),i.e a
-        labelled  map such that M and self are representant of the same rooted map
-        and M is the canonical representant.
+        This function returns the canonical representant of rooted(self),
+        i.e a labelled  map such that M and self are representant of 
+        the same rooted map and M is the canonical representant.
         -------
         Returns:
              The canonical representant of rooted(self)
@@ -1400,7 +1423,8 @@ class LabelledMap:
 
     def isPlaneTree(self):
         """
-        A method return a boolean indicating if self is a plane Tree or not
+        A method that returns a boolean indicating 
+        if self is a plane Tree or not
         -------
         Returns:
              A boolean indicating if self is plane tree or not
@@ -1408,7 +1432,8 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        return self.numberOfFaces()==1 and self.numberOfEdges() == self.numberOfNodes()-1
+        return self.numberOfFaces()==1 
+        and self.numberOfEdges() == self.numberOfNodes()-1
 
 
     def schaefferTree(self,markedDemiEdge):
@@ -1850,14 +1875,18 @@ class LabelledMap:
 
     def getDyckPath(self,isCanonical=False):
         """
-        There is a canonical bijection between rooted planer tree with m edges and dyck path of size m, this method return the associated dyck path
-        to rooted(self) if self is a tree if self isn't a tree it will raise an error.
+        There is a canonical bijection between rooted planar trees 
+        with m edges and dyck path of size m, this method return the
+        associated dyck path to rooted(self) if self is a tree 
+        if self isn't a tree it will raise an error.
         -----
         Args:
-            isCanonical: A boolean indicating if self is already in canonical form
+            isCanonical: A boolean indicating if self 
+            is already in canonical form
         Returns : 
-            A list of size 2*m representing the dyck path associated to rooted(self) +1 for step up and  -1 for step down in the dyck path
-            if self is a plane tree otherwise it will raise an error
+            A list of size 2*m representing the dyck path associated to
+            rooted(self) +1 for step up and -1 for step down if self is
+            a plane tree otherwise it will raise an error
         -----
         O(m)
         """
@@ -1881,4 +1910,3 @@ class LabelledMap:
             seen[curDemiEdge] = True
             curDemiEdge = canonicalPhi(curDemiEdge)
         return dyckPath
-    

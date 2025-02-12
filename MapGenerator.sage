@@ -5,8 +5,8 @@ import random
 
 class MapGenerator:
     """
-    This class represents an abstraction containing methods to generate a 
-    Map.
+    This class represents an abstraction containing 
+    methods to generate a Map.
     """
 
     def __init__(self):
@@ -47,15 +47,18 @@ class MapGenerator:
 
         INPUT:
             - ``n`` -- int; size of the path
-            - ``seed`` -- int; A random seed; if None is used, no random seed will be set.
+            - ``seed`` -- int; A random seed; 
+            if None is used, no random seed will be set.
 
         OUTPUT:
-            A list of size 2*n with +1 for up and -1 for down steps in the Dyck path.
+            A list of size 2*n with +1 for up and 
+            -1 for down steps in the Dyck path.
 
         EXAMPLE::
             sage: dyckPath = MapGenerator().getRandomDyckPath(10)
             sage: dyckPath
-            [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1]
+            [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 
+            1, 1, -1, -1, 1, -1, 1, -1]
 
         TESTS::
             sage: dyckPath = MapGenerator().getRandomDyckPath(50)
@@ -89,8 +92,8 @@ class MapGenerator:
 
         Args:
             n : The size of the permutation.
-            seed : A random seed; if None is used, no random seed will be 
-                   set.
+            seed : A random seed; if None is used, 
+                   no random seed will be set.
 
         Returns:
             A random permutation of size n.
