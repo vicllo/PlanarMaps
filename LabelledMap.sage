@@ -106,8 +106,8 @@ class LabelledMap:
 
         if adj is not None and (sigma is not None or alpha is not None):
             raise ValueError(
-                "Cannot build the map from both an adjacency list 
-                 and permutations."
+                """Cannot build the map from both an adjacency list 
+                 and permutations."""
             )
 
         if adj is None:
@@ -675,8 +675,8 @@ class LabelledMap:
 
         if not g.is_planar(set_embedding=True):
             raise ValueError(
-                "The force_planar method can only be used on maps 
-                 whose underlying graph is planar."
+                """The force_planar method can only be used on maps 
+                 whose underlying graph is planar."""
             )
 
         e = g.get_embedding()
@@ -1333,7 +1333,6 @@ class LabelledMap:
             clr: None if self isn't bipartite; otherwise, it gives 
             the color description mentioned above.
         -------
-    """
 
         O(m)
         where m is the number of edges
@@ -1432,7 +1431,7 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        return self.numberOfFaces()==1 
+        return self.numberOfFaces()==1 \
         and self.numberOfEdges() == self.numberOfNodes()-1
 
 
@@ -1646,7 +1645,11 @@ class LabelledMap:
         sigma = self.sigma
 
         phi = self.phi
+
         nextAction = alpha.right_action_product(sigma.inverse())
+        backAction = nextAction.inverse()
+        #In case the labelling isn't such that the minimum labelling is 1
+        #We update the labelling 
         maxLabel = labelled[1]
         minLabel = labelled[1]
         for i in range(1,len(labelled)):
@@ -1660,75 +1663,58 @@ class LabelledMap:
 
         maxLabel -= minLabel-1
         minLabel = 1
-
-        alphaQuadList = [-1 for i in range(4*self.m)]
-
-        p = [[] for i in range(maxLabel+1)]
+                
 
         nodes = sigma.to_cycles()
         
+        #We get a correspondance between nodes and demiEdge
         nodesId = [ -1 for i in range(2*self.m+1)]
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
                 nodesId[nodes[i][j]] = i+1
-                
-        sigmaQuadCycleDemiEdge = [deque() for i in range(2*self.m+1)]
 
-        corres = [-1 for i in range(2*self.m+1)]
-        cnt = 1
-        
+
+        alphaQuadList = [-1 for i in range(4*self.m)]
+        p = [[] for i in range(maxLabel+1)]
+        sigmaQuadCycleDemiEdge = [deque() for i in range(2*self.m+1)]
         sigmaQuadCycle = [[]]
 
-        root = 1
+        check = [-1 for i in range(2*self.m+1)]
 
-        partner = [-1 for i in range(2*self.m+1)]
-
-        curDemiEdge = root
-        
         oneOrdered = []
-        N = 2*self.m
-        while N!=0:
-            curLabel = labelled[curDemiEdge]
-            curNode = -1
-            otherNodeId = -1
-            if curLabel>1 and len(p[curLabel-1])>0 and partner[curDemiEdge] == -1:
-                partner[curDemiEdge] =p[curLabel-1][-1]
-                N-=1
-
-            if labelled[curDemiEdge] == 1 and partner[curDemiEdge] == -1:
-                partner[curDemiEdge] == -2
-                oneOrdered.append(curDemiEdge)
-                N-=1
-            p[curLabel].append(curDemiEdge)
-            curDemiEdge = nextAction(curDemiEdge)
-        
-
-        p = [[] for i in range(maxLabel+1)]
         backPartner = [-1 for i in range(2*self.m+1)]
-        backAction = nextAction.inverse()
+        corres = [-1 for i in range(2*self.m+1)]
+        
+        #We're turning around the tree in a  clockwise manner 
+        #When we connect each demi edge A the first demiEdge before it
+        #Which label is -1 less than the label of A
+        #If we see that the demi edge is of label one we just add it 
+        #to a list of demi edge of label 1 and continue
+        #And similarly during this loop we compute the back partner of 
+        #each demi edge A of not maximal label which is define as the first
+        #demi edge B such that B has label on more than the label of A
+        #And such that B is first one to connect to A 
+        #We also construct the cycle around each demiEdge
+        root = 1
+        cnt = 1
         curDemiEdge = root
         N = 2*self.m
         while N!=0:
             curLabel = labelled[curDemiEdge]
             curNode = -1
             otherNodeId = -1
-            if curLabel+1<len(p) and len(p[curLabel+1])>0 and backPartner[curDemiEdge] == -1:
-                backPartner[curDemiEdge] = p[curLabel+1][-1]
-                N-=1
-            if curLabel+1>=len(p) and backPartner[curDemiEdge] == -1:
-                backPartner[curDemiEdge] = -2
-                N-=1
-            p[curLabel].append(curDemiEdge)
-            curDemiEdge = backAction(curDemiEdge)
-    
-        curDemiEdge = root
-        
-        for i in range(2*self.m):
-            curLabel = labelled[curDemiEdge]
-            if curLabel>1:
-                otherDemiEdge = partner[curDemiEdge]    
-                corres[curDemiEdge] = cnt
+            if curLabel>1 and len(p[curLabel-1])>0 and check[curDemiEdge] == -1:
+                check[curDemiEdge] = -2
 
+                otherDemiEdge = p[curLabel-1][-1]
+                
+                N-=1
+                
+                if backPartner[otherDemiEdge] == -1:
+                    backPartner[otherDemiEdge] = curDemiEdge
+
+                corres[curDemiEdge] = cnt
+                
                 sigmaQuadCycleDemiEdge[curDemiEdge].appendleft(cnt)
                 sigmaQuadCycleDemiEdge[otherDemiEdge].append(cnt+1)
 
@@ -1736,26 +1722,29 @@ class LabelledMap:
                 alphaQuadList[cnt] = cnt
 
                 cnt+=2
-            
+
+            if labelled[curDemiEdge] == 1 and check[curDemiEdge] == -1:
+                check[curDemiEdge] == -2
+
+                corres[curDemiEdge] = cnt
+
+                otherNodeId = 0
+
+                sigmaQuadCycleDemiEdge[curDemiEdge].appendleft(cnt)
+
+                sigmaQuadCycle[otherNodeId].append(cnt+1)
+
+                alphaQuadList[cnt-1] = cnt+1
+                alphaQuadList[cnt] = cnt
+                cnt+=2
+                N-=1
+            p[curLabel].append(curDemiEdge)
             curDemiEdge = nextAction(curDemiEdge)
-        
-        for curDemiEdge in oneOrdered:
-            otherNodeId = 0
-            sigmaQuadCycleDemiEdge[curDemiEdge] = list(sigmaQuadCycleDemiEdge[curDemiEdge])
-            corres[curDemiEdge] = cnt
 
-            lst = []
-            lst.append(cnt)
-            lst += sigmaQuadCycleDemiEdge[curDemiEdge]
-
-            sigmaQuadCycleDemiEdge[curDemiEdge] = lst
-
-            sigmaQuadCycle[otherNodeId].append(cnt+1)
-
-            alphaQuadList[cnt-1] = cnt+1
-            alphaQuadList[cnt] = cnt
-            cnt+=2
-
+        #For demi edge  A such that sigmaQuadCycleDemiEdge[A]>1 we need
+        #We need to make a shift on sigmaQuadCycleDemiEdge[A] such that the first demi edge in the cycle is 
+        #The one corresponding to his back partner 
+        #This is needed to have a correct merge later on when we merge them by node
         for curDemiEdge in range(1,2*self.m+1):
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = list(sigmaQuadCycleDemiEdge[curDemiEdge])
@@ -1784,8 +1773,11 @@ class LabelledMap:
                 newDemiEdgeQuadCycle.append(restDemiEdgeQuad[(i+startId)%P])
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = newDemiEdgeQuadCycle
-            
+   
 
+        sigmaQuadCycle[0] = tuple(sigmaQuadCycle[0])
+        #Merging cycle on demi edge per  node
+        #And also making transforming them into tuple
         for node in nodes:
             accum = []
             for demiEdge in node:
@@ -1793,23 +1785,24 @@ class LabelledMap:
                     accum.append(e)
                 accum.append(sigmaQuadCycleDemiEdge[demiEdge][0])
                 
-            sigmaQuadCycle.append(accum)
+            sigmaQuadCycle.append(tuple(accum))
 
-        for i in range(len(sigmaQuadCycle)):
-            sigmaQuadCycle[i] = tuple(sigmaQuadCycle[i])
-        
+
         
         sigmaQuad = Permutation(sigmaQuadCycle)
         alphaQuad = Permutation(alphaQuadList)        
         quad = LabelledMap(sigma = sigmaQuad,alpha = alphaQuad)
         numberOfQuadDemiEdge = len(alphaQuadList)
-
         
         phiQuad = quad.phi
         alphaQuad = quad.alpha
         U = corres[root]
         X,W,V = phiQuad(U),phiQuad(phiQuad(U)),phiQuad(phiQuad(phiQuad(U))) 
+        
 
+        #There is two quadragulation possible depending on which root we choose
+        #Here we calculate the two possible permutation corresponding to the 
+        #Two possible root
         tauA = None
         tauB = None
         if labelled[root] == labelled[alpha(root)]:
@@ -1838,7 +1831,7 @@ class LabelledMap:
             
             canonicalTauA = quadA.getRootedMapCorrespondance(otherMap = quadACanonical,rootDemiEdge = root)
             canonicalTauB = quadB.getRootedMapCorrespondance(otherMap = quadBCanonical,rootDemiEdge = root)
-            
+
             markedDemiEdge = sigmaQuadCycle[0][0]
 
             markedDemiEdgeA = tauA(markedDemiEdge)
@@ -1850,7 +1843,6 @@ class LabelledMap:
             return quadACanonical,quadBCanonical,markedDemiEdgeA,markedDemiEdgeB
 
         return quadA.canonicalRepresentant(),quadB.canonicalRepresentant()
-    
     def nodes(self):
         """    
         This function return the nodes of self as cycle of self.sigma
