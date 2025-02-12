@@ -108,3 +108,61 @@ class MutableLabelledMap(LabelledMap):
             self.sigma = Permutation([(self.sigma.inverse()(iEdge1), h1, h2)]) * self.sigma
         
         self._updateAttributes()
+    def deleteEdge(self, iEdge):
+    """ Delete the given half-edge
+    
+        INPUT:
+
+        - ``iEdge`` integer; the index of the half-edge to contract
+        
+        TEST::
+        """
+        if iEdge < 1 or iEdge > 2 * self.m:
+            raise ValueError("Invalid half-edge number.")
+        sigma =self.sigma
+        alpha = self.alpha
+        # Swap iEdge with 2*m if it is not already 2*m
+        if iEdge != 2*self.m :
+            swap1 = Permutation([(iEdge,2*self.m)])
+            sigma = swap1 * self.sigma * swap1
+            alpha = swap1 * self.alpha * swap1
+        # Swap alpha(iEdge) with 2*m-1 if it is not already 2*m-1
+        if self.alpha(iEdge) != 2*self.m-1:
+            if self.alpha(iEdge) != 2*self.m :
+                swap2 = Permutation([(self.alpha(iEdge),2*self.m-1),(2*self.m,)])
+            else : 
+                 swap2 = Permutation([(self.alpha(iEdge),2*self.m-1)])
+            sigma = swap2 * sigma * swap2
+            alpha = swap2 * alpha * swap2
+
+        inverseSigma = sigma.inverse()
+        #Apply two permutations to sigma to update its structure
+        t1 = Permutation ([(2*self.m-1 , inverseSigma(2*self.m-1) ),(2*self.m,)])
+        t2 = Permutation ([(2*self.m , inverseSigma(2*self.m) )])
+        sigma = sigma.left_action_product(t1)
+        sigma = sigma.left_action_product(t2)
+
+        # Construct the new alpha and sigma
+        new_domain = list(range(1, 2*self.m-1 ))
+        new_sigma = Permutation([sigma(i) for i in new_domain])
+        new_alpha = Permutation(alpha.to_cycles()[:-1])
+
+
+        #test if the new Graph is connected
+        seen = [False] * (self.size - 1)
+        seen[0] = seen[1] = True            # half-edges are numbered from 1 to size, included
+        todo = [1]
+        while todo:
+            i = todo.pop()
+            if not seen[new_alpha(i)]:
+                todo.append(new_alpha(i))
+                seen[new_alpha(i)] = True
+            if not seen[new_sigma(i)]:
+                todo.append(new_sigma(i))
+                seen[new_sigma(i)] = True
+
+        if False in seen:
+            raise ValueError("The graph is not connected")
+        self.alpha = new_alpha
+        self.sigma = new_sigma
+        self._updateAttributes()
