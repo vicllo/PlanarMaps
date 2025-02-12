@@ -13,7 +13,7 @@ except:
 
 class LabelledMap:
     """
-    A class to represent a  labelled map.
+    A class to represent a labelled map.
 
     Attributes
     ----------
