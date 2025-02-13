@@ -631,14 +631,13 @@ class LabelledMap:
             sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
             sage: LabelledMap(sigma, alpha).genus()
             0
-
-            sage: adj = [(5, 4, 2), (1, 3, 6), (4, 7, 2), (8, 3, 1),  
-            ...         (8, 1, 6), (5, 2, 7), (3, 8, 6), (7, 4, 5)]
+            sage: adj = [(5, 4, 2), (1, 3, 6), (4, 7, 2), (8, 3, 1),\
+            (8, 1, 6), (5, 2, 7), (3, 8, 6), (7, 4, 5)]
             sage: LabelledMap(adj=adj).genus()
             0
 
-            sage: adj = [(4, 5, 6), (4, 5, 6), (4, 5, 6), (1, 2, 3),
-            ...         (1, 2, 3), (1, 2, 3)]
+            sage: adj = [(4, 5, 6), (4, 5, 6), (4, 5, 6), (1, 2, 3),\
+            (1, 2, 3), (1, 2, 3)]
             sage: LabelledMap(adj=adj).genus()
             1
 
