@@ -116,6 +116,107 @@ class MutableLabelledMap(LabelledMap):
             self.sigma = Permutation([(self.sigma.inverse()(iEdge1), h1, h2)]) * self.sigma
         
         self._updateAttributes()
+    def deleteEdge(self, iEdge):
+        """ Delete the given half-edge
+    
+        INPUT:
+
+        - ``iEdge`` integer; the index of the half-edge to delete
+        
+        TEST::
+            sage: sigma = Permutation([(8,1),(2,3),(4,5),(6,7)])
+            sage: alpha = Permutation([(1,2),(3,4),(5,6),(7,8)])
+            sage: P = MutableLabelledMap(sigma,alpha)
+            sage: P.deleteEdge(8)
+            sage: P.sigma.to_cycles()
+            [(1,), (2, 3), (4, 5), (6,)]
+            sage: P.alpha.to_cycles()
+            [(1, 2), (3, 4), (5, 6)]
+        """
+        if iEdge < 1 or iEdge > 2 * self.m:
+            raise ValueError("Invalid half-edge number.")
+        sigma = self.sigma
+        alpha = self.alpha
+        # Swap iEdge with 2*m if it is not already 2*m
+        if iEdge != 2*self.m :
+            swap1 = Permutation([(iEdge,2*self.m)])
+            sigma = swap1 * self.sigma * swap1
+            alpha = swap1 * self.alpha * swap1
+        # Swap alpha(iEdge) with 2*m-1 if it is not already 2*m-1
+        if self.alpha(iEdge) != 2*self.m-1:
+            if self.alpha(iEdge) != 2*self.m :
+                swap2 = Permutation([(self.alpha(iEdge),2*self.m-1),(2*self.m,)])
+            else : 
+                 swap2 = Permutation([(self.alpha(iEdge),2*self.m-1)])
+            sigma = swap2 * sigma * swap2
+            alpha = swap2 * alpha * swap2
+
+        inverseSigma = sigma.inverse()
+        #Apply two permutations to sigma to update its structure
+        if 2*self.m-1 != sigma(2*self.m-1):
+            t1 = Permutation ([(2*self.m-1 , inverseSigma(2*self.m-1) ),(2*self.m,)])
+            sigma = sigma.left_action_product(t1)
+        if 2*self.m!=sigma(2*self.m):
+            t2 = Permutation ([(2*self.m , inverseSigma(2*self.m) )])
+            sigma = sigma.left_action_product(t2)
+
+        # Construct the new alpha and sigma
+        new_domain = list(range(1, 2*self.m-1 ))
+        new_sigma = Permutation([sigma(i) for i in new_domain])
+        new_alpha = Permutation(alpha.to_cycles()[:-1])
+
+
+        #test if the new Graph is connected
+        seen = [False] * (self.size - 1)
+        seen[0] = seen[1] = True            # half-edges are numbered from 1 to size, included
+        todo = [1]
+        while todo:
+            i = todo.pop()
+            if not seen[new_alpha(i)]:
+                todo.append(new_alpha(i))
+                seen[new_alpha(i)] = True
+            if not seen[new_sigma(i)]:
+                todo.append(new_sigma(i))
+                seen[new_sigma(i)] = True
+
+        if False in seen:
+            raise ValueError("The graph is not connected")
+        self.alpha = new_alpha
+        self.sigma = new_sigma
+        self._updateAttributes()
+    def deleteVertex(self,iEdge):
+        sigma = self.sigma
+        alpha = self.alpha
+        m=self.m
+        def transposition(i,j):
+            if i!=2*m and j!=2*m:
+                return Permutation([(i,j),(2*m,)])
+            else :
+                return Permutation([(min(i,j),2*m)])
+        for cycle in sigma.to_cycles():
+            if iEdge in cycle:
+                Cycle = cycle
+                break
+        for i in range(len(Cycle)):
+            # swap (Cycle[i],alpha(Cycle[i)) --> (2m-2i,2m-2i-1)
+            swap1=Permutation([i for i in range(1, 2*m+1)])
+            swap2=Permutation([i for i in range(1, 2*m+1)])
+            if Cycle[i]!=2*m-2*i:
+                swap1 = transposition(Cycle[i],2*m-2*i)
+            if alpha(Cycle[i])!=2*m-2*i-1:
+                swap2 = transposition(alpha(Cycle[i]),2*m-2*i-1)
+            sigma = swap1 * sigma * swap1
+            alpha = swap1 * alpha * swap1
+            sigma = swap2 * sigma * swap2
+            alpha = swap2 * alpha * swap2
+            
+            
+        self.sigma=sigma
+        self.alpha=alpha
+
+        for i in range(len(Cycle)):
+            self.deleteEdge(2*m-2*i)
+        self._updateAttributes()
 
     def contractFace(self, iEdge):
         """
