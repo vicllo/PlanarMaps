@@ -56,40 +56,39 @@ class LabelledMap:
                        Alpha : [2, 1, 4, 3, 6, 5]
 
         TESTS::
-
         sage: sigma = Permutation([3, 4, 1, 2, 6, 5])
         sage: alpha = Permutation([(1, 2), (3, 4)])
         sage: map = LabelledMap(sigma, alpha)
         Traceback (most recent call last):
         ...
-        ValueError: The two permutations do not have the same size.
+        ValueError: The two permutations do not have the same size
 
         sage: sigma = Permutation([3, 4, 1, 2, 5])
         sage: alpha = Permutation([(1, 2), (3, 4, 5)])
         sage: LabelledMap(sigma, alpha)
         Traceback (most recent call last):
         ...
-        ValueError: The permutation alpha is not an involution.
+        ValueError: The permutation alpha is not an involution
 
         sage: sigma = Permutation([3, 4, 1, 2, 5])
         sage: alpha = Permutation([2, 1, 3, 5, 4])
         sage: LabelledMap(sigma, alpha)
         Traceback (most recent call last):
         ...
-        ValueError: The permutation alpha should not have fixed points.
+        ValueError: The permutation alpha should not have any fixed points
 
         sage: sigma = Permutation([1, 2, 3, 4, 5, 6])
         sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
         sage: LabelledMap(sigma, alpha)
         Traceback (most recent call last):
         ...
-        ValueError: The graph is not connected.
+        ValueError: The graph is not connected
 
         sage: adj = [(3,), (1, 3), (2,)]
         sage: LabelledMap(adj=adj)
         Traceback (most recent call last):
         ...
-        ValueError: Invalid adjacency list.
+        ValueError: Invalid adjacency list
 
         sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
         sage: adj = [(3,), (1, 3), (2,)]
@@ -97,7 +96,7 @@ class LabelledMap:
         Traceback (most recent call last):
         ...
         ValueError: Cannot build the map from both an adjacency list
-        and permutations.
+        and permutations
         """
 
         if sigma is None and alpha is None and adj is None:
@@ -107,7 +106,7 @@ class LabelledMap:
         if adj is not None and (sigma is not None or alpha is not None):
             raise ValueError(
                 """Cannot build the map from both an adjacency list 
-                 and permutations."""
+                 and permutations"""
             )
 
         if adj is None:
@@ -138,7 +137,7 @@ class LabelledMap:
 
         if self.alpha.number_of_fixed_points() != 0:
             raise ValueError(
-                "The permutation alpha should not have any fixed points."
+                "The permutation alpha should not have any fixed points"
             )
 
         seen = [False] * (self.size + 1)
