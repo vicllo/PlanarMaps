@@ -360,7 +360,7 @@ class LabelledMap:
                 nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_head, label_pos = 0.7)
                 nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_tail, label_pos = 0.3)
                 nx.draw_networkx_edge_labels(G, layout, ax = ax, rotate = False, edge_labels = edge_labels_middle, label_pos = 0.5)
-            if ax == None:
+            if ax == None:          # automatically open matplotlib if no axis are given
                 plt.show()
 
     def __repr__(self):

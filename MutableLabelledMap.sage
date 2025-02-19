@@ -12,6 +12,17 @@ class MutableLabelledMap(LabelledMap):
         self.f = len(self.phi.to_cycles())
         self.n = len(self.sigma.to_cycles())
 
+    def copy(self):
+        return MutableLabelledMap(self.sigma, self.alpha)
+
+    def _buildTransp(self, swaps):
+        """
+        Builds a transposition from a list of couples representing swaps (possibly null).
+        For example, _buildTransp([(1,1),(2,4),(3,3)]) returns (1,4,3,2).
+        """
+        
+        return Permutation(list(filter(lambda t: t[0] != t[1], swaps)))
+
     def contractEdge(self, iEdge):
         """
         Contracts the given half-edge (i. e. merge the two nodes that it links, and removes the edge itself).
@@ -34,19 +45,16 @@ class MutableLabelledMap(LabelledMap):
         if iEdge < 1 or iEdge > 2 * self.m:
             raise ValueError("Invalid half-edge number.")
 
-        def buildTransp(l):            # build a permutation from a list of possibly null transpositions
-            return Permutation(list(filter(lambda t: t[0] != t[1], l)))        # ie. buildTransp([(1,1),(2,4),(3,3)]) = (1,4,3,2)
-        
         # swaps the iEdge and its dual with the half-edges 2*self.m-1 and 2*self.m to allow easily removing them
 
-        swap = buildTransp([(iEdge, 2*self.m-1), (self.alpha(iEdge), 2*self.m)])
+        swap = self._buildTransp([(iEdge, 2*self.m-1), (self.alpha(iEdge), 2*self.m)])
 
         self.alpha = swap * self.alpha * swap
         self.sigma = swap * self.sigma * swap
 
         # merge the two neighbors lists
 
-        swp = buildTransp([(2*self.m-1, self.sigma(2*self.m)), (2*self.m, self.sigma(2*self.m-1))])
+        swp = self._buildTransp([(2*self.m-1, self.sigma(2*self.m)), (2*self.m, self.sigma(2*self.m-1))])
         
         self.sigma = self.sigma * swp
 
@@ -106,5 +114,81 @@ class MutableLabelledMap(LabelledMap):
             # ...->iEdge1->j->... is now ...->h1->iEdge1->j->... in sigma and same for h2/iEdge2
         else:
             self.sigma = Permutation([(self.sigma.inverse()(iEdge1), h1, h2)]) * self.sigma
+        
+        self._updateAttributes()
+
+    def contractFace(self, iEdge):
+        """
+        Contracts the face corresponding to the given half-edge into a single node.
+        Note that half-edges go clockwise around a face.
+        """
+
+        # first, we loop through the face, and swap all its half-edges (and their counterparts) with the last half-edges
+        # this way, after the contraction, we will just have to remove the last cycles of sigma
+
+        faceEdge = iEdge
+        index = 2*self.m
+
+        sigma = self.sigma
+        alpha = self.alpha
+
+        while faceEdge != 2*self.m or index == 2*self.m:
+            swp = Permutation([(faceEdge, index)]) if faceEdge != index else Permutation([])
+            print ("swapping", faceEdge, index)
+            if index % 2 == 0:
+                faceEdge = alpha(faceEdge)
+            else:
+                faceEdge = sigma(faceEdge)
+
+            sigma = swp * sigma * swp
+            alpha = swp * alpha * swp
+
+            index -= 1
+
+        iEdge = 2 * self.m
+
+        self.sigma = sigma
+        self.alpha = alpha
+
+        #return
+
+        sigmaInv = sigma.inverse()
+        swaps = []
+
+        faceEdge = sigmaInv(iEdge)     # since sigma goes anticlockwise around nodes, we need to go through the face in the same order
+        outgoingEdge = -1              # we don't know any outgoing edge yet
+        firstOutgoing = -1
+
+
+        # we loop through the face and maps each outgoing edge to the following one in the new sigma
+        
+        firstIter = True        # we need to actually enter the while loop... and stop when we have been through the whole face
+
+        while firstIter or sigma(faceEdge) != iEdge:
+            if sigma(sigma(faceEdge)) != faceEdge:          # there is at least one outgoing edge
+                currentEdge = sigma(sigma(faceEdge))
+                if outgoingEdge != -1:                                  # if we've seen another outgoing edge, we map it to the current one
+                    swaps.append((outgoingEdge, sigma(faceEdge)))  # after the swap, sigma will be outgoingEdge (-> sigma(faceEdge)) -> currentEdge
+                else:
+                    firstOutgoing = currentEdge
+                outgoingEdge = currentEdge
+
+            faceEdge = sigmaInv(alpha(faceEdge))
+
+            print ("faceEdge", faceEdge, "outgoingEdge", outgoingEdge, "firstOutgoing", firstOutgoing)
+            firstIter = False
+        
+        # we also need to map the last outgoing edge to the first one we have seen
+        if firstOutgoing != -1:
+            swaps.append((outgoingEdge, sigmaInv(firstOutgoing)))
+
+        sigma = self._buildTransp(swaps) * sigma
+
+        # then, the half-edges we need to remove are from index + 1 to 2*m
+
+        #def rem_
+
+        self.sigma = sigma
+        self.alpha = alpha
         
         self._updateAttributes()
