@@ -1,6 +1,7 @@
 from sage.all_cmdline import *  # Import sage library
 import warnings
 from collections import deque
+import random
 
 try:
     import networkx as nx
@@ -9,6 +10,7 @@ except ImportError:
 
 try:
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
 except ImportError:
     plt = None
 
