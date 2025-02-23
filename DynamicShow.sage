@@ -112,9 +112,9 @@ class Vector2D:
 class DynamicShow:
     # force expressions are heavily inspired by planarmap.js (https://github.com/tgbudd/planarmap.js)
     
-    repulsionVerticesCoef = 2.0			# controls the vertex-vertex repulsion force
+    repulsionVerticesCoef = 3.0			# controls the vertex-vertex repulsion force
 
-    torsionCoef = 1.0					# controls the torsion force between the consecutive edges around a vertex
+    torsionCoef = 2.0					# controls the torsion force between the consecutive edges around a vertex
     torsionPower = 2.0                  # exponent of the angle in the torsion force
     torsionScale = pi / 6               # angles are divided by this quantity in the torsion force
     
@@ -126,8 +126,9 @@ class DynamicShow:
 
     weakSpringCoef = 0.01               # controls the strength of the force pulling all nodes towards (0, 0)
     
-    maxDispl = 0.1                       # maximum distance a node is allowed to travel during a single iteration
-    initial_delta_t = 0.005              # delta_t of the first iteration
+    maxDispl = 0.5                        # maximum distance a node is allowed to travel during a single iteration
+    fast_delta_t = 1                  # delta_t of the first iterations
+    slow_delta_t = 0.01                 # delta_t of the last iterations
     max_iter_tick = 5                   # max number of iterations during a single tick
 
     def __init__(self, map: LabelledMap):
@@ -168,22 +169,58 @@ class DynamicShow:
             return min(i, j), max(i, j)
         
         self.G = nx.DiGraph()
-        self.G.add_edges_from(minmax(i, j) for (i, j, _) in g.edges())
+        self.G.add_edges_from(minmax(i-1, j-1) for (i, j, _) in g.edges())
 
         layout = g.layout_planar() if map.genus() == 0 else g.layout()
 
         self.pos = [Vector2D(*layout[i+1]) for i in range(self.nVertices)]
         # self.speed = [Vector2D(0, 0) for i in range(self.nVertices)]
 
+    def centerPos(self):
+        "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
+
+        xs, ys = [v.x for v in self.pos], [v.y for v in self.pos]
+
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+
+        for i in range(self.nVertices):
+            if minx < maxx:
+                xs[i] = (xs[i] - minx) / (maxx - minx) * 0.9 + 0.05
+            else:
+                xs[i] = 0.5
+
+            if miny < maxy:
+                ys[i] = (ys[i] - miny) / (maxy - miny) * 0.9 + 0.05
+            else:
+                ys[i] = 0.5
+
+        return [(xs[i], ys[i]) for i in range(self.nVertices)]
+
     def start(self):
         # initialize the matplotlib figure
-        self.fig, self.ax = plt.subplots()
+        size = 7
 
-        plt.axis("off")
-        self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False)
-        plt.show()
-
+        self.fig, (self.top_ax, self.ax) = plt.subplots(2, 1, figsize = (size, size+1), height_ratios = [1, size])
         
+        pos_centered = self.centerPos()
+
+        self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax = self.ax, nodelist = list(range(self.nVertices)), node_color="red", node_size = min(300, 1000 / self.nVertices**.5))
+        self.edges_plt = nx.draw_networkx_edges(self.G, pos_centered, ax = self.ax, arrows = False)
+
+        self.ax.axis("off")
+        self.ax.set_xlim(left=0, right=1)
+        self.ax.set_ylim(bottom=0, top=1)
+
+        self.top_ax.axis("off")
+        self.top_ax.set_xlim(left=0, right=1)
+        self.top_ax.set_ylim(bottom=0, top=1)
+        
+        self.text = self.top_ax.text(0, 0.5, "Frame: 0")
+
+        self.fig.tight_layout()
+
+        self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
+
     def computeRepulsionVVForces(self):
         for i in range(self.nVertices):
             for j in range(i+1, self.nVertices):
@@ -303,8 +340,15 @@ class DynamicShow:
         self.computeRepulsionEEForces()
 
     def tick(self, frame):
-        delta_t = self.initial_delta_t * 20 / max(frame, 20)
-        iters = self.max_iter_tick
+        full_force_frames = self.nVertices * 2     # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
+        power = 1.5                                   # delta_t will be proportional to 1 / frame ^ power when this number is reached
+
+        if frame < full_force_frames:
+            delta_t = self.fast_delta_t
+            iters = 1
+        else:
+            delta_t = self.slow_delta_t * full_force_frames**power / frame**power
+            iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
 
         while iters > 0:
             self.update_forces()
@@ -330,36 +374,42 @@ class DynamicShow:
             if self.check_pos_correct(newpos):
                 self.pos = newpos
                 iters -= 1
+                delta_t /= 1.5
             else:
                 delta_t /= 2
         
     def update_fig(self, frame):
         if frame > 5:
             self.tick(frame)
+            #self.pos[0].x += (random.random() - 0.5) / 5
 
-        x, y = [self.pos[i].x for i in range(self.nVertices)], [self.pos[i].y for i in range(self.nVertices)]
+        self.text.set_text("Frame: " + str(frame))
 
-        #self.ax.set_xlim(left=min(x) + (max(x)-min(x))/10, right=max(x) + (max(x)-min(x))/10)
-        #self.ax.set_ylim(bottom=min(y) + (max(y)-min(y))/10, top=max(y) + (max(y)-min(y))/10)
-        self.ax.set_xlim(left=0, right=5)
-        self.ax.set_ylim(bottom=0, top=5)
-
-        plt.axis("on")
-        plt.cla()
+        #plt.axis("on")
+        #plt.cla()
 
         # self.pos[0] += Vector2D((random.random()-.5), (random.random()-.5))
         
-        nx.draw(
-            self.G,
-            {i: (float(self.pos[i-1].x), float(self.pos[i-1].y)) for i in range(1, self.nVertices + 1)},
-            ax=self.ax,
-            labels={
-                i: str(i)
-                for i in range(1, self.nVertices + 1)
-            },
-            node_size=[300] * self.nVertices,
-            nodelist=list(range(1, self.nVertices + 1)),
-            arrows=False,
-            with_labels=True,
-            node_color="red",
-        )
+        # nx.draw(
+        #     self.G,
+        #     {i: (float(self.pos[i-1].x), float(self.pos[i-1].y)) for i in range(1, self.nVertices + 1)},
+        #     ax=self.ax,
+        #     labels={
+        #         i: str(i)
+        #         for i in range(1, self.nVertices + 1)
+        #     },
+        #     node_size=[300] * self.nVertices,
+        #     nodelist=list(range(1, self.nVertices + 1)),
+        #     arrows=False,
+        #     with_labels=True,
+        #     node_color="red",
+        # )
+
+        pos_centered = self.centerPos()
+
+        edges_pos = [(pos_centered[i], pos_centered[j]) for (i, j) in self.edges]
+
+        self.nodes_plt.set_offsets(pos_centered)
+        self.edges_plt.set_segments(edges_pos)
+
+        return self.nodes_plt, self.edges_plt, self.text
