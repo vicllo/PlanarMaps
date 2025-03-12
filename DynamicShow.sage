@@ -429,8 +429,10 @@ class DynamicShow:
             #if maxForce > 0:
             #    delta_t = min(delta_t, 2.0 / maxForce)
 
-            if maxForce * self.slow_delta_t < self.max_extent * self.convergence_limit:
+            if maxForce * self.slow_delta_t < self.max_extent * self.convergence_limit and not self.done:
                 print ("STOP")
+                self.anim.event_source.stop()
+                self.anim_running = False
                 self.done = True
 
             newpos = [Vector2D() for i in range(self.nVertices)]
@@ -461,7 +463,7 @@ class DynamicShow:
                 self.currentMaxDispl /= 2.0r
         
     def update_fig(self, frame):
-        if frame > 5 and not self.done:
+        if frame > 5 and self.anim_running:
             self.tick(frame)
             #self.pos[0].x += (random.random() - 0.5) / 5
 
