@@ -1,5 +1,7 @@
 load("LabelledMap.sage")
 
+import matplotlib.animation as animation
+
 import math         # we use python's float type and math functions to avoid using the more accurate but much slower sage types
                     # eg. we want pi - 1 to be stored as its floating-point value instead of this formal expression
                     # this is why all numbers in this file are written with "r"s: type(1.0r+math.pi) = float, but type(1.0 + pi) = sage.symbolic.expression.Expression
@@ -184,6 +186,16 @@ class DynamicShow:
 
         self.done = False
         self.max_extent = 1
+
+        self.anim_running = True
+
+    def onClick(self, event):
+        if self.anim_running:
+            self.anim.event_source.stop()
+            self.anim_running = False
+        else:
+            self.anim.event_source.start()
+            self.anim_running = True
 
     def centerPos(self):
         "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
@@ -433,5 +445,7 @@ class DynamicShow:
 
         self.nodes_plt.set_offsets(pos_centered)
         self.edges_plt.set_segments(edges_pos)
+
+        self.fig.canvas.mpl_connect('button_press_event', self.onClick)
 
         return self.nodes_plt, self.edges_plt, self.text
