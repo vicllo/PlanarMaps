@@ -143,31 +143,79 @@ class DynamicShow:
         # initialize the map
         
         self.map = map
+        
+        vertices = map.sigma.to_cycles()
 
-        self.nVertices = map.numberOfNodes()
-        self.nEdges = map.numberOfEdges()
+        real_n_vertices = len(vertices)  # Remove multiedges and loops
+        real_n_halfedges = map.m         # These half-edges should not be drawn
+
+        alpha = map.alpha
+        sigma = map.sigma
+        m = map.m
+
+        def minmax(i, j):
+            """Ensure edges always go from lowest to highest vertex id."""
+            return min(i, j), max(i, j)
+
+        corres = [0] * (2 * m + 1)  # Map half-edge i to its corresponding vertex
+        for i in range(1, len(vertices) + 1):
+            for k in vertices[i - 1]:
+                corres[k] = i
+
+        def break_down(i):
+            nonlocal alpha, sigma, corres, vertices, m
+
+            # Add a new vertex v, and break down the edge whose half-edges 
+            # are i & alpha(i) into 2 edges (i, 2*m+1) and (2*m+2, alpha(i)).
+            alpha *= Permutation((alpha(i), 2 * m + 1, i, 2 * m + 2))
+            sigma *= Permutation((2 * m + 1, 2 * m + 2))
+
+            corres.append(len(vertices) + 1)
+            corres.append(len(vertices) + 1)
+            vertices.append((2 * m + 1, 2 * m + 2))
+            m += 1
+
+        def break_loop(i):
+            j = alpha(i)
+            vertex = len(vertices)
+
+            break_down(i)
+            break_down(2 * m)
+
+        # For each loop a-a, add a new vertex v and replace the edge a-a
+        # with two edges a-v, v-a.
+        for i in range(1, 2 * m + 1):
+            if corres[i] == corres[alpha(i)]:
+                break_loop(i)
+
+        # Handle each vertex and break down edges if needed.
+        for v in range(1, len(vertices) + 1):
+            seen_vertices = set()
+            for i in vertices[v - 1]:
+                if corres[alpha(i)] in seen_vertices:
+                    break_down(i)
+                else:
+                    seen_vertices.add(corres[alpha(i)])
+
+        # Build the graph embedding
+        embedding = {
+            i: list(corres[alpha(k)] for k in vertices[i - 1])[::-1]
+            for i in range(1, len(vertices) + 1)
+        }
+
+        edges_num1 = [       # vertices must be numbered from 1 to nVertices included in networkx
+            (corres[i], corres[alpha(i)]) for i in range(1, 2 * m + 1) if i < alpha(i)
+        ]
+
+        self.nVertices = len(vertices)
+        self.nEdges = m // 2
 
         # initialize positions to a valid (but ugly) layout
 
-        self.vertices = map.sigma.to_cycles()
-
-        corres = [0] * (2 * map.m + 1)  # Map half-edge i to its corresponding vertex
-        for i in range(1, self.nVertices + 1):
-            for k in self.vertices[i - 1]:
-                corres[k] = i
-
-        embedding = {
-            i: list(corres[map.alpha(k)] for k in self.vertices[i - 1])[::-1]
-            for i in range(1, self.nVertices + 1)
-        }
-
-        edges_num1 = [          # vertices must be numbered from 1 to nVertices included in networkx
-            (corres[i], corres[map.alpha(i)]) for i in range(1, 2 * map.m + 1) if i < map.alpha(i)
-        ]
-
         self.edges = [(i-1, j-1) for (i, j) in edges_num1]      # but internally, it's more convenient to use zero-indexing
-        self.faces = [[corres[j]-1 for j in face] for face in map.faces()]
+        self.faces = [[corres[j]-1 for j in face] for face in alpha.right_action_product(sigma).to_cycles()]
         self.embedding = [[j-1 for j in embedding[i]] for i in range(1, self.nVertices+1)]
+
         g = Graph(edges_num1, loops=False, multiedges=False)
         g.set_embedding(embedding)
 
