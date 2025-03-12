@@ -151,6 +151,8 @@ class DynamicShow:
         real_n_vertices = len(vertices)  # Remove multiedges and loops
         real_n_halfedges = map.m         # These half-edges should not be drawn
 
+        self.real_n_vertices = real_n_vertices
+
         alpha = map.alpha
         sigma = map.sigma
         m = map.m
@@ -164,25 +166,32 @@ class DynamicShow:
             for k in vertices[i - 1]:
                 corres[k] = i
 
+        break_down_num = 3          # break each duplicate edge into this number of small edges
+
         def break_down(i):
             nonlocal alpha, sigma, corres, vertices, m
-
             # Add a new vertex v, and break down the edge whose half-edges 
-            # are i & alpha(i) into 2 edges (i, 2*m+1) and (2*m+2, alpha(i)).
-            alpha *= Permutation((alpha(i), 2 * m + 1, i, 2 * m + 2))
-            sigma *= Permutation((2 * m + 1, 2 * m + 2))
+            # are i & alpha(i) into break_down_num edges (i, 2*m+1), (2*m+2, 2*m+3), .., (2*m+2*(break_down_num-1), alpha(i)).
 
-            corres.append(len(vertices) + 1)
-            corres.append(len(vertices) + 1)
-            vertices.append((2 * m + 1, 2 * m + 2))
-            m += 1
+            alpha_cycles = [(alpha(i), 2*m + 1, i, 2*m + 2*(break_down_num-1))] + [(2*k, 2*k + 1) for k in range(m + 1, m + break_down_num - 1)]
+            alpha *= Permutation(alpha_cycles)
+
+            sigma_cycles = [(2*k - 1, 2 * k) for k in range(m+1, m + break_down_num)]
+            sigma *= Permutation(sigma_cycles)
+
+            for k in range(break_down_num - 1):
+                corres.append(len(vertices) + 1)
+                corres.append(len(vertices) + 1)
+
+                vertices.append((2 * m + 1, 2 * m + 2))
+                m += 1
 
         def break_loop(i):
             j = alpha(i)
             vertex = len(vertices)
 
-            break_down(i)
             break_down(2 * m)
+            break_down(i)
 
         # For each loop a-a, add a new vertex v and replace the edge a-a
         # with two edges a-v, v-a.
@@ -190,14 +199,20 @@ class DynamicShow:
             if corres[i] == corres[alpha(i)]:
                 break_loop(i)
 
+        break_all_down = True           # if True, break down each multiedge; if False, break down all but one
+
         # Handle each vertex and break down edges if needed.
         for v in range(1, len(vertices) + 1):
-            seen_vertices = set()
+            seen_vertices = {}
             for i in vertices[v - 1]:
                 if corres[alpha(i)] in seen_vertices:
+                    if seen_vertices[corres[alpha(i)]] != -1:
+                        duplicate_he = seen_vertices[corres[alpha(i)]]
+                        seen_vertices[corres[alpha(i)]] = -1
+                        break_down(duplicate_he)
                     break_down(i)
                 else:
-                    seen_vertices.add(corres[alpha(i)])
+                    seen_vertices[corres[alpha(i)]] = i
 
         # Build the graph embedding
         embedding = {
@@ -232,7 +247,7 @@ class DynamicShow:
         self.pos = [Vector2D(*layout[i+1]) for i in range(self.nVertices)]
         # self.speed = [Vector2D(0, 0) for i in range(self.nVertices)]
 
-        self.done = False
+        self.done = True
         self.max_extent = 1
 
         self.anim_running = True
@@ -275,7 +290,8 @@ class DynamicShow:
         
         pos_centered = self.centerPos()
 
-        self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax = self.ax, nodelist = list(range(self.nVertices)), node_color="red", node_size = min(300, 1000 / self.nVertices**.5))
+        self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax = self.ax, nodelist = list(range(self.nVertices)),
+                    node_color="red", node_size=[min(300, 1000 / self.nVertices**.5)] * self.real_n_vertices + [0] * (self.nVertices - self.real_n_vertices))
         self.edges_plt = nx.draw_networkx_edges(self.G, pos_centered, ax = self.ax, arrows = False)
 
         self.ax.axis("off")
