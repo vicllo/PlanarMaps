@@ -119,8 +119,8 @@ class DynamicShow:
     
     repulsionVerticesCoef = 3.0r			# controls the vertex-vertex repulsion force
 
-    torsionCoef = 2.0r					# controls the torsion force between the consecutive edges around a vertex
-    torsionPower = 2.0r                  # exponent of the angle in the torsion force
+    torsionCoef = 6.0r					# controls the torsion force between the consecutive edges around a vertex
+    torsionPower = 3.0r                  # exponent of the angle in the torsion force
     torsionScale = math.pi / 6r               # angles are divided by this quantity in the torsion force
     
     springCoef = 2.0r  					# controls the strength of the spring force for each edge
@@ -138,6 +138,8 @@ class DynamicShow:
     convergence_limit = 0.01              # consider that the optimum is found when all nodes move less than convergenceLimit * max_extent in a single slow_delta_t frame
     
     max_iter_tick = 4r                   # max number of iterations during a single tick
+
+    break_down_num = 5                   # break each duplicate edge into this number of small edges
 
     def __init__(self, map: LabelledMap):
         # only works on simple maps so far!
@@ -166,12 +168,12 @@ class DynamicShow:
             for k in vertices[i - 1]:
                 corres[k] = i
 
-        break_down_num = 3          # break each duplicate edge into this number of small edges
-
-        def break_down(i):
+        def break_down(i, break_down_num):
             nonlocal alpha, sigma, corres, vertices, m
             # Add a new vertex v, and break down the edge whose half-edges 
             # are i & alpha(i) into break_down_num edges (i, 2*m+1), (2*m+2, 2*m+3), .., (2*m+2*(break_down_num-1), alpha(i)).
+
+            print ("breaking down", i)
 
             alpha_cycles = [(alpha(i), 2*m + 1, i, 2*m + 2*(break_down_num-1))] + [(2*k, 2*k + 1) for k in range(m + 1, m + break_down_num - 1)]
             alpha *= Permutation(alpha_cycles)
@@ -190,8 +192,7 @@ class DynamicShow:
             j = alpha(i)
             vertex = len(vertices)
 
-            break_down(2 * m)
-            break_down(i)
+            break_down(i, max(self.break_down_num, 3))
 
         # For each loop a-a, add a new vertex v and replace the edge a-a
         # with two edges a-v, v-a.
@@ -209,8 +210,8 @@ class DynamicShow:
                     if seen_vertices[corres[alpha(i)]] != -1:
                         duplicate_he = seen_vertices[corres[alpha(i)]]
                         seen_vertices[corres[alpha(i)]] = -1
-                        break_down(duplicate_he)
-                    break_down(i)
+                        break_down(duplicate_he, self.break_down_num)
+                    break_down(i, self.break_down_num)
                 else:
                     seen_vertices[corres[alpha(i)]] = i
 
@@ -224,8 +225,10 @@ class DynamicShow:
             (corres[i], corres[alpha(i)]) for i in range(1, 2 * m + 1) if i < alpha(i)
         ]
 
+        self.alpha, self.sigma = alpha, sigma
+
         self.nVertices = len(vertices)
-        self.nEdges = m // 2
+        self.nEdges = m
 
         # initialize positions to a valid (but ugly) layout
 
@@ -247,10 +250,10 @@ class DynamicShow:
         self.pos = [Vector2D(*layout[i+1]) for i in range(self.nVertices)]
         # self.speed = [Vector2D(0, 0) for i in range(self.nVertices)]
 
-        self.done = True
         self.max_extent = 1
 
         self.anim_running = True
+        self.done = False
 
     def onClick(self, event):
         if self.anim_running:
