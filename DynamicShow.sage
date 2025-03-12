@@ -1,5 +1,8 @@
 load("LabelledMap.sage")
 
+import math         # we use python's float type and math functions to avoid using the more accurate but much slower sage types
+                    # eg. we want pi - 1 to be stored as its floating-point value instead of this formal expression
+                    # this is why all numbers in this file are written with "r"s: type(1.0r+math.pi) = float, but type(1.0 + pi) = sage.symbolic.expression.Expression
 
 def check_segments_intersecting(p1, q1, p2, q2):
     def onSegment(p, q, r):
@@ -12,20 +15,20 @@ def check_segments_intersecting(p1, q1, p2, q2):
 
         val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
 
-        if val == 0:
-            return 0
-        elif val > 0:
-            return 1
-        return 2
+        if val == 0r:
+            return 0r
+        elif val > 0r:
+            return 1r
+        return 2r
     
     o1, o2, o3, o4 = orient(p1,q1,p2), orient(p1,q1,q2), orient(p2,q2,p1), orient(p2,q2,q1)
 
     return (
         (o1 != o2 and o3 != o4) or
-        (o1 == 0 and onSegment(p1, p2, q1)) or
-        (o2 == 0 and onSegment(p1, q2, q1)) or
-        (o3 == 0 and onSegment(p2, p1, q2)) or
-        (o4 == 0 and onSegment(p2, q1, q2)))
+        (o1 == 0r and onSegment(p1, p2, q1)) or
+        (o2 == 0r and onSegment(p1, q2, q1)) or
+        (o3 == 0r and onSegment(p2, p1, q2)) or
+        (o4 == 0r and onSegment(p2, q1, q2)))
 
 def check_polygon_intersecting(segments):
     "Check whether the given segments intersect each other."
@@ -43,7 +46,7 @@ def check_polygon_intersecting(segments):
 
 
 class Vector2D:
-    def __init__(self, x = 0, y = 0):
+    def __init__(self, x = 0.0r, y = 0.0r):
         self.x = float(x)
         self.y = float(y)
 
@@ -54,8 +57,8 @@ class Vector2D:
         return sqrt(self.normSq())
 
     def normalized(self):
-        if self.norm() == 0:
-            return Vector2D(1, 0)           # hopefully, this should cancel out if trying to normalize a null vector
+        if self.norm() == 0.0r:
+            return Vector2D(1.0r, 0.0r)           # hopefully, this should cancel out if trying to use a normalized null vector
         return self / self.norm()
 
     def force_float(self):
@@ -71,10 +74,10 @@ class Vector2D:
 
     def angle_towards(self, other):
         "Returns the angle between self and other (counterclockwise) in the range [0, 2pi[."
-        a = atan2(self.x * other.y - self.y * other.x, self.x * other.x + self.y * other.y)
-        if a < 0:
-            return float(a + 2 * pi)
-        return float(a)
+        a = math.atan2(self.x * other.y - self.y * other.x, self.x * other.x + self.y * other.y)
+        if a < 0.0r:
+            return a + 2.0r * math.pi
+        return a
 
     def __add__(self, other):
         return Vector2D(self.x + other.x, self.y + other.y)
@@ -112,24 +115,27 @@ class Vector2D:
 class DynamicShow:
     # force expressions are heavily inspired by planarmap.js (https://github.com/tgbudd/planarmap.js)
     
-    repulsionVerticesCoef = 3.0			# controls the vertex-vertex repulsion force
+    repulsionVerticesCoef = 3.0r			# controls the vertex-vertex repulsion force
 
-    torsionCoef = 2.0					# controls the torsion force between the consecutive edges around a vertex
-    torsionPower = 2.0                  # exponent of the angle in the torsion force
-    torsionScale = pi / 6               # angles are divided by this quantity in the torsion force
+    torsionCoef = 2.0r					# controls the torsion force between the consecutive edges around a vertex
+    torsionPower = 2.0r                  # exponent of the angle in the torsion force
+    torsionScale = math.pi / 6r               # angles are divided by this quantity in the torsion force
     
-    springCoef = 2  					# controls the strength of the spring force for each edge
-    springLength = 1.0                  # controls the default length of an edge
+    springCoef = 2.0r  					# controls the strength of the spring force for each edge
+    springLength = 1.0r                  # controls the default length of an edge
     
-    repulsionVertexEdgeCoef = 1.0       # controls the strength of the repulsive force between nodes & edges
-    repulsionVertexEdgePower = 2.0      # exponent of the node-edge distance   
+    repulsionVertexEdgeCoef = 1.0r       # controls the strength of the repulsive force between nodes & edges
+    repulsionVertexEdgePower = 2.0r      # exponent of the node-edge distance   
 
-    weakSpringCoef = 0.01               # controls the strength of the force pulling all nodes towards (0, 0)
+    weakSpringCoef = 0.01r               # controls the strength of the force pulling all nodes towards (0, 0)
     
-    maxDispl = 0.5                        # maximum distance a node is allowed to travel during a single iteration
-    fast_delta_t = 1                  # delta_t of the first iterations
-    slow_delta_t = 0.01                 # delta_t of the last iterations
-    max_iter_tick = 5                   # max number of iterations during a single tick
+    maxDispl = springLength / 2          # maximum distance a node is allowed to travel during a single iteration
+    fast_delta_t = 1.0r                  # delta_t of the first iterations
+    slow_delta_t = 0.01r                 # delta_t of the last iterations
+
+    convergence_limit = 0.01              # consider that the optimum is found when all nodes move less than convergenceLimit * max_extent in a single slow_delta_t frame
+    
+    max_iter_tick = 4r                   # max number of iterations during a single tick
 
     def __init__(self, map: LabelledMap):
         # only works on simple maps so far!
@@ -176,6 +182,9 @@ class DynamicShow:
         self.pos = [Vector2D(*layout[i+1]) for i in range(self.nVertices)]
         # self.speed = [Vector2D(0, 0) for i in range(self.nVertices)]
 
+        self.done = False
+        self.max_extent = 1
+
     def centerPos(self):
         "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
 
@@ -185,14 +194,16 @@ class DynamicShow:
 
         for i in range(self.nVertices):
             if minx < maxx:
-                xs[i] = (xs[i] - minx) / (maxx - minx) * 0.9 + 0.05
+                xs[i] = (xs[i] - minx) / (maxx - minx) * 0.9r + 0.05r
             else:
-                xs[i] = 0.5
+                xs[i] = 0.5r
 
             if miny < maxy:
-                ys[i] = (ys[i] - miny) / (maxy - miny) * 0.9 + 0.05
+                ys[i] = (ys[i] - miny) / (maxy - miny) * 0.9r + 0.05r
             else:
-                ys[i] = 0.5
+                ys[i] = 0.5r
+
+        self.max_extent = max(maxx - minx, maxy - miny)
 
         return [(xs[i], ys[i]) for i in range(self.nVertices)]
 
@@ -218,6 +229,8 @@ class DynamicShow:
         self.text = self.top_ax.text(0, 0.5, "Frame: 0")
 
         self.fig.tight_layout()
+
+        self.currentMaxDispl = self.maxDispl
 
         self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
 
@@ -255,9 +268,9 @@ class DynamicShow:
 
                     angle = abs(v1.angle_towards(v2))
                     
-                    energy = self.torsionCoef * float(tanh(angle / self.torsionScale)) ** self.torsionPower
+                    energy = self.torsionCoef * math.tanh(angle / self.torsionScale) ** self.torsionPower
 
-                    scale = -2 * self.torsionPower * energy / self.torsionScale / sinh(2 * angle / self.torsionScale)
+                    scale = -2.0r * self.torsionPower * energy / self.torsionScale / math.sinh(2.0r * angle / self.torsionScale)
 
                     force1 = v1.rotate90() * (scale / v1.normSq())
                     force2 = v2.rotate90() * (scale / v2.normSq())
@@ -299,12 +312,12 @@ class DynamicShow:
                     u1 = self.embedding[i][k]                                   # simulates an angular spring force between u1 and u2
                     u2 = self.embedding[i][(k+1) % len(self.embedding[i])]
                     
-                    angle_sum += float(2*pi - (pos[u1] - pos[i]).angle_towards(pos[u2] - pos[i]))   # embedding is given clockwise
+                    angle_sum += 2.0r * math.pi - (pos[u1] - pos[i]).angle_towards(pos[u2] - pos[i])   # embedding is given clockwise
 
                 # if the embedding is correct, angle_sum = 2pi
                 # otherwise, it's way bigger (>= 4pi?)
 
-                if angle_sum >= 2.1 * pi:  # account for float inaccuracies
+                if angle_sum >= 2.1r * math.pi:  # account for float inaccuracies
                     print ("bad!! bad angle (sum", angle_sum, "!)")
                     print (pos[i])
                     for k in self.embedding[i]:
@@ -329,7 +342,6 @@ class DynamicShow:
 
         return True
 
-
     def update_forces(self):
         self.forces = [Vector2D() for i in range(self.nVertices)]
 
@@ -340,8 +352,8 @@ class DynamicShow:
         self.computeRepulsionEEForces()
 
     def tick(self, frame):
-        full_force_frames = self.nVertices * 2     # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
-        power = 1.5                                   # delta_t will be proportional to 1 / frame ^ power when this number is reached
+        full_force_frames = int(self.nVertices * 1.5r)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
+        power = 3r                                     # delta_t will be proportional to 1 / frame ^ power when this number is reached
 
         if frame < full_force_frames:
             delta_t = self.fast_delta_t
@@ -357,12 +369,16 @@ class DynamicShow:
             #if maxForce > 0:
             #    delta_t = min(delta_t, 2.0 / maxForce)
 
+            if maxForce * self.slow_delta_t < self.max_extent * self.convergence_limit:
+                print ("STOP")
+                self.done = True
+
             newpos = [Vector2D() for i in range(self.nVertices)]
 
             for i in range(self.nVertices):
                 displ = self.forces[i] * delta_t
-                if displ.normSq() > self.maxDispl ** 2:
-                    displ = displ.normalized() * self.maxDispl
+                if displ.normSq() > self.currentMaxDispl ** 2.0r:
+                    displ = displ.normalized() * self.currentMaxDispl
                 
                 newpos[i] = self.pos[i] + displ
 
@@ -373,17 +389,23 @@ class DynamicShow:
                 
             if self.check_pos_correct(newpos):
                 self.pos = newpos
-                iters -= 1
-                delta_t /= 1.5
+                iters -= 1r
+                delta_t /= 2.0r
+                
+                # if currentMaxDispl is lower than maxDispl, we start increasing it slowly
+                prop = 0.2r
+                self.currentMaxDispl = self.maxDispl * prop + self.currentMaxDispl * (1-prop)
             else:
-                delta_t /= 2
+                # we're going too fast... reduce delta_t & maxDispl
+                delta_t /= 2.0r
+                self.currentMaxDispl /= 2.0r
         
     def update_fig(self, frame):
-        if frame > 5:
+        if frame > 5 and not self.done:
             self.tick(frame)
             #self.pos[0].x += (random.random() - 0.5) / 5
 
-        self.text.set_text("Frame: " + str(frame))
+        self.text.set_text("Frame: " + str(frame) + ("; done" if self.done else ""))
 
         #plt.axis("on")
         #plt.cla()
