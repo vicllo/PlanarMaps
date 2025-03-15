@@ -117,16 +117,16 @@ class Vector2D:
 class DynamicShow:
     # force expressions are heavily inspired by planarmap.js (https://github.com/tgbudd/planarmap.js)
     
-    repulsionVerticesCoef = 3.0r			# controls the vertex-vertex repulsion force
+    repulsionVerticesCoef = 10.0r			# controls the vertex-vertex repulsion force
 
-    torsionCoef = 6.0r					# controls the torsion force between the consecutive edges around a vertex
+    torsionCoef = 3.0r					# controls the torsion force between the consecutive edges around a vertex
     torsionPower = 3.0r                  # exponent of the angle in the torsion force
     torsionScale = math.pi / 6r               # angles are divided by this quantity in the torsion force
     
-    springCoef = 2.0r  					# controls the strength of the spring force for each edge
+    springCoef = 3.0r  					# controls the strength of the spring force for each edge
     springLength = 1.0r                  # controls the default length of an edge
     
-    repulsionVertexEdgeCoef = 1.0r       # controls the strength of the repulsive force between nodes & edges
+    repulsionVertexEdgeCoef = 3.0r       # controls the strength of the repulsive force between nodes & edges
     repulsionVertexEdgePower = 2.0r      # exponent of the node-edge distance   
 
     weakSpringCoef = 0.01r               # controls the strength of the force pulling all nodes towards (0, 0)
@@ -140,6 +140,13 @@ class DynamicShow:
     max_iter_tick = 4r                   # max number of iterations during a single tick
 
     break_down_num = 5                   # break each duplicate edge into this number of small edges
+
+    useVVForce = True
+    useTorsionForce = True
+    useSpringForce = True
+    useWeakSpringForce = False
+    useVEForce = True
+    useEEForce = True
 
     def __init__(self, map: LabelledMap):
         # only works on simple maps so far!
@@ -255,14 +262,6 @@ class DynamicShow:
         self.anim_running = True
         self.done = False
 
-    def onClick(self, event):
-        if self.anim_running:
-            self.anim.event_source.stop()
-            self.anim_running = False
-        else:
-            self.anim.event_source.start()
-            self.anim_running = True
-
     def centerPos(self):
         "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
 
@@ -285,7 +284,7 @@ class DynamicShow:
 
         return [(xs[i], ys[i]) for i in range(self.nVertices)]
 
-    def start(self):
+    def start(self, frameByFrame = False):
         # initialize the matplotlib figure
         size = 7
 
@@ -309,9 +308,49 @@ class DynamicShow:
 
         self.fig.tight_layout()
 
+        self.fig.canvas.mpl_connect('button_press_event', self.onClick)
+        self.fig.canvas.mpl_connect('key_press_event', self.onKey)
+
         self.currentMaxDispl = self.maxDispl
+        
+        self.doFrame = False
+        self.frame = 0
 
         self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
+        
+        self.ax.callbacks.connect('xlim_changed', lambda event: self.anim._blit_cache.clear())
+        self.ax.callbacks.connect('ylim_changed', lambda event: self.anim._blit_cache.clear())
+
+        if frameByFrame:
+            self.anim_running = False
+            #self.anim.event_source.stop()
+        else:
+            self.anim_running = True
+
+    def onClick(self, event):
+        return
+
+        if self.anim_running:
+            self.anim.event_source.stop()
+            self.anim_running = False
+        else:
+            self.anim.event_source.start()
+            self.anim_running = True
+
+    def onKey(self, event):
+        if event.key == ' ':
+            self.doFrame = True
+
+        if event.key == "enter":
+            if self.anim_running:
+                #self.anim.event_source.stop()
+                self.anim_running = False
+            else:
+                #self.anim.event_source.start()
+                self.anim_running = True
+
+        if event.key == "escape":
+            plt.close()
 
     def computeRepulsionVVForces(self):
         for i in range(self.nVertices):
@@ -324,7 +363,8 @@ class DynamicShow:
     def computeSpringForces(self):
         for (i, j) in self.edges:
             r = self.pos[j] - self.pos[i]
-            force = self.springCoef * (r.norm() - self.springLength) * r.normalized()
+            #force = self.springCoef * (r.norm() - self.springLength) * r.normalized()
+            force = self.springCoef * math.log(r.norm() / self.springLength) * r.normalized()
 
             self.forces[i] += force
             self.forces[j] -= force
@@ -346,10 +386,15 @@ class DynamicShow:
                     v1, v2 = self.pos[u1] - self.pos[i], self.pos[u2] - self.pos[i]
 
                     angle = abs(v1.angle_towards(v2))
+                    goal = 2.0r * math.pi / len(self.embedding[i])
                     
                     energy = self.torsionCoef * math.tanh(angle / self.torsionScale) ** self.torsionPower
 
-                    scale = -2.0r * self.torsionPower * energy / self.torsionScale / math.sinh(2.0r * angle / self.torsionScale)
+                    #scale = -2.0r * self.torsionPower * 10 * energy / self.torsionScale / math.sinh(2.0r * angle / self.torsionScale)
+
+                    scale = self.torsionCoef * abs(angle - goal) ** self.torsionPower
+                    if angle < goal:
+                        scale = -scale
 
                     force1 = v1.rotate90() * (scale / v1.normSq())
                     force2 = v2.rotate90() * (scale / v2.normSq())
@@ -398,9 +443,9 @@ class DynamicShow:
 
                 if angle_sum >= 2.1r * math.pi:  # account for float inaccuracies
                     print ("bad!! bad angle (sum", angle_sum, "!)")
-                    print (pos[i])
-                    for k in self.embedding[i]:
-                        print (pos[k])
+                    # print (pos[i])
+                    # for k in self.embedding[i]:
+                    #    print (pos[k])
                     return False
         
         # check that there is no edge crossing
@@ -416,7 +461,7 @@ class DynamicShow:
 
             if check_polygon_intersecting(segments):
                 print ("bad!! intersecting")
-                print (segments)
+                #print (segments)
                 return False
 
         return True
@@ -424,21 +469,26 @@ class DynamicShow:
     def update_forces(self):
         self.forces = [Vector2D() for i in range(self.nVertices)]
 
-        self.computeRepulsionVVForces()
-        self.computeSpringForces()
-        self.computeWeakSpringForces()
-        self.computeTorsionForces()
-        self.computeRepulsionEEForces()
+        if self.useVVForce:
+            self.computeRepulsionVVForces()
+        if self.useSpringForce:
+            self.computeSpringForces()
+        if self.useWeakSpringForce:
+            self.computeWeakSpringForces()
+        if self.useTorsionForce:
+            self.computeTorsionForces()
+        if self.useEEForce:
+            self.computeRepulsionEEForces()
 
-    def tick(self, frame):
+    def tick(self):
         full_force_frames = int(self.nVertices * 1.5r)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
         power = 3r                                     # delta_t will be proportional to 1 / frame ^ power when this number is reached
 
-        if frame < full_force_frames:
+        if self.frame < full_force_frames:
             delta_t = self.fast_delta_t
             iters = 1
         else:
-            delta_t = self.slow_delta_t * full_force_frames**power / frame**power
+            delta_t = self.slow_delta_t * full_force_frames**power / self.frame**power
             iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
 
         while iters > 0:
@@ -482,11 +532,13 @@ class DynamicShow:
                 self.currentMaxDispl /= 2.0r
         
     def update_fig(self, frame):
-        if frame > 5 and self.anim_running:
-            self.tick(frame)
+        if frame > 5 and (self.anim_running or self.doFrame):
+            self.tick()
+            self.doFrame = False
+            self.frame += 1
             #self.pos[0].x += (random.random() - 0.5) / 5
 
-        self.text.set_text("Frame: " + str(frame) + ("; done" if self.done else ""))
+        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else ""))
 
         #plt.axis("on")
         #plt.cla()
@@ -514,7 +566,5 @@ class DynamicShow:
 
         self.nodes_plt.set_offsets(pos_centered)
         self.edges_plt.set_segments(edges_pos)
-
-        self.fig.canvas.mpl_connect('button_press_event', self.onClick)
 
         return self.nodes_plt, self.edges_plt, self.text
