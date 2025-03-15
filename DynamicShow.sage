@@ -5,6 +5,7 @@ import matplotlib.animation as animation
 import math         # we use python's float type and math functions to avoid using the more accurate but much slower sage types
                     # eg. we want pi - 1 to be stored as its floating-point value instead of this formal expression
                     # this is why all numbers in this file are written with "r"s: type(1.0r+math.pi) = float, but type(1.0 + pi) = sage.symbolic.expression.Expression
+import time
 
 def check_segments_intersecting(p1, q1, p2, q2):
     def onSegment(p, q, r):
@@ -139,6 +140,7 @@ class DynamicShow:
     
     max_iter_tick = 4r                   # max number of iterations during a single tick
 
+    time_profile = False                  # print informations about time use of different functions
     break_down_num = 5                   # break each duplicate edge into this number of small edges
 
     useVVForce = True
@@ -165,6 +167,18 @@ class DynamicShow:
         alpha = map.alpha
         sigma = map.sigma
         m = map.m
+
+
+        if self.time_profile:
+            self.update_forces_time_avg = None
+            self.RepulsionVVForcesTime = None 
+            self.SpringForcesTime = None 
+            self.WeakSpringForcesTime = None 
+            self.TorsionForcesTime = None 
+            self.RepulsionEEForcesTime = None
+
+            self.check_pos_correct_time_avg = None
+
 
         def minmax(i, j):
             """Ensure edges always go from lowest to highest vertex id."""
@@ -469,16 +483,35 @@ class DynamicShow:
     def update_forces(self):
         self.forces = [Vector2D() for i in range(self.nVertices)]
 
-        if self.useVVForce:
-            self.computeRepulsionVVForces()
-        if self.useSpringForce:
-            self.computeSpringForces()
-        if self.useWeakSpringForce:
-            self.computeWeakSpringForces()
-        if self.useTorsionForce:
-            self.computeTorsionForces()
-        if self.useEEForce:
-            self.computeRepulsionEEForces()
+        forces_to_compute = [
+            self.computeRepulsionVVForces,
+            self.computeSpringForces,
+            self.computeWeakSpringForces,
+            self.computeTorsionForces,
+            self.computeRepulsionEEForces,
+        ]
+        
+        # TODO : INITIALISER AVANT !!!!!!!!
+        if self.time_profile:
+            forces_times = {}
+            for force in forces_to_compute:
+                forces_times[force.__name__] = 0
+        for force in forces_to_compute:
+            if self.time_profile:
+                begin = time.perf_counter()
+            force()
+            if self.time_profile:
+                end = time.perf_counter()
+                forces_times[force.__name__] += end - begin
+        """
+        self.computeRepulsionVVForces()
+        self.computeSpringForces()
+        self.computeWeakSpringForces()
+        self.computeTorsionForces()
+        self.computeRepulsionEEForces()
+        """
+        if self.time_profile:
+            print(forces_times)
 
     def tick(self):
         full_force_frames = int(self.nVertices * 1.5r)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
@@ -492,8 +525,17 @@ class DynamicShow:
             iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
 
         while iters > 0:
-            self.update_forces()
-            
+            if self.time_profile:
+                debut = time.perf_counter()
+            self.update_forces() # LONG ? Et si oui, quelle force ?
+            if self.time_profile:
+                fin = time.perf_counter() 
+                if self.update_forces_time_avg is None:
+                    self.update_forces_time_avg = fin - debut
+                    print("Initial frame for time :", frame)
+                else:
+                    self.update_forces_time_avg = ((frame * self.update_forces_time_avg) + (fin - debut)) / (frame + 1)
+
             maxForce = max(map(Vector2D.normSq, self.forces))
             #if maxForce > 0:
             #    delta_t = min(delta_t, 2.0 / maxForce)
@@ -517,8 +559,11 @@ class DynamicShow:
                 # self.pos[i] += self.speed[i] * self.maxDelta + 0.5 * self.forces[i] * self.maxDelta * self.maxDelta / self.vertexInertia
                 # self.speed[i] /= 2              # friction forces (we need energy loss somewhere)
                 # self.speed[i] += self.forces[i] * self.maxDelta / self.vertexInertia
-                
-            if self.check_pos_correct(newpos):
+            
+            if self.time_profile:
+                debut = time.perf_counter()
+
+            if self.check_pos_correct(newpos): # LONG ?
                 self.pos = newpos
                 iters -= 1r
                 delta_t /= 2.0r
@@ -530,7 +575,15 @@ class DynamicShow:
                 # we're going too fast... reduce delta_t & maxDispl
                 delta_t /= 2.0r
                 self.currentMaxDispl /= 2.0r
-        
+            
+            if self.time_profile:
+                fin = time.perf_counter()
+                if self.check_pos_correct_time_avg is None:
+                    print("Initial frame for check correct :", frame)
+                    self.check_pos_correct_time_avg = fin - debut 
+                else:
+                    self.check_pos_correct_time_avg = ((frame * self.check_pos_correct_time_avg) + (fin - debut)) / (frame + 1)
+
     def update_fig(self, frame):
         if frame > 5 and (self.anim_running or self.doFrame):
             self.tick()
@@ -539,6 +592,10 @@ class DynamicShow:
             #self.pos[0].x += (random.random() - 0.5) / 5
 
         self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else ""))
+
+        if self.time_profile:
+            print(self.update_forces_time_avg, self.check_pos_correct_time_avg)
+
 
         #plt.axis("on")
         #plt.cla()
