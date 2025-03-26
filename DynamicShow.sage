@@ -138,12 +138,20 @@ class DynamicShow:
     weakSpringCoef = 0.01r               # controls the strength of the force pulling all nodes towards (0, 0)
     
     maxDispl = springLength * 2.0r       # maximum distance a node is allowed to travel during a single iteration
-    fast_delta_t = 1.0r                  # delta_t of the first iterations
-    slow_delta_t = 0.01r                 # delta_t of the last iterations
-
-    convergence_limit = 0.01r              # consider that the optimum is found when all nodes move less than convergenceLimit * max_extent in a single slow_delta_t frame
     
-    max_iter_tick = 4r                   # max number of iterations during a single tick
+    # first model
+    fast_delta_t = 1.0r                  # delta_t of the first iterations
+    slow_delta_t = 0.1r                 # delta_t of the last iterations
+
+    # second model
+    default_delta_t = 1.0r              # delta_t of the first iteration
+    exp_decrease = 0.2r                 # delta_t will equal to default_delta_t * exp(frame / (exp_decrease * n_edges))
+
+    use_exponential_model = False
+    
+    convergence_limit = 0.0005r              # consider that the optimum is found when all nodes move less than this value in a single tick (when rescaled to [0,1])
+    
+    max_iter_tick = 3r                   # max number of iterations during a single tick
 
     time_profile = True                  # print informations about time use of different functions
     break_down_num = 5r                  # break each duplicate edge into this number of small edges
@@ -154,8 +162,12 @@ class DynamicShow:
     useWeakSpringForce = True
     useEEForce = True
 
+    current_penalty = 0                 # for each valid frame, current_penalty decrease by one
+    wrong_move_penalty = 1             # for each wrong frame, current_penalty increase by this value
+    
     validFrames = 0
     validFramesThreshold = 20           # start increasing current_delta_t -> delta_t after this number of valid frames
+
 
     def __init__(self, map: LabelledMap):
         # initialize the map
@@ -269,27 +281,7 @@ class DynamicShow:
         self.anim_running = True
         self.done = False
 
-    def centerPos(self):
-        "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
-
-        xs, ys = [v.x for v in self.pos], [v.y for v in self.pos]
-
-        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
-
-        for i in range(self.nVertices):
-            if minx < maxx:
-                xs[i] = (xs[i] - minx) / (maxx - minx) * 0.9r + 0.05r
-            else:
-                xs[i] = 0.5r
-
-            if miny < maxy:
-                ys[i] = (ys[i] - miny) / (maxy - miny) * 0.9r + 0.05r
-            else:
-                ys[i] = 0.5r
-
-        self.max_extent = max(maxx - minx, maxy - miny)
-
-        return [(xs[i], ys[i]) for i in range(self.nVertices)]
+        self.is_planar = map.genus() == 0
 
     def start(self, frameByFrame = False):
         # initialize the matplotlib figure
@@ -315,28 +307,23 @@ class DynamicShow:
         txt_ax.axis("off")
         txt_ax.set_xlim(left=0, right=1)
         txt_ax.set_ylim(bottom=0, top=1)
+
+        slider_ax.axis("off")
         
         self.text = txt_ax.text(0, 0.5, "Frame: 0")
 
-        self.slider = matplotlib.widgets.Slider(ax = slider_ax, valmin = -3, valmax = 1, valinit = 0, label = "delta_t")
-        self.slider.on_changed(self.update_slider_val)
-        self.slider.valtext.set_text("1.000")
-        self.force_delta_t = False
+        # self.slider = matplotlib.widgets.Slider(ax = slider_ax, valmin = -3, valmax = 1, valinit = 0, label = "delta_t")
+        # self.slider.on_changed(self.update_slider_val)
+        # self.slider.valtext.set_text("1.000")
+        # self.force_delta_t = False
 
         #self.fig.tight_layout()
 
         self.fig.canvas.mpl_connect('button_press_event', self.onClick)
         self.fig.canvas.mpl_connect('key_press_event', self.onKey)
-
-        self.currentMaxDispl = self.maxDispl
         
         self.doFrame = False
         self.frame = 0
-
-        self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
-        
-        self.ax.callbacks.connect('xlim_changed', lambda event: self.anim._blit_cache.clear())
-        self.ax.callbacks.connect('ylim_changed', lambda event: self.anim._blit_cache.clear())
 
         if frameByFrame:
             self.anim_running = False
@@ -360,7 +347,13 @@ class DynamicShow:
             self.useLogSpring = False
 
         self.validFrames = 0
+        self.currentMaxDispl = self.maxDispl
+        self.prev_pos_centered = None
 
+        self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
+        
+        self.ax.callbacks.connect('xlim_changed', lambda event: self.anim._blit_cache.clear())
+        self.ax.callbacks.connect('ylim_changed', lambda event: self.anim._blit_cache.clear())
 
     def reset_forces(self):
         self.forces_to_compute = []
@@ -375,6 +368,29 @@ class DynamicShow:
             self.forces_to_compute.append(self.computeTorsionForces)
         if self.useEEForce:
             self.forces_to_compute.append(self.computeRepulsionEEForces)
+
+    def centerPos(self):
+        "Returns a list of positions (as tuple) centered in [0,1] (with a .05 margin on each side)."
+
+        xs, ys = [v.x for v in self.pos], [v.y for v in self.pos]
+
+        minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+
+        for i in range(self.nVertices):
+            if minx < maxx:
+                xs[i] = (xs[i] - minx) / (maxx - minx) * 0.9r + 0.05r
+            else:
+                xs[i] = 0.5r
+
+            if miny < maxy:
+                ys[i] = (ys[i] - miny) / (maxy - miny) * 0.9r + 0.05r
+            else:
+                ys[i] = 0.5r
+
+        self.max_extent = max(maxx - minx, maxy - miny)
+
+        return [(xs[i], ys[i]) for i in range(self.nVertices)]
+
 
     def print_timers(self):
         if self.time_profile and self.frame > 0:
@@ -566,22 +582,37 @@ class DynamicShow:
         """
         
     def tick(self):
-        full_force_frames = int(self.nVertices * 1.5r)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
-        power = 1r                                     # delta_t will be proportional to 1 / frame ^ power when this number is reached
-
-        if self.frame < full_force_frames:
-            delta_t = self.fast_delta_t
+        if self.use_exponential_model:
+            base_delta_t = self.default_delta_t * math.exp(-self.frame / (self.exp_decrease * self.nEdges))
             iters = 1
-        else:
-            delta_t = self.slow_delta_t * full_force_frames**power / self.frame**power
-            iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
-
-        if self.force_delta_t:
-            delta_t = self.fixed_delta_t
-        else:
-            self.slider.valtext.set_text(round(delta_t, 3))
         
+        else:
+            full_force_frames = int(self.nVertices * 2r)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
+            several_iter_frames = int(self.nVertices * 4r) # after this number of iterations, we start doing several frame at once with decreasing delta_t to reach the optimum
+
+            power = 1.5r                                     # delta_t will be proportional to 1 / frame ^ power when this number is reached
+
+            if self.frame < full_force_frames:
+                base_delta_t = self.fast_delta_t
+            else:
+                base_delta_t = self.slow_delta_t * full_force_frames**power / self.frame**power
+            
+            if self.frame < several_iter_frames:
+                iters = 1
+            else:
+                iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
+
+        delta_t = base_delta_t
+        delta_t /= (self.current_penalty + 1)
+
+        self.current_delta_t = delta_t
+
         while iters > 0:
+            #self.current_penalty = 0
+            #currentMaxDispl = self.maxDispl / math.sqrt(self.current_penalty + 1r)
+            #currentMaxDispl = self.maxDispl / (2r ** self.current_penalty)
+            #delta_t = base_delta_t / (2r ** self.current_penalty)
+
             if self.time_profile:
                 debut = time.perf_counter()
             self.update_forces() # LONG ? Et si oui, quelle force ?
@@ -592,12 +623,6 @@ class DynamicShow:
             maxForce = max(map(Vector2D.normSq, self.forces))
             #if maxForce > 0:
             #    delta_t = min(delta_t, 2.0 / maxForce)
-
-            if maxForce * self.slow_delta_t < self.max_extent * self.convergence_limit and not self.done:
-                print ("STOP")
-                #self.anim.event_source.stop()
-                self.anim_running = False
-                self.done = True
 
             newpos = [Vector2D() for i in range(self.nVertices)]
 
@@ -616,22 +641,28 @@ class DynamicShow:
             if self.time_profile:
                 debut = time.perf_counter()
 
-            if self.check_pos_correct(newpos): # LONG ?
+            if not self.is_planar or self.check_pos_correct(newpos): # LONG ?
                 self.pos = newpos
                 iters -= 1r
-                delta_t /= 2.0r
-            
+                delta_t /= 3.0r
+
                 self.frame += 1r
                 self.validFrames += 1r
+                if self.current_penalty > 0:
+                    self.current_penalty -= 1r
             else:
                 # we're going too fast... reduce delta_t & maxDispl
+                self.validFrames = 0r
+                self.current_penalty = (self.current_penalty + self.wrong_move_penalty) * 2r
+                
                 delta_t /= 2.0r
                 self.currentMaxDispl /= 2.0r
 
-                self.validFrames = 0
+                self.validFrames = 0r
 
             if self.validFrames > self.validFramesThreshold:
-                self.currentMaxDispl = 0.2 * self.maxDispl + 0.8 * self.currentMaxDispl
+                self.currentMaxDispl = 0.2r * self.maxDispl + 0.8r * self.currentMaxDispl
+        
             
             if self.time_profile:
                 fin = time.perf_counter()
@@ -642,8 +673,10 @@ class DynamicShow:
             self.tick()
             self.doFrame = False
             #self.pos[0].x += (random.random() - 0.5) / 5
+        else:
+            self.current_delta_t = 0
 
-        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else ""))
+        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else "") + " " + str(round(self.current_delta_t, 3)))
 
         #plt.axis("on")
         #plt.cla()
@@ -666,6 +699,17 @@ class DynamicShow:
         # )
 
         pos_centered = self.centerPos()
+
+        if self.prev_pos_centered:
+            dist = max((pos_centered[i][0] - self.prev_pos_centered[i][0]) ** 2.0r + (pos_centered[i][1] - self.prev_pos_centered[i][1]) ** 2.0r for i in range(self.nVertices))
+
+            if dist < self.convergence_limit ** 2.0r and self.anim_running and not self.done:
+                print ("STOP")
+                #self.anim.event_source.stop()
+                self.anim_running = False
+                self.done = True
+
+        self.prev_pos_centered = pos_centered
 
         edges_pos = [(pos_centered[i], pos_centered[j]) for (i, j) in self.edges]
 
