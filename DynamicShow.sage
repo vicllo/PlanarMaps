@@ -194,12 +194,29 @@ class DynamicShow:
             for k in vertices[i - 1]:
                 corres[k] = i
 
+        # Three dictionaries to store half-edge IDs
+        self.edge_labels_head = {}  # (i, j): half-edge from i to j
+        self.edge_labels_tail = {}  # (i, j): half-edge from j to i
+        self.edge_labels_middle = {}  # Used for loops & multiedges
+
+        def rem(i):
+            for d in (self.edge_labels_head, self.edge_labels_tail):
+                for (key, val) in list(d.items()):
+                    if val == i:
+                        del d[key]
+
         def break_down(i, break_down_num):
             nonlocal alpha, sigma, corres, vertices, m
             # Add a new vertex v, and break down the edge whose half-edges 
             # are i & alpha(i) into break_down_num edges (i, 2*m+1), (2*m+2, 2*m+3), .., (2*m+2*(break_down_num-1), alpha(i)).
 
             # print ("breaking down", i)
+
+            self.edge_labels_middle[(corres[i]-1, len(vertices))] = i
+            self.edge_labels_middle[(corres[alpha(i)]-1, len(vertices) + break_down_num - 2)] = alpha(i)
+
+            rem(i)
+            rem(alpha(i))
 
             alpha_cycles = [(alpha(i), 2*m + 1, i, 2*m + 2*(break_down_num-1))] + [(2*k, 2*k + 1) for k in range(m + 1, m + break_down_num - 1)]
             alpha *= Permutation(alpha_cycles)
@@ -214,6 +231,7 @@ class DynamicShow:
                 vertices.append((2 * m + 1, 2 * m + 2))
                 m += 1
 
+
         def break_loop(i):
             j = alpha(i)
             vertex = len(vertices)
@@ -225,6 +243,7 @@ class DynamicShow:
         for i in range(1, 2 * m + 1):
             if corres[i] == corres[alpha(i)]:
                 break_loop(i)
+                
 
         break_all_down = True           # if True, break down each multiedge; if False, break down all but one
 
@@ -240,6 +259,11 @@ class DynamicShow:
                     break_down(i, self.break_down_num)
                 else:
                     seen_vertices[corres[alpha(i)]] = i
+                    if corres[i] <= real_n_vertices and corres[alpha(i)] <= real_n_vertices:
+                        if corres[i] < corres[alpha(i)] and i not in self.edge_labels_middle.values():
+                            self.edge_labels_head[minmax(corres[i]-1, corres[alpha(i)]-1)] = i
+                        elif corres[i] > corres[alpha(i)] and i not in self.edge_labels_middle.values():
+                            self.edge_labels_tail[minmax(corres[i]-1, corres[alpha(i)]-1)] = i
 
         # Build the graph embedding
         embedding = {
@@ -283,7 +307,7 @@ class DynamicShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, frameByFrame = False):
+    def start(self, frameByFrame = False, show_halfedges = True):
         # initialize the matplotlib figure
         size = 7
 
@@ -299,6 +323,13 @@ class DynamicShow:
         self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax = self.ax, nodelist = list(range(self.nVertices)),
                     node_color="red", node_size=[min(300, 1000 / self.nVertices**.5)] * self.real_n_vertices + [0] * (self.nVertices - self.real_n_vertices))
         self.edges_plt = nx.draw_networkx_edges(self.G, pos_centered, ax = self.ax, arrows = False)
+
+        if show_halfedges:
+            self.labels_head = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
+            self.labels_tail = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
+            self.labels_middle = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+
+        self.show_halfedges = show_halfedges
 
         self.ax.axis("off")
         self.ax.set_xlim(left=0, right=1)
@@ -716,4 +747,24 @@ class DynamicShow:
         self.nodes_plt.set_offsets(pos_centered)
         self.edges_plt.set_segments(edges_pos)
 
-        return self.nodes_plt, self.edges_plt, self.text
+        ret = [self.nodes_plt, self.edges_plt, self.text]
+
+        if self.show_halfedges:
+            #labels_head = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
+            #labels_tail = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
+            #labels_middle = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+
+            # for (source, dest) in [(labels_head, self.labels_head), (labels_tail, self.labels_tail), (labels_middle, self.labels_middle)]:
+            #    for (edge, txt) in source.items():
+            #        dest[edge].set_position(txt.get_position())
+
+            #        ret.append(dest[edge])
+
+            for (d, prop) in ((self.labels_head, 0.7), (self.labels_tail, 0.3), (self.labels_middle, 0.5)):
+                for (edge, txt) in d.items():
+                    txt.set_x(pos_centered[edge[0]][0] * prop + pos_centered[edge[1]][0] * (1 - prop))
+                    txt.set_y(pos_centered[edge[0]][1] * prop + pos_centered[edge[1]][1] * (1 - prop))
+
+                    ret.append(txt)
+        
+        return tuple(ret)
