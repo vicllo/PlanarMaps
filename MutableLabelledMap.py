@@ -1,4 +1,7 @@
-load("LabelledMap.sage")
+from sage.all import Permutation
+
+from LabelledMap import LabelledMap
+
 
 class MutableLabelledMap(LabelledMap):
     def _updateAttributes(self):
@@ -8,7 +11,7 @@ class MutableLabelledMap(LabelledMap):
 
         self.phi = self.alpha.right_action_product(self.sigma)
         self.size = self.sigma.size()
-        self.m = self.size // 2 
+        self.m = self.size // 2
         self.f = len(self.phi.to_cycles())
         self.n = len(self.sigma.to_cycles())
 
@@ -20,7 +23,7 @@ class MutableLabelledMap(LabelledMap):
         Builds a transposition from a list of couples representing swaps (possibly null).
         For example, _buildTransp([(1,1),(2,4),(3,3)]) returns (1,4,3,2).
         """
-        
+
         return Permutation(list(filter(lambda t: t[0] != t[1], swaps)))
 
     def contractEdge(self, iEdge):
@@ -55,7 +58,7 @@ class MutableLabelledMap(LabelledMap):
         # merge the two neighbors lists
 
         swp = self._buildTransp([(2*self.m-1, self.sigma(2*self.m)), (2*self.m, self.sigma(2*self.m-1))])
-        
+
         self.sigma = self.sigma * swp
 
         # now sigma is correct; we just have to delete the leftover (2*m-1, 2*m) transposition
@@ -65,7 +68,7 @@ class MutableLabelledMap(LabelledMap):
 
         self._updateAttributes()
 
-    def addEdge(self, iEdge1, iEdge2, keepGenus = True):
+    def addEdge(self, iEdge1, iEdge2, keepGenus=True):
         """
         Add an edge between the two nodes from whom start iEdge1 and iEdge2.
         The resulting half-edges will be immediately before iEdge1 and iEdge2, respectively, in the new permutation sigma.
@@ -105,7 +108,7 @@ class MutableLabelledMap(LabelledMap):
 
             if i == iEdge1:        # we went through the whole face without encountering iEdge2
                 raise ValueError(f"Adding an edge between {iEdge1} and {iEdge2} would increase the map's genus")
-        
+
         h1, h2 = 2*self.m+1, 2*self.m+2
 
         self.alpha = Permutation([(h1, h2)]) * self.alpha        # the new half-edges are part of the same edge
@@ -114,15 +117,16 @@ class MutableLabelledMap(LabelledMap):
             # ...->iEdge1->j->... is now ...->h1->iEdge1->j->... in sigma and same for h2/iEdge2
         else:
             self.sigma = Permutation([(self.sigma.inverse()(iEdge1), h1, h2)]) * self.sigma
-        
+
         self._updateAttributes()
+
     def deleteEdge(self, iEdge):
         """ Delete the given half-edge
-    
+
         INPUT:
 
         - ``iEdge`` integer; the index of the half-edge to delete
-        
+
         TEST::
             sage: sigma = Permutation([(8,1),(2,3),(4,5),(6,7)])
             sage: alpha = Permutation([(1,2),(3,4),(5,6),(7,8)])
@@ -146,8 +150,8 @@ class MutableLabelledMap(LabelledMap):
         if self.alpha(iEdge) != 2*self.m-1:
             if self.alpha(iEdge) != 2*self.m :
                 swap2 = Permutation([(self.alpha(iEdge),2*self.m-1),(2*self.m,)])
-            else : 
-                 swap2 = Permutation([(self.alpha(iEdge),2*self.m-1)])
+            else:
+                swap2 = Permutation([(self.alpha(iEdge),2*self.m-1)])
             sigma = swap2 * sigma * swap2
             alpha = swap2 * alpha * swap2
 
@@ -161,10 +165,9 @@ class MutableLabelledMap(LabelledMap):
             sigma = sigma.left_action_product(t2)
 
         # Construct the new alpha and sigma
-        new_domain = list(range(1, 2*self.m-1 ))
+        new_domain = list(range(1, 2*self.m-1))
         new_sigma = Permutation([sigma(i) for i in new_domain])
         new_alpha = Permutation(alpha.to_cycles()[:-1])
-
 
         #test if the new Graph is connected
         seen = [False] * (self.size - 1)
@@ -184,10 +187,12 @@ class MutableLabelledMap(LabelledMap):
         self.alpha = new_alpha
         self.sigma = new_sigma
         self._updateAttributes()
+
     def deleteVertex(self,iEdge):
         sigma = self.sigma
         alpha = self.alpha
         m=self.m
+
         def transposition(i,j):
             if i!=2*m and j!=2*m:
                 return Permutation([(i,j),(2*m,)])
@@ -209,8 +214,7 @@ class MutableLabelledMap(LabelledMap):
             alpha = swap1 * alpha * swap1
             sigma = swap2 * sigma * swap2
             alpha = swap2 * alpha * swap2
-            
-            
+
         self.sigma=sigma
         self.alpha=alpha
 
@@ -260,9 +264,8 @@ class MutableLabelledMap(LabelledMap):
         outgoingEdge = -1              # we don't know any outgoing edge yet
         firstOutgoing = -1
 
-
         # we loop through the face and maps each outgoing edge to the following one in the new sigma
-        
+
         firstIter = True        # we need to actually enter the while loop... and stop when we have been through the whole face
 
         while firstIter or sigma(faceEdge) != iEdge:
@@ -278,7 +281,7 @@ class MutableLabelledMap(LabelledMap):
 
             print ("faceEdge", faceEdge, "outgoingEdge", outgoingEdge, "firstOutgoing", firstOutgoing)
             firstIter = False
-        
+
         # we also need to map the last outgoing edge to the first one we have seen
         if firstOutgoing != -1:
             swaps.append((outgoingEdge, sigmaInv(firstOutgoing)))
@@ -291,5 +294,5 @@ class MutableLabelledMap(LabelledMap):
 
         self.sigma = sigma
         self.alpha = alpha
-        
+
         self._updateAttributes()

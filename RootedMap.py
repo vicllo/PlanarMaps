@@ -1,6 +1,4 @@
-from collections import deque
-
-load("LabelledMap.sage")
+from LabelledMap import LabelledMap
 
 
 class RootedMap(LabelledMap):
@@ -27,13 +25,13 @@ class RootedMap(LabelledMap):
 
     def tetravalance(self):
         """
-        This method provides a bijection between rooted maps 
-        with m edges of genus g and face-bicolorable tetravalent 
-        rooted maps of genus g with m vertices. This function returns 
+        This method provides a bijection between rooted maps
+        with m edges of genus g and face-bicolorable tetravalent
+        rooted maps of genus g with m vertices. This function returns
         the rooted face-bicolorable tetravalance associated with self.
         -------
         Returns:
-            A tetravalent face-bicolorable rooted map 
+            A tetravalent face-bicolorable rooted map
             associated with self.
         -------
         O(m), where m is the number of edges.
@@ -70,8 +68,8 @@ class RootedMap(LabelledMap):
 
     def quadrangulation(self):
         """
-        This function provides a bijection between rooted maps 
-        of genus g with m edges and bipartite rooted quadrangulations 
+        This function provides a bijection between rooted maps
+        of genus g with m edges and bipartite rooted quadrangulations
         of genus g with m faces.
         -------
         Returns:
@@ -114,16 +112,16 @@ class RootedMap(LabelledMap):
             + " Alpha : "
             + str(self.alpha)
         )
-        
+
     def inverseQuadrangulation(self):
         """
-        This function is the inverse of quadrangulation given that self 
-        is a bipartite rooted quadrangulation. It returns the only  
-        rooted map M such that M.quadrangulation() = self. If self 
+        This function is the inverse of quadrangulation given that self
+        is a bipartite rooted quadrangulation. It returns the only
+        rooted map M such that M.quadrangulation() = self. If self
         isn't a bipartite quadrangulation, it will raise an error.
         -------
         Returns:
-            The inverse of self from quadrangulation if self is a rooted 
+            The inverse of self from quadrangulation if self is a rooted
             bipartite quadrangulation; otherwise, raises an error.
         -------
         O(m), where m is the number of edges.
@@ -135,20 +133,20 @@ class RootedMap(LabelledMap):
 
     def relabel(self, tau):
         """
-        This method, inherited from LabelledMap, is not applicable to 
+        This method, inherited from LabelledMap, is not applicable to
         RootedMap. It will simply return a copy of self.
         """
         return RootedMap(labelledMap=self, isAlreadyCanonical=True)
 
     def schaefferTree(self, markedDemiEdge):
         """
-        The Schaeffer surjection from rooted bipartite quadrangulation of 
-        genus g with k faces and a marked node to a rooted one-face map 
+        The Schaeffer surjection from rooted bipartite quadrangulation of
+        genus g with k faces and a marked node to a rooted one-face map
         (tree if g=0) of genus g with k edges and a labelling of its nodes.
 
-        The function returns a rooted one-face map associated with self 
-        and a labelling on its demi-edges such that f(node) is the common 
-        value of all its demi-edges. If self isn't a bipartite 
+        The function returns a rooted one-face map associated with self
+        and a labelling on its demi-edges such that f(node) is the common
+        value of all its demi-edges. If self isn't a bipartite
         quadrangulation, this function will raise an error.
         -------
         Args:
@@ -164,20 +162,20 @@ class RootedMap(LabelledMap):
 
     def inverseShaefferTree(self, labelled, returnMarkedDemiEdge=True):
         """
-        This method is the inverse of schaefferTree. Given that self is a 
-        one-face map, it returns a quadruple (quadA, quadB, markedDemiEdgeA, 
+        This method is the inverse of schaefferTree. Given that self is a
+        one-face map, it returns a quadruple (quadA, quadB, markedDemiEdgeA,
         markedDemiEdgeB) where quadA and quadB are rooted quadrangulations.
 
         If returnMarkedDemiEdge=False, it will return only (quadA, quadB).
         If self isn't a one-face map, it will raise an error.
         -------
         Args:
-            labelled : A list of size 2*m+1 such that for the demi-edge i, 
+            labelled : A list of size 2*m+1 such that for the demi-edge i,
                        labelled[i] is the label of its attached node.
-            returnMarkedDemiEdge : Whether or not to return marked demi-edges 
+            returnMarkedDemiEdge : Whether or not to return marked demi-edges
                                    (default is True).
         Returns:
-            (quadA, quadB, markedDemiEdgeA, markedDemiEdgeB) if 
+            (quadA, quadB, markedDemiEdgeA, markedDemiEdgeB) if
             returnMarkedDemiEdge=True; otherwise, (quadA, quadB).
         -------
         O(m), where m is the number of edges.

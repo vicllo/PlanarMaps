@@ -1,11 +1,14 @@
-load("RootedMap.sage")
 from collections import deque
 import random
+
+from sage.all import Permutation
+
+from RootedMap import RootedMap
 
 
 class MapGenerator:
     """
-    This class represents an abstraction containing 
+    This class represents an abstraction containing
     methods to generate a Map.
     """
 
@@ -29,8 +32,8 @@ class MapGenerator:
 
     def complete_map(n):
         """
-        Returns an arbitrary rooted map corresponding to the complete 
-        graph with n nodes. The genus is guaranteed to be zero if the 
+        Returns an arbitrary rooted map corresponding to the complete
+        graph with n nodes. The genus is guaranteed to be zero if the
         graph is planar (i.e., n <= 4).
         """
         adj = list(
@@ -47,17 +50,17 @@ class MapGenerator:
 
         INPUT:
             - ``n`` -- int; size of the path
-            - ``seed`` -- int; A random seed; 
+            - ``seed`` -- int; A random seed;
             if None is used, no random seed will be set.
 
         OUTPUT:
-            A list of size 2*n with +1 for up and 
+            A list of size 2*n with +1 for up and
             -1 for down steps in the Dyck path.
 
         EXAMPLE::
             sage: dyckPath = MapGenerator().getRandomDyckPath(10)
             sage: dyckPath
-            [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 
+            [1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1,
             1, 1, -1, -1, 1, -1, 1, -1]
 
         TESTS::
@@ -66,11 +69,11 @@ class MapGenerator:
             sage: for step in dyckPath:
             ....:     level += step
             ....:     assert level >= 0
-            ....: 
+            ....:
             sage: assert level == 0
         """
         rng = random.Random()
-        if not seed is None:
+        if seed is not None:
             rng.seed(int(seed))
         N = 2 * n + 1
         dyck = [1] * n + [-1] * (n + 1)
@@ -92,14 +95,14 @@ class MapGenerator:
 
         Args:
             n : The size of the permutation.
-            seed : A random seed; if None is used, 
+            seed : A random seed; if None is used,
                    no random seed will be set.
 
         Returns:
             A random permutation of size n.
         """
         rng = random.Random()
-        if not seed is None:
+        if seed is not None:
             rng.seed(int(seed))
         lst = [i + 1 for i in range(n)]
         rng.shuffle(lst)
@@ -113,7 +116,7 @@ class MapGenerator:
             dyckPathCandidate : A list representing a potential Dyck path.
 
         Returns:
-            A boolean indicating whether or not dyckPathCandidate is a 
+            A boolean indicating whether or not dyckPathCandidate is a
             correct Dyck path.
         """
         if len(dyckPathCandidate) == 0 or len(dyckPathCandidate) % 2 == 1:
@@ -135,11 +138,11 @@ class MapGenerator:
         Given a Dyck path, this function returns the associated rooted tree.
 
         Args:
-            dyckPath : A list representing a Dyck path, with +1 for up and 
+            dyckPath : A list representing a Dyck path, with +1 for up and
                        -1 for down.
 
         Returns:
-            The corresponding rooted plane tree if dyckPath is valid; 
+            The corresponding rooted plane tree if dyckPath is valid;
             otherwise, raises an error.
 
         Complexity:
@@ -175,15 +178,15 @@ class MapGenerator:
             seed : A random seed; if None is used, no random seed will be set.
 
         Returns:
-            A list of size 2*tree.m + 1 where labelling[i] (for i >= 1) 
-            represents the label of demi-edge i. The first value 
+            A list of size 2*tree.m + 1 where labelling[i] (for i >= 1)
+            represents the label of demi-edge i. The first value
             (labelling[0]) is set to -1 but has no meaning.
 
         Complexity:
             O(m), where m is the number of edges in the tree.
         """
         rng = random.Random()
-        if not seed is None:
+        if seed is not None:
             rng.seed(int(seed))
 
         sigma = tree.sigma
@@ -266,7 +269,7 @@ class MapGenerator:
 
     def getRandomPlanarQuadrangulation(self, numberOfFace, seed=None):
         """
-        Generates a uniformly random rooted planar quadrangulation with a 
+        Generates a uniformly random rooted planar quadrangulation with a
         specified number of faces.
 
         Args:
@@ -274,7 +277,7 @@ class MapGenerator:
             seed : A random seed; if None is used, no random seed will be set.
 
         Returns:
-            A randomly selected rooted planar quadrangulation with 
+            A randomly selected rooted planar quadrangulation with
             numberOfFace faces.
 
         Complexity:
@@ -286,7 +289,7 @@ class MapGenerator:
         )
 
         rng = random.Random()
-        if not seed is None:
+        if seed is not None:
             rng.seed(int(seed))
 
         if rng.random() < 0.5:
@@ -295,7 +298,7 @@ class MapGenerator:
 
     def getRandomPlanarMap(self, numberOfEdge, seed=None):
         """
-        Generates a uniformly random rooted planar map with a specified 
+        Generates a uniformly random rooted planar map with a specified
         number of edges.
 
         Args:
