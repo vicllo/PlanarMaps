@@ -1,7 +1,7 @@
-from sage.all_cmdline import *  # Import sage library
 import warnings
 from collections import deque
-import random
+
+from sage.all import Permutation, Permutations, Graph  # Import sage library
 
 try:
     import networkx as nx
@@ -203,7 +203,6 @@ class LabelledMap:
             raise ValueError("Invalid adjacency list")
 
         self._build_from_permutations(Permutation(cycles), Permutation(pairs))
-
 
     def buildGraph(self):
         """
@@ -571,8 +570,6 @@ class LabelledMap:
         """
         return self.n
 
-
-
     def numberOfEdges(self):
         """
         A method that returns the number of edges of this labelled map
@@ -694,7 +691,6 @@ class LabelledMap:
 
         return LabelledMap(adj=adj)
 
-
     def getSpanningTree(self):
         """
         A method that returns any spanning tree of the  map
@@ -726,7 +722,6 @@ class LabelledMap:
 
         return tree
 
-
     def dual(self):
         """
         A method that return the dual of this map
@@ -756,7 +751,6 @@ class LabelledMap:
             Complexity is O(m) where m is the number of edges
         """
         return LabelledMap(self.phi.inverse(),self.alpha)
-
 
     def diameter(self):
         """
@@ -1300,9 +1294,8 @@ class LabelledMap:
         #The number of edge in the edge map
         L = int(2*m)
 
-        alphaListEdgeMap = [-1 for k in range(2*L) ]
-        sigmaListEdgeMap = [-1 for k in range(2*L) ]
-
+        alphaListEdgeMap = [-1 for k in range(2*L)]
+        sigmaListEdgeMap = [-1 for k in range(2*L)]
 
         #Construction of alpha and sigma for the edge map
         for k in range(1,L+1):
@@ -1315,7 +1308,6 @@ class LabelledMap:
             j = sigma(k)
 
             sigmaListEdgeMap[k+L-1] = alpha(j)
-
 
         alphaEdgeMap = Permutation(alphaListEdgeMap)
         sigmaEdgeMap = Permutation(sigmaListEdgeMap)
@@ -1363,7 +1355,7 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        clr = [ -1 for i in range(2*self.m+1)]
+        clr = [-1 for i in range(2*self.m+1)]
         clr[1] = 0
         alpha = self.alpha
         sigma = self.sigma
@@ -1397,8 +1389,6 @@ class LabelledMap:
                 return None
 
         return clr
-
-
 
     def canonicalRepresentant(self):
         """
@@ -1459,7 +1449,6 @@ class LabelledMap:
         """
         return self.numberOfFaces()==1 \
         and self.numberOfEdges() == self.numberOfNodes()-1
-
 
     def schaefferTree(self,markedDemiEdge):
         """
@@ -1522,7 +1511,6 @@ class LabelledMap:
                     seen[alphaNodeId] = True
                     p.append(alphaNodeId)
 
-
         phi_cycles = phi.to_cycles()
 
         corres = [-1 for i in range(2*len(phi_cycles)+1)]
@@ -1548,7 +1536,6 @@ class LabelledMap:
                     link = (A,B)
                 else:
                     link = (C,D)
-
 
             corres[cnt] = link[0]
             invCorres[link[0]] = cnt
@@ -1579,10 +1566,7 @@ class LabelledMap:
 
             sigmaTreeList[treeDemiEdge-1] = invCorres[turnU]
 
-
-
         A,D,C,B = 1,phi(1),phi(phi(1)),phi(phi(phi(1)))
-
 
         treeRoot = None
 
@@ -1689,15 +1673,13 @@ class LabelledMap:
         maxLabel -= minLabel-1
         minLabel = 1
 
-
         nodes = sigma.to_cycles()
 
         #We get a correspondance between nodes and demiEdge
-        nodesId = [ -1 for i in range(2*self.m+1)]
+        nodesId = [-1 for i in range(2*self.m+1)]
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
                 nodesId[nodes[i][j]] = i+1
-
 
         alphaQuadList = [-1 for i in range(4*self.m)]
         p = [[] for i in range(maxLabel+1)]
@@ -1780,8 +1762,7 @@ class LabelledMap:
             firstDemiEdgeQuad = sigmaQuadCycleDemiEdge[curDemiEdge][0]
             restDemiEdgeQuad = sigmaQuadCycleDemiEdge[curDemiEdge][1:]
 
-
-            startId =  -1
+            startId = -1
 
             otherDemiEdge = backPartner[curDemiEdge]
 
@@ -1799,7 +1780,6 @@ class LabelledMap:
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = newDemiEdgeQuadCycle
 
-
         sigmaQuadCycle[0] = tuple(sigmaQuadCycle[0])
         #Merging cycle on demi edge per  node
         #And also making transforming them into tuple
@@ -1812,8 +1792,6 @@ class LabelledMap:
 
             sigmaQuadCycle.append(tuple(accum))
 
-
-
         sigmaQuad = Permutation(sigmaQuadCycle)
         alphaQuad = Permutation(alphaQuadList)
         quad = LabelledMap(sigma = sigmaQuad,alpha = alphaQuad)
@@ -1823,7 +1801,6 @@ class LabelledMap:
         alphaQuad = quad.alpha
         U = corres[root]
         X,W,V = phiQuad(U),phiQuad(phiQuad(U)),phiQuad(phiQuad(phiQuad(U)))
-
 
         #There is two quadragulation possible depending on which root we choose
         #Here we calculate the two possible permutation corresponding to the
@@ -1844,13 +1821,10 @@ class LabelledMap:
             tauA = Permutations(numberOfQuadDemiEdge).reflection((W,root))
             tauB = Permutations(numberOfQuadDemiEdge).reflection((X,root))
 
-
-
         quadA = quad.relabel(tauA)
         quadB = quad.relabel(tauB)
 
-
-        if returnMarkedDemiEdge == True:
+        if returnMarkedDemiEdge is True:
             quadACanonical = quadA.canonicalRepresentant()
             quadBCanonical = quadB.canonicalRepresentant()
 
@@ -1868,6 +1842,7 @@ class LabelledMap:
             return quadACanonical,quadBCanonical,markedDemiEdgeA,markedDemiEdgeB
 
         return quadA.canonicalRepresentant(),quadB.canonicalRepresentant()
+
     def nodes(self):
         """
         This function return the nodes of self as cycle of self.sigma
@@ -1907,7 +1882,6 @@ class LabelledMap:
         -----
         O(m)
         """
-
         if not self.isPlaneTree():
             raise ValueError("Self isn't a plane tree.")
 
