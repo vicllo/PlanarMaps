@@ -1,8 +1,14 @@
 import warnings
 from collections import deque
-
-from sage.all import Permutation, Permutations, Graph  # Import sage library
-
+from networkx import transitive_closure
+from numpy import isin
+import PermutationUtilsAbstractor
+from CustomSwap import CustomSwap
+from TopologicalDemiEdge import TopologicalDemiEdge
+from PermutationUtilsAbstractor import PermutationUtilsAbstractor
+from sage.all import Permutation, Graph  # Import sage library
+from time import time
+from MapPermutation import *
 try:
     import networkx as nx
 except ImportError:
@@ -10,9 +16,30 @@ except ImportError:
 
 try:
     import matplotlib.pyplot as plt
-    from matplotlib.animation import FuncAnimation
 except ImportError:
     plt = None
+
+
+def transitiveCouplePermutation(sigma, alpha):
+    """
+    Check that sigma and alpha act transitively
+    """
+    assert alpha.size() == sigma.size()
+    size = sigma.size()
+    seen = [False] * (size + 1)
+    seen[0] = seen[1] = True
+    # Half-edges are numbered from 1 to size, included
+
+    todo = [1]
+    while todo:
+        i = todo.pop()
+        if not seen[alpha(i)]:
+            todo.append(alpha(i))
+            seen[alpha(i)] = True
+        if not seen[sigma(i)]:
+            todo.append(sigma(i))
+            seen[sigma(i)] = True
+    return not False in seen
 
 
 class LabelledMap:
@@ -21,9 +48,9 @@ class LabelledMap:
 
     Attributes
     ----------
-    sigma : Permutation
+    sigma : Permutation or MapPermutation
         Fixed-point free involution whose cycles are given by the edges.
-    alpha : Permutation
+    alpha : Permutation or MapPermutation
         Permutation that maps a half-edge to the half-edge incident to
         it in a clockwise direction around the vertex it belongs to.
 
@@ -33,9 +60,9 @@ class LabelledMap:
 
     def __init__(
         self,
-        sigma: Permutation = None,
-        alpha: Permutation = None,
-        adj=None,
+        sigma: Permutation | MapPermutation = None,
+        alpha: Permutation | MapPermutation = None,
+        adj=None
     ):
         r"""
         Initializes the labelled map from either the permutations alpha
@@ -43,10 +70,9 @@ class LabelledMap:
         its neighbors in order; vertices must be numbered from 1 to n).
 
         INPUT:
-
-        - ``sigma`` -- Permutation; Fixed-point free involution whose
+        - ``sigma`` -- Permutation ; Fixed-point free involution whose
           cycles are given by the edges.
-        - ``alpha`` -- Permutation; Permutation that maps a half-edge
+        - ``alpha`` -- Permution ; Permutation that maps a half-edge
           to the half-edge incident to it in clockwise direction around
           the vertex it belongs to.
 
@@ -104,8 +130,7 @@ class LabelledMap:
         """
 
         if sigma is None and alpha is None and adj is None:
-            sigma = Permutation()
-            alpha = Permutation()
+            raise ValueError("sigma and alpha and adj cannot all be none")
 
         if adj is not None and (sigma is not None or alpha is not None):
             raise ValueError(
@@ -113,29 +138,42 @@ class LabelledMap:
                  and permutations"""
             )
 
+        self.topologicalMap = {}
         if adj is None:
             self._build_from_permutations(sigma, alpha)
         else:
             self._build_from_adj(adj)
+        self.extend()
+
+    def extend(self):
+        self.sigmaUtilsAbstractor = PermutationUtilsAbstractor(self.sigma)
+        self.phiUtilsAbstractor = PermutationUtilsAbstractor(self.phi)
+        # Initialising the topologicalMap
+        for i in range(1, self.q+1):
+            self.topologicalMap[i] = TopologicalDemiEdge(self, i)
 
     def _build_from_permutations(self, sigma, alpha):
         r"""
         Initializes the labelled map from the underlying permutations.
         """
-        self.sigma = sigma
         self.alpha = alpha
+        self.sigma = sigma
+
+        if isinstance(self.sigma, Permutation):
+            self.sigma = MapPermutation(self.sigma)
+
+        if isinstance(self.alpha, Permutation):
+            self.alpha = MapPermutation(self.alpha)
+
         self.phi = self.alpha.right_action_product(self.sigma)
-        self.size = self.sigma.size()
-        self.m = self.size // 2
-        self.f = len(self.phi.to_cycles())
-        self.n = len(self.sigma.to_cycles())
+        size = self.sigma.size()
 
         if self.sigma.size() != self.alpha.size():
             raise ValueError("The two permutations do not have the same size")
 
         if (
             self.alpha.right_action_product(self.alpha)
-            != Permutations(self.size).identity()
+            != MapPermutation(size)
         ):
             raise ValueError("The permutation alpha is not an involution")
 
@@ -144,21 +182,7 @@ class LabelledMap:
                 "The permutation alpha should not have any fixed points"
             )
 
-        seen = [False] * (self.size + 1)
-        seen[0] = seen[1] = True
-        # Half-edges are numbered from 1 to size, included
-
-        todo = [1]
-        while todo:
-            i = todo.pop()
-            if not seen[self.alpha(i)]:
-                todo.append(self.alpha(i))
-                seen[self.alpha(i)] = True
-            if not seen[self.sigma(i)]:
-                todo.append(self.sigma(i))
-                seen[self.sigma(i)] = True
-
-        if False in seen:
+        if not transitiveCouplePermutation(self.sigma, self.alpha):
             raise ValueError("The graph is not connected")
 
     def _build_from_adj(self, adj):
@@ -173,7 +197,6 @@ class LabelledMap:
         if sum(map(len, adj)) % 2 != 0:
             raise ValueError("Invalid adjacency list")
 
-        self.m = sum(map(len, adj)) // 2
         pairs = []  # Pairs of half-edges representing the edges
         cycles = []  # Cycles of outgoing half-edges for each vertex
 
@@ -202,7 +225,8 @@ class LabelledMap:
         if edges:
             raise ValueError("Invalid adjacency list")
 
-        self._build_from_permutations(Permutation(cycles), Permutation(pairs))
+        self._build_from_permutations(
+            MapPermutation(cycles), MapPermutation(pairs))
 
     def buildGraph(self):
         """
@@ -213,7 +237,8 @@ class LabelledMap:
             A multigraph corresponding to the labelled map.
         """
         vertices = self.sigma.to_cycles()
-        corres = [0] * (2 * self.m + 1)  # Associates a vertex to each half-edge
+        # Associates a vertex to each half-edge
+        corres = [0] * (2 * self.m + 1)
         for i in range(1, len(vertices) + 1):
             for k in vertices[i - 1]:
                 corres[k] = i
@@ -271,7 +296,8 @@ class LabelledMap:
         edge_labels_tail = {}  # (i, j): half-edge from j to i
         edge_labels_middle = {}  # Used for loops
 
-        corres = [0] * (2 * self.m + 1)  # Map half-edge i to its corresponding vertex
+        # Map half-edge i to its corresponding vertex
+        corres = [0] * (2 * self.m + 1)
         for i in range(1, len(vertices) + 1):
             for k in vertices[i - 1]:
                 corres[k] = i
@@ -281,12 +307,13 @@ class LabelledMap:
             if write_labels:
                 # Avoid writing half-edge numbers during the first step
                 edge_labels_middle[(corres[i], len(vertices) + 1)] = i
-                edge_labels_middle[(corres[alpha(i)], len(vertices) + 1)] = alpha(i)
+                edge_labels_middle[(
+                    corres[alpha(i)], len(vertices) + 1)] = alpha(i)
 
             # Add a new vertex v, and break down the edge whose half-edges
             # are i & alpha(i) into 2 edges (i, 2*m+1) and (2*m+2, alpha(i)).
-            alpha *= Permutation((alpha(i), 2 * m + 1, i, 2 * m + 2))
-            sigma *= Permutation((2 * m + 1, 2 * m + 2))
+            alpha *= MapPermutation([(alpha(i), 2 * m + 1, i, 2 * m + 2)])
+            sigma *= CustomSwap([(2 * m + 1, 2 * m + 2)])
 
             corres.append(len(vertices) + 1)
             corres.append(len(vertices) + 1)
@@ -322,9 +349,11 @@ class LabelledMap:
                         and corres[alpha(i)] <= real_n_vertices
                     ):
                         if corres[i] < corres[alpha(i)]:
-                            edge_labels_head[minmax(corres[i], corres[alpha(i)])] = i
+                            edge_labels_head[minmax(
+                                corres[i], corres[alpha(i)])] = i
                         else:
-                            edge_labels_tail[minmax(corres[i], corres[alpha(i)])] = i
+                            edge_labels_tail[minmax(
+                                corres[i], corres[alpha(i)])] = i
 
         # Build the graph embedding
         embedding = {
@@ -450,10 +479,9 @@ class LabelledMap:
         Returns:
              The number of faces of self
         -------
-        O(m)
-        where m is the number of edges
+        O(1)
         """
-        return len(self.phi.to_cycles())
+        return self.phiUtilsAbstractor.numberOfCycles()
 
     def numberOfFaces(self):
         """
@@ -504,7 +532,7 @@ class LabelledMap:
 
             Complexity is O(1) where m is the number of edges
         """
-        return self.f
+        return self._numberOfFaces()
 
     def _numberOfNodes(self):
         """
@@ -513,10 +541,11 @@ class LabelledMap:
         Returns:
              The number of nodes of self
         -------
-        O(m)
+        O(1)
         where m is the number of edges
         """
-        return len(self.sigma.to_cycles())
+
+        return self.sigmaUtilsAbstractor.numberOfCycles()
 
     def numberOfNodes(self):
         """
@@ -568,7 +597,7 @@ class LabelledMap:
 
             Complexity is O(m) where m is the number of edges
         """
-        return self.n
+        return self._numberOfNodes()
 
     def numberOfEdges(self):
         """
@@ -619,7 +648,7 @@ class LabelledMap:
 
             Complexity is O(1)
         """
-        return self.m
+        return self.sigma.size()//2
 
     def genus(self):
         """
@@ -650,14 +679,14 @@ class LabelledMap:
 
         .. NOTE::
 
-            Complexity is O(m), where m is the number of edges.
+            Complexity is O(1)
         """
         return (
             self.numberOfEdges()
             + 2
             - self.numberOfFaces()
             - self.numberOfNodes()
-            ) // 2
+        ) // 2
 
     def force_planar(self):
         """
@@ -750,7 +779,7 @@ class LabelledMap:
 
             Complexity is O(m) where m is the number of edges
         """
-        return LabelledMap(self.phi.inverse(),self.alpha)
+        return LabelledMap(self.phi.inverse(), self.alpha)
 
     def diameter(self):
         """
@@ -782,7 +811,6 @@ class LabelledMap:
         return Graph.diameter(graph)
 
     def derivedMap(self):
-
         """
         A method that return the derived map of this map
 
@@ -890,30 +918,30 @@ class LabelledMap:
         """
         K = 8*self.m+1
 
-        derivedAlphaList = list(range(1,K))
-        derivedSigmaList = list(range(1,K))
+        derivedAlphaList = list(range(1, K))
+        derivedSigmaList = list(range(1, K))
 
         invPhi = self.phi.inverse()
 
         m = int(self.m)
 
-        for i in list(range(1,K)):
-            if i<=2*m:
+        for i in list(range(1, K)):
+            if i <= 2*m:
                 derivedAlphaList[i-1] = i+2*m
                 derivedSigmaList[i-1] = self.sigma(i)
-            elif i>2*m and i<=4*m:
+            elif i > 2*m and i <= 4*m:
                 derivedAlphaList[i-1] = i-2*m
                 derivedSigmaList[i-1] = i+4*m
-            elif i>4*m and i<=6*m:
+            elif i > 4*m and i <= 6*m:
                 derivedAlphaList[i-1] = i+2*m
                 derivedSigmaList[i-1] = invPhi(i-4*m)+4*m
             else:
                 derivedAlphaList[i-1] = i-2*m
                 derivedSigmaList[i-1] = self.alpha(i-6*m)+2*m
 
-        derivedSigma = Permutation(derivedSigmaList)
-        derivedAlpha = Permutation(derivedAlphaList)
-        return LabelledMap(derivedSigma,derivedAlpha).canonicalRepresentant()
+        derivedSigma = MapPermutation(derivedSigmaList)
+        derivedAlpha = MapPermutation(derivedAlphaList)
+        return LabelledMap(derivedSigma, derivedAlpha).canonicalRepresentant()
 
     def quadrangulation(self):
         """
@@ -973,8 +1001,8 @@ class LabelledMap:
                 alpha(sigma(alpha(corres[invDemiEdge])))
             ]
 
-        alphaInv = Permutation(alphaInvList)
-        sigmaInv = Permutation(sigmaInvList)
+        alphaInv = MapPermutation(alphaInvList)
+        sigmaInv = MapPermutation(sigmaInvList)
 
         return LabelledMap(
             sigma=sigmaInv,
@@ -1038,8 +1066,8 @@ class LabelledMap:
             alphaQuadList[quadDemiEdge - 1] = quadDemiEdge + numberOfQuadEdge
             alphaQuadList[quadDemiEdge + numberOfQuadEdge - 1] = quadDemiEdge
 
-        alphaQuad = Permutation(alphaQuadList)
-        sigmaQuad = Permutation(sigmaQuadList)
+        alphaQuad = MapPermutation(alphaQuadList)
+        sigmaQuad = MapPermutation(sigmaQuadList)
         relabelList = [i + 1 for i in range(2 * numberOfQuadEdge)]
 
         for quadDemiEdge in range(1, numberOfQuadEdge + 1):
@@ -1048,12 +1076,12 @@ class LabelledMap:
                 relabelList[quadDemiEdge - 1] + numberOfQuadEdge
             )
 
-        relabelPerm = Permutation(relabelList)
+        relabelPerm = MapPermutation(relabelList)
         return LabelledMap(sigmaQuad, alphaQuad).relabel(
             relabelPerm
         ).canonicalRepresentant()
 
-    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge):
+    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge, return_map_perm=False):
         """
         A method that returns a labelling of the demi-edges of this map
         giving `otherMap` while keeping `rootDemiEdge` invariant.
@@ -1064,6 +1092,7 @@ class LabelledMap:
 
         - ``otherMap`` -- LabelledMap; the other map
         - ``rootDemiEdge`` -- int; the edge on which to root
+        - ``return_map_perm`` -- ; whether or not to return a MapPermutation
 
         OUTPUT:
 
@@ -1075,7 +1104,7 @@ class LabelledMap:
 
             sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
             sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
-            sage: tau = Permutation((1, 3))
+            sage: tau = Permutation([(1, 3)])
             sage: Map = LabelledMap(sigma, alpha)
             sage: relabelMap = Map.relabel(tau)
             sage: Map.getRootedMapCorrespondance(relabelMap, 2)
@@ -1113,7 +1142,10 @@ class LabelledMap:
                 p.append(sigma(u))
 
         try:
-            t = Permutation(tList)
+            if not return_map_perm:
+                t = Permutation(tList)
+            else:
+                t = MapPermutation(tList)
         except ValueError:
             return None
 
@@ -1129,7 +1161,7 @@ class LabelledMap:
 
         INPUT:
 
-        - ``tau`` -- Permutation; a permutation on the demi-edges
+        - ``tau`` -- Permutation or Permutation; a permutation on the demi-edges
           representing the relabelling.
 
         OUTPUT:
@@ -1140,7 +1172,7 @@ class LabelledMap:
 
             sage: sigma = Permutation([1, 3, 2, 5, 4, 6])
             sage: alpha = Permutation([(1, 2), (3, 4), (5, 6)])
-            sage: tau = Permutation((1, 3))
+            sage: tau = Permutation([(1, 3)])
             sage: LabelledMap(sigma, alpha).relabel(tau)
             Labelled map | Sigma : [2, 1, 3, 5, 4, 6],
             Alpha : [4, 3, 2, 1, 6, 5]
@@ -1149,6 +1181,8 @@ class LabelledMap:
 
             Complexity is O(m), where m is the number of edges.
         """
+        if isinstance(tau, Permutation):
+            tau = MapPermutation(tau)
         invTau = tau.inverse()
         relabeledSigma = tau.left_action_product(
             invTau.right_action_product(self.sigma)
@@ -1291,14 +1325,14 @@ class LabelledMap:
         sigma = self.sigma
         m = self.m
 
-        #The number of edge in the edge map
+        # The number of edge in the edge map
         L = int(2*m)
 
         alphaListEdgeMap = [-1 for k in range(2*L)]
         sigmaListEdgeMap = [-1 for k in range(2*L)]
 
-        #Construction of alpha and sigma for the edge map
-        for k in range(1,L+1):
+        # Construction of alpha and sigma for the edge map
+        for k in range(1, L+1):
             alphaListEdgeMap[k-1] = k+L
             alphaListEdgeMap[k+L-1] = k
 
@@ -1309,10 +1343,10 @@ class LabelledMap:
 
             sigmaListEdgeMap[k+L-1] = alpha(j)
 
-        alphaEdgeMap = Permutation(alphaListEdgeMap)
-        sigmaEdgeMap = Permutation(sigmaListEdgeMap)
+        alphaEdgeMap = MapPermutation(alphaListEdgeMap)
+        sigmaEdgeMap = MapPermutation(sigmaListEdgeMap)
 
-        return LabelledMap(sigmaEdgeMap,alphaEdgeMap).canonicalRepresentant()
+        return LabelledMap(sigmaEdgeMap, alphaEdgeMap).canonicalRepresentant()
 
     def isQuandrangulation(self):
         """
@@ -1324,7 +1358,7 @@ class LabelledMap:
         phi_cycles = self.phi.to_cycles()
 
         for i in range(len(phi_cycles)):
-            if len(phi_cycles[i])!=4:
+            if len(phi_cycles[i]) != 4:
                 return False
 
         return True
@@ -1367,7 +1401,7 @@ class LabelledMap:
 
         seen[0] = True
         cnt = 2
-        while len(p)>0:
+        while len(p) > 0:
             u = p.pop()
             if not seen[sigma(u)-1]:
                 seen[sigma(u)-1] = True
@@ -1377,14 +1411,14 @@ class LabelledMap:
             if not seen[alpha(u)-1]:
                 seen[alpha(u)-1] = True
                 p.append(alpha(u))
-                clr[alpha(u)] = (1+clr[u])%2
+                clr[alpha(u)] = (1+clr[u]) % 2
         sigma_cycles = sigma.to_cycles()
         for i in range(len(sigma_cycles)):
             r = clr[sigma_cycles[i][0]]
             for j in range(len(sigma_cycles[i])):
-                if r!= clr[sigma_cycles[i][j]]:
+                if r != clr[sigma_cycles[i][j]]:
                     return None
-        for i in range(1,2*self.m+1):
+        for i in range(1, 2*self.m+1):
             if clr[i] == clr[alpha(i)]:
                 return None
 
@@ -1402,7 +1436,7 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        relabelList =[-1 for i in range(2*self.m)]
+        relabelList = [-1 for i in range(2*self.m)]
         alphaCycles = self.alpha.to_cycles()
 
         sigma = self.sigma
@@ -1418,21 +1452,21 @@ class LabelledMap:
 
         seen[rootDemiEdge-1] = True
         cnt = 2
-        while len(p)>0:
+        while len(p) > 0:
             u = p.popleft()
             if not seen[sigma(u)-1]:
                 seen[sigma(u)-1] = True
                 p.append(sigma(u))
                 relabelList[sigma(u)-1] = cnt
-                cnt+=1
+                cnt += 1
 
             if not seen[alpha(u)-1]:
                 seen[alpha(u)-1] = True
                 p.append(alpha(u))
                 relabelList[alpha(u)-1] = cnt
-                cnt+=1
+                cnt += 1
 
-        relabel = Permutation(relabelList)
+        relabel = MapPermutation(relabelList)
 
         return self.relabel(relabel)
 
@@ -1447,10 +1481,10 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        return self.numberOfFaces()==1 \
-        and self.numberOfEdges() == self.numberOfNodes()-1
+        return self.numberOfFaces() == 1 \
+            and self.numberOfEdges() == self.numberOfNodes()-1
 
-    def schaefferTree(self,markedDemiEdge):
+    def schaefferTree(self, markedDemiEdge):
         """
         The Schaeffer surjection from rooted bipartite quadrangulation of genus g with k face and a marked node to
         rooted one face map (tree in the case g=0) of genus g with k edges and a labelling of its nodes (i.e a function on the nodes of the tree considered up to translation
@@ -1498,7 +1532,7 @@ class LabelledMap:
 
         seen[startNodeId] = True
 
-        while len(p)>0:
+        while len(p) > 0:
             nodeId = p.popleft()
 
             for demiEdge in nodes[nodeId]:
@@ -1518,31 +1552,31 @@ class LabelledMap:
 
         cnt = 1
         for i in range(len(phi_cycles)):
-            A,D,C,B = phi_cycles[i][0],phi_cycles[i][1],phi_cycles[i][2],phi_cycles[i][3]
+            A, D, C, B = phi_cycles[i][0], phi_cycles[i][1], phi_cycles[i][2], phi_cycles[i][3]
             link = None
             if labellingQuad[A] == labellingQuad[C]:
                 if labellingQuad[B] == labellingQuad[D]:
-                    if labellingQuad[A]>labellingQuad[B]:
-                        link = (A,C)
+                    if labellingQuad[A] > labellingQuad[B]:
+                        link = (A, C)
                     else:
-                        link = (D,B)
+                        link = (D, B)
                 else:
-                    if labellingQuad[B]>labellingQuad[D]:
-                        link = (C,B)
+                    if labellingQuad[B] > labellingQuad[D]:
+                        link = (C, B)
                     else:
-                        link = (D,A)
+                        link = (D, A)
             else:
-                if labellingQuad[A]>labellingQuad[C]:
-                    link = (A,B)
+                if labellingQuad[A] > labellingQuad[C]:
+                    link = (A, B)
                 else:
-                    link = (C,D)
+                    link = (C, D)
 
             corres[cnt] = link[0]
             invCorres[link[0]] = cnt
-            cnt+=1
+            cnt += 1
             corres[cnt] = link[1]
             invCorres[link[1]] = cnt
-            cnt+=1
+            cnt += 1
 
         numberOfTreeDemiEdge = cnt-1
 
@@ -1551,8 +1585,8 @@ class LabelledMap:
 
         prelabelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
 
-        for treeDemiEdge in range(1,numberOfTreeDemiEdge+1):
-            if treeDemiEdge%2 == 0:
+        for treeDemiEdge in range(1, numberOfTreeDemiEdge+1):
+            if treeDemiEdge % 2 == 0:
                 alphaTreeList[treeDemiEdge-1] = treeDemiEdge-1
             else:
                 alphaTreeList[treeDemiEdge-1] = treeDemiEdge+1
@@ -1566,57 +1600,58 @@ class LabelledMap:
 
             sigmaTreeList[treeDemiEdge-1] = invCorres[turnU]
 
-        A,D,C,B = 1,phi(1),phi(phi(1)),phi(phi(phi(1)))
+        A, D, C, B = 1, phi(1), phi(phi(1)), phi(phi(phi(1)))
 
         treeRoot = None
 
-        if invCorres[A]!=-1 and invCorres[B]!=-1:
-            if labellingQuad[A]>labellingQuad[B]:
+        if invCorres[A] != -1 and invCorres[B] != -1:
+            if labellingQuad[A] > labellingQuad[B]:
                 treeRoot = invCorres[A]
             else:
                 treeRoot = invCorres[B]
 
-        elif invCorres[D]!=-1 and invCorres[A]!=-1:
-            if labellingQuad[D]>labellingQuad[A]:
+        elif invCorres[D] != -1 and invCorres[A] != -1:
+            if labellingQuad[D] > labellingQuad[A]:
                 treeRoot = invCorres[D]
             else:
                 treeRoot = invCorres[A]
 
-        elif invCorres[B]!=-1 and invCorres[C]!=-1:
-            if labellingQuad[B]>labellingQuad[C]:
+        elif invCorres[B] != -1 and invCorres[C] != -1:
+            if labellingQuad[B] > labellingQuad[C]:
                 treeRoot = invCorres[C]
             else:
                 treeRoot = invCorres[B]
 
-        elif invCorres[C]!=-1 and invCorres[D]!=-1:
-            if labellingQuad[C]>labellingQuad[D]:
+        elif invCorres[C] != -1 and invCorres[D] != -1:
+            if labellingQuad[C] > labellingQuad[D]:
                 treeRoot = invCorres[D]
             else:
                 treeRoot = invCorres[C]
 
-        elif invCorres[A]!=-1 and invCorres[C]!=-1:
+        elif invCorres[A] != -1 and invCorres[C] != -1:
             treeRoot = invCorres[A]
 
         else:
             treeRoot = invCorres[B]
 
-        tau = Permutations(len(alphaTreeList)).reflection((1,treeRoot))
-        alphaTree = Permutation(alphaTreeList)
-        sigmaTree = Permutation(sigmaTreeList)
+        tau = CustomSwap([(1, treeRoot)])
+        alphaTree = MapPermutation(alphaTreeList)
+        sigmaTree = MapPermutation(sigmaTreeList)
 
-        tree = LabelledMap(alpha=alphaTree,sigma=sigmaTree).relabel(tau)
+        tree = LabelledMap(alpha=alphaTree, sigma=sigmaTree).relabel(tau)
 
         canonicalTree = tree.canonicalRepresentant()
-        tauCanonical = tree.getRootedMapCorrespondance(canonicalTree,rootDemiEdge = 1)
+        tauCanonical = tree.getRootedMapCorrespondance(
+            canonicalTree, rootDemiEdge=1, return_map_perm=True)
 
         labelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
 
-        for i in range(1,numberOfTreeDemiEdge+1):
+        for i in range(1, numberOfTreeDemiEdge+1):
             labelling[tauCanonical(tau(i))] = prelabelling[i]
 
-        return canonicalTree,labelling
+        return canonicalTree, labelling
 
-    def inverseShaefferTree(self,labelled,returnMarkedDemiEdge = True):
+    def inverseShaefferTree(self, labelled, returnMarkedDemiEdge=True):
         """
         This method is the inverse of the schaefferTree method given that self is a one face map it will return a quadruple
         (quadA,quadB,markedDemiEdgeA,markedDemiEdgeB) where quadA and quaB are in canonical form and we have
@@ -1641,15 +1676,18 @@ class LabelledMap:
             sage: sigma = Permutation( [(1,6),(2,3),(4,5)])
             sage: alpha = Permutation( [(1,2),(3,4),(5,6)])
             sage: tri = LabelledMap(sigma,alpha)
-            sage: bigQuad = tri.derivedMap().derivedMap().derivedMap().derivedMap().quadrangulation()
+            sage: bigQuad = tri.derivedMap().derivedMap(
+            ).derivedMap().derivedMap().quadrangulation()
             sage: bigQuad.numberOfEdges()
             1536
             sage: markedDemiEdge = 750
             sage: sct,labelled = bigQuad.schaefferTree(markedDemiEdge = markedDemiEdge)
             sage: quadA,quadB,markedDemiEdgeA,markedDemiEdgeB = sct.inverseShaefferTree(labelled)
-            sage: quadA.schaefferTree(markedDemiEdge = markedDemiEdgeA)[0] == sct.canonicalRepresentant() and quadB.schaefferTree(markedDemiEdge = markedDemiEdgeB)[0] == sct.canonicalRepresentant()
+            sage: quadA.schaefferTree(markedDemiEdge = markedDemiEdgeA)[0] == sct.canonicalRepresentant(
+            ) and quadB.schaefferTree(markedDemiEdge = markedDemiEdgeB)[0] == sct.canonicalRepresentant()
             True
         """
+        startTime = time()
         alpha = self.alpha
         sigma = self.sigma
 
@@ -1657,25 +1695,23 @@ class LabelledMap:
 
         nextAction = alpha.right_action_product(sigma.inverse())
         backAction = nextAction.inverse()
-        #In case the labelling isn't such that the minimum labelling is 1
-        #We update the labelling
+        # In case the labelling isn't such that the minimum labelling is 1
+        # We update the labelling
         maxLabel = labelled[1]
         minLabel = labelled[1]
-        for i in range(1,len(labelled)):
-            if labelled[i]<minLabel:
+        for i in range(1, len(labelled)):
+            if labelled[i] < minLabel:
                 minLabel = labelled[i]
-            if labelled[i]>maxLabel:
+            if labelled[i] > maxLabel:
                 maxLabel = labelled[i]
 
-        for i in range(1,len(labelled)):
+        for i in range(1, len(labelled)):
             labelled[i] -= minLabel-1
-
         maxLabel -= minLabel-1
         minLabel = 1
-
         nodes = sigma.to_cycles()
 
-        #We get a correspondance between nodes and demiEdge
+        # We get a correspondance between nodes and demiEdge
         nodesId = [-1 for i in range(2*self.m+1)]
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
@@ -1692,30 +1728,30 @@ class LabelledMap:
         backPartner = [-1 for i in range(2*self.m+1)]
         corres = [-1 for i in range(2*self.m+1)]
 
-        #We're turning around the tree in a  clockwise manner
-        #When we connect each demi edge A the first demiEdge before it
-        #Which label is -1 less than the label of A
-        #If we see that the demi edge is of label one we just add it
-        #to a list of demi edge of label 1 and continue
-        #And similarly during this loop we compute the back partner of
-        #each demi edge A of not maximal label which is define as the first
-        #demi edge B such that B has label on more than the label of A
-        #And such that B is first one to connect to A
-        #We also construct the cycle around each demiEdge
+        # We're turning around the tree in a  clockwise manner
+        # When we connect each demi edge A the first demiEdge before it
+        # Which label is -1 less than the label of A
+        # If we see that the demi edge is of label one we just add it
+        # to a list of demi edge of label 1 and continue
+        # And similarly during this loop we compute the back partner of
+        # each demi edge A of not maximal label which is define as the first
+        # demi edge B such that B has label on more than the label of A
+        # And such that B is first one to connect to A
+        # We also construct the cycle around each demiEdge
         root = 1
         cnt = 1
         curDemiEdge = root
         N = 2*self.m
-        while N!=0:
+        while N != 0:
             curLabel = labelled[curDemiEdge]
             curNode = -1
             otherNodeId = -1
-            if curLabel>1 and len(p[curLabel-1])>0 and check[curDemiEdge] == -1:
+            if curLabel > 1 and len(p[curLabel-1]) > 0 and check[curDemiEdge] == -1:
                 check[curDemiEdge] = -2
 
                 otherDemiEdge = p[curLabel-1][-1]
 
-                N-=1
+                N -= 1
 
                 if backPartner[otherDemiEdge] == -1:
                     backPartner[otherDemiEdge] = curDemiEdge
@@ -1728,7 +1764,7 @@ class LabelledMap:
                 alphaQuadList[cnt-1] = cnt+1
                 alphaQuadList[cnt] = cnt
 
-                cnt+=2
+                cnt += 2
 
             if labelled[curDemiEdge] == 1 and check[curDemiEdge] == -1:
                 check[curDemiEdge] == -2
@@ -1743,19 +1779,20 @@ class LabelledMap:
 
                 alphaQuadList[cnt-1] = cnt+1
                 alphaQuadList[cnt] = cnt
-                cnt+=2
-                N-=1
+                cnt += 2
+                N -= 1
             p[curLabel].append(curDemiEdge)
             curDemiEdge = nextAction(curDemiEdge)
 
-        #For demi edge  A such that sigmaQuadCycleDemiEdge[A]>1 we need
-        #We need to make a shift on sigmaQuadCycleDemiEdge[A] such that the first demi edge in the cycle is
-        #The one corresponding to his back partner
-        #This is needed to have a correct merge later on when we merge them by node
-        for curDemiEdge in range(1,2*self.m+1):
+        # For demi edge  A such that sigmaQuadCycleDemiEdge[A]>1 we need
+        # We need to make a shift on sigmaQuadCycleDemiEdge[A] such that the first demi edge in the cycle is
+        # The one corresponding to his back partner
+        # This is needed to have a correct merge later on when we merge them by node
+        for curDemiEdge in range(1, 2*self.m+1):
 
-            sigmaQuadCycleDemiEdge[curDemiEdge] = list(sigmaQuadCycleDemiEdge[curDemiEdge])
-            if len(sigmaQuadCycleDemiEdge[curDemiEdge])==1:
+            sigmaQuadCycleDemiEdge[curDemiEdge] = list(
+                sigmaQuadCycleDemiEdge[curDemiEdge])
+            if len(sigmaQuadCycleDemiEdge[curDemiEdge]) == 1:
                 continue
             curLabel = labelled[curDemiEdge]
 
@@ -1776,13 +1813,13 @@ class LabelledMap:
             newDemiEdgeQuadCycle.append(firstDemiEdgeQuad)
 
             for i in range(P):
-                newDemiEdgeQuadCycle.append(restDemiEdgeQuad[(i+startId)%P])
+                newDemiEdgeQuadCycle.append(restDemiEdgeQuad[(i+startId) % P])
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = newDemiEdgeQuadCycle
 
         sigmaQuadCycle[0] = tuple(sigmaQuadCycle[0])
-        #Merging cycle on demi edge per  node
-        #And also making transforming them into tuple
+        # Merging cycle on demi edge per  node
+        # And also making transforming them into tuple
         for node in nodes:
             accum = []
             for demiEdge in node:
@@ -1792,34 +1829,35 @@ class LabelledMap:
 
             sigmaQuadCycle.append(tuple(accum))
 
-        sigmaQuad = Permutation(sigmaQuadCycle)
-        alphaQuad = Permutation(alphaQuadList)
-        quad = LabelledMap(sigma = sigmaQuad,alpha = alphaQuad)
+        sigmaQuad = MapPermutation(sigmaQuadCycle)
+        alphaQuad = MapPermutation(alphaQuadList)
+        quad = LabelledMap(sigma=sigmaQuad, alpha=alphaQuad)
         numberOfQuadDemiEdge = len(alphaQuadList)
 
         phiQuad = quad.phi
         alphaQuad = quad.alpha
         U = corres[root]
-        X,W,V = phiQuad(U),phiQuad(phiQuad(U)),phiQuad(phiQuad(phiQuad(U)))
+        X, W, V = phiQuad(U), phiQuad(phiQuad(U)), phiQuad(phiQuad(phiQuad(U)))
 
-        #There is two quadragulation possible depending on which root we choose
-        #Here we calculate the two possible permutation corresponding to the
-        #Two possible root
+        # There is two quadragulation possible depending on which root we choose
+        # Here we calculate the two possible permutation corresponding to the
+        # Two possible root
         tauA = None
         tauB = None
         if labelled[root] == labelled[alpha(root)]:
-            tauA = Permutations(numberOfQuadDemiEdge).reflection((U,root))
-            tauB = Permutations(numberOfQuadDemiEdge).reflection((X,root))
+            tauA = CustomSwap([(U, root)])
+            tauB = CustomSwap([(X, root)])
 
         elif labelled[root] > labelled[alpha(root)]:
-            tauA = Permutations(numberOfQuadDemiEdge).reflection((U,root))
-            tauB = Permutations(numberOfQuadDemiEdge).reflection((V,root))
+            tauA = CustomSwap([(U, root)])
+            tauB = CustomSwap([(V, root)])
 
         else:
             U = corres[alpha(root)]
-            X,W,V = phiQuad(U),phiQuad(phiQuad(U)),phiQuad(phiQuad(phiQuad(U)))
-            tauA = Permutations(numberOfQuadDemiEdge).reflection((W,root))
-            tauB = Permutations(numberOfQuadDemiEdge).reflection((X,root))
+            X, W, V = phiQuad(U), phiQuad(
+                phiQuad(U)), phiQuad(phiQuad(phiQuad(U)))
+            tauA = CustomSwap([(W, root)])
+            tauB = CustomSwap([(X, root)])
 
         quadA = quad.relabel(tauA)
         quadB = quad.relabel(tauB)
@@ -1828,8 +1866,10 @@ class LabelledMap:
             quadACanonical = quadA.canonicalRepresentant()
             quadBCanonical = quadB.canonicalRepresentant()
 
-            canonicalTauA = quadA.getRootedMapCorrespondance(otherMap = quadACanonical,rootDemiEdge = root)
-            canonicalTauB = quadB.getRootedMapCorrespondance(otherMap = quadBCanonical,rootDemiEdge = root)
+            canonicalTauA = quadA.getRootedMapCorrespondance(
+                otherMap=quadACanonical, rootDemiEdge=root, return_map_perm=True)
+            canonicalTauB = quadB.getRootedMapCorrespondance(
+                otherMap=quadBCanonical, rootDemiEdge=root, return_map_perm=True)
 
             markedDemiEdge = sigmaQuadCycle[0][0]
 
@@ -1839,9 +1879,9 @@ class LabelledMap:
             markedDemiEdgeA = canonicalTauA(markedDemiEdgeA)
             markedDemiEdgeB = canonicalTauB(markedDemiEdgeB)
 
-            return quadACanonical,quadBCanonical,markedDemiEdgeA,markedDemiEdgeB
+            return quadACanonical, quadBCanonical, markedDemiEdgeA, markedDemiEdgeB
 
-        return quadA.canonicalRepresentant(),quadB.canonicalRepresentant()
+        return quadA.canonicalRepresentant(), quadB.canonicalRepresentant()
 
     def nodes(self):
         """
@@ -1865,7 +1905,7 @@ class LabelledMap:
         """
         return self.phi.to_cycles()
 
-    def getDyckPath(self,isCanonical=False):
+    def getDyckPath(self, isCanonical=False):
         """
         There is a canonical bijection between rooted planar trees
         with m edges and dyck path of size m, this method return the
@@ -1896,8 +1936,216 @@ class LabelledMap:
         dyckPath = []
 
         while not seen[curDemiEdge]:
-            print(curDemiEdge,canonicalAlpha(curDemiEdge))
             dyckPath.append(-1 if seen[canonicalAlpha(curDemiEdge)] else 1)
             seen[curDemiEdge] = True
             curDemiEdge = canonicalPhi(curDemiEdge)
         return dyckPath
+
+    @property
+    def q(self):
+        """
+        Returns: The number of demi edge of self
+        ----
+        O(1)
+        """
+        return 2*self.m
+
+    def getTopologicalDemiEdge(self, demiEdge):
+        """
+        Args:
+            demiEdge an index
+        Returns:
+            The TopologicalDemiEdge associated to demiEdge 
+        ----
+        O(1)
+        """
+        return self.topologicalMap[demiEdge]
+
+    def getListTopologicalDemiEdge(self):
+        """
+        Returns:
+            The list of TopologicalDemiEdge in self such that the ith element
+            is the TopologicalDemiEdge associated to the i+1 index
+        ----
+        O(m)
+        """
+        lst = []
+        for i in range(1, self.q+1):
+            lst.append(self.getTopologicalDemiEdge(i))
+        return lst
+
+    def X(self, demiEdge):
+        """
+        Args:
+            demiEdge an index
+        Returns:
+            The TopologicalDemiEdge associated to demiEdge 
+        ----
+        O(1)
+        """
+        return self.getTopologicalDemiEdge(demiEdge)
+
+    def XList(self):
+        """
+        Returns:
+            The list of TopologicalDemiEdge in self such that the ith element
+            is the TopologicalDemiEdge associated to the i+1 index
+        ----
+        O(m)
+        """
+        return self.getListTopologicalDemiEdge()
+
+    @property
+    def m(self):
+        """
+        Returns: The number of edge of self
+        ----
+        O(1)
+        """
+        return self.numberOfEdges()
+
+    @property
+    def f(self):
+        """
+        Returns: The number of face of self
+        ----
+        O(1)
+        """
+        return self.numberOfFaces()
+
+    @property
+    def n(self):
+        """
+        Returns: The number of node of self
+        ----
+        O(1)
+        """
+        return self.numberOfNodes()
+
+    def pretty_print(self):
+        """
+        A prettier print
+        """
+        print(f"""
+            Alpha: {self.alpha.to_cycles()}
+            Sigma: {self.sigma.to_cycles()}
+            Phi : {self.phi.to_cycles()}
+        """)
+
+    def copy(self):
+        """
+        Returns : A copy of self
+        -------
+        O(1)
+        """
+        return LabelledMap(self.sigma, self.alpha)
+
+    def areOnTheSameNode(self, demiEdgeA, demiEdgeB):
+        """
+        Args:
+            demiEdgeA,demiEdgeB: Index representing demi edges of self
+        Returns:
+            A boolean indicating whether or note demiEdgeA and demiEdgeB are on the node
+        -------
+        O(1)
+        """
+        return self.sigmaUtilsAbstractor.sameCycle(demiEdgeA, demiEdgeB)
+
+    def areOnTheSameFace(self, demiEdgeA, demiEdgeB):
+        """
+        Args:
+            demiEdgeA,demiEdgeB: Index representing demi edges of self
+        Returns:
+            A boolean indicating whether or note demiEdgeA and demiEdgeB are on the same face
+        -------
+        O(1) 
+        """
+        return self.phiUtilsAbstractor.sameCycle(demiEdgeA, demiEdgeB)
+
+    def demiEdgesOnTheSameNode(self, demiEdge):
+        """
+        Args:
+            demiEdge: An index representing a demi edge of self
+        Returns:
+            A list of demiEdge on the same node as demiEdge
+        -------
+        O(d) where d is the number of demi edge on  the node
+        """
+        lst = []
+        lst.append(demiEdge)
+        curDemiEdge = self.sigma(demiEdge)
+        while curDemiEdge != demiEdge:
+            lst.append(curDemiEdge)
+            curDemiEdge = self.sigma(curDemiEdge)
+        return lst
+
+    def demiEdgesOnTheSameFace(self, demiEdge):
+        """
+        Args:
+            demiEdge: An index representing a demi edge of self
+        Returns:
+            A list of demiEdge on the same face as demiEdge
+        -------
+        O(f) where f is the number of demi edge on the face
+        """
+        lst = []
+        lst.append(demiEdge)
+        curDemiEdge = self.phi(demiEdge)
+        while curDemiEdge != demiEdge:
+            lst.append(curDemiEdge)
+            curDemiEdge = self.phi(curDemiEdge)
+        return lst
+
+    def numberInTheSameFace(self, demiEdge):
+        """
+        Args:
+            demiEdge
+        Returns:
+            The number of  demi edge on the same face as demi edge
+        ----
+        O(1)
+        """
+        return self.phiUtilsAbstractor.numberInCycle(demiEdge)
+
+    def numberInTheSameNode(self, demiEdge):
+        """
+        Args:
+            demiEdge
+        Returns:
+            The number of  demi edge on the same node as demi edge
+        ----
+        O(1)
+        """
+
+        return self.sigmaUtilsAbstractor.numberInCycle(demiEdge)
+
+    def checkTwoInTheSameFace(self, listDemiEdges):
+        """
+        A method that will return a boolean indicating whether or not 
+        two demiEdge are on the same face
+        -----
+        Args:
+            listDemiEdges: A list of demi edges
+        OUTPUT:
+            a boolean indicating whether or not there is two demi edge on the 
+            same face
+        -----
+        O(len(listDemiEdges))
+        """
+        return self.phiUtilsAbstractor.checkTwoInTheSameCycle(listDemiEdges)
+
+    def checkTwoInTheSameNode(self, listDemiEdges):
+        """
+        A method that will return a boolean indicating whether or not 
+        two demiEdge are on the same node
+        -----
+        Args:
+            listDemiEdges: A list of demi edges
+        OUTPUT:
+            a boolean indicating whether or not there is two demi edge on the 
+            same node
+        -----
+        O(len(listDemiEdges))
+        """
+
+        return self.sigmaUtilsAbstractor.checkTwoInTheSameCycle(listDemiEdges)

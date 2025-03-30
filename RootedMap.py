@@ -202,3 +202,22 @@ class RootedMap(LabelledMap):
         return RootedMap(
             labelledMap=quadA, isAlreadyCanonical=True
         ), RootedMap(labelledMap=quadB, isAlreadyCanonical=True)
+
+    def copy(self):
+        """
+        Returns:
+            A copy of self
+        ----
+        O(m)
+        """
+        return RootedMap(sigma=self.sigma, alpha=self.alpha)
+
+    @property
+    def root(self):
+        """
+        Returns:
+            The TopologicalDemiEdge associated to the root
+        ----
+        O(1)
+        """
+        return self.X(1)

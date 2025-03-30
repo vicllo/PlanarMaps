@@ -1,7 +1,6 @@
 from collections import deque
 import random
-
-from sage.all import Permutation
+from MapPermutation import MapPermutation
 
 from RootedMap import RootedMap
 
@@ -15,7 +14,7 @@ class MapGenerator:
     def __init__(self):
         pass
 
-    def cube():
+    def cube(self):
         """Returns the standard cube map."""
         return RootedMap(
             adj=[
@@ -30,7 +29,7 @@ class MapGenerator:
             ]
         )
 
-    def complete_map(n):
+    def complete_map(self, n):
         """
         Returns an arbitrary rooted map corresponding to the complete
         graph with n nodes. The genus is guaranteed to be zero if the
@@ -86,8 +85,8 @@ class MapGenerator:
             if level < minlevel:
                 posmin = i + 1
                 minlevel = level
-        Dyckfinal = [dyck[(posmin + i) % N] for i in range(N - 1)]
-        return Dyckfinal
+        Dyckfinal = dyck[posmin:] + dyck[:posmin]
+        return Dyckfinal[:-1]
 
     def getRandomPermutation(self, n, seed=None):
         """
@@ -106,7 +105,7 @@ class MapGenerator:
             rng.seed(int(seed))
         lst = [i + 1 for i in range(n)]
         rng.shuffle(lst)
-        return Permutation(lst)
+        return MapPermutation(lst)
 
     def isValidDyckPath(self, dyckPathCandidate):
         """
@@ -133,14 +132,14 @@ class MapGenerator:
                 return False
         return S == 0
 
-    def getTreeFromDyckPath(self, dyckPath):
+    def getTreeFromDyckPath(self, dyckPath, trust=False):
         """
         Given a Dyck path, this function returns the associated rooted tree.
 
         Args:
             dyckPath : A list representing a Dyck path, with +1 for up and
                        -1 for down.
-
+            trust: A boolean indicating whether to trust that we have a dyckPath 
         Returns:
             The corresponding rooted plane tree if dyckPath is valid;
             otherwise, raises an error.
@@ -148,7 +147,7 @@ class MapGenerator:
         Complexity:
             O(k), where k = len(dyckPath)
         """
-        if not self.isValidDyckPath(dyckPath):
+        if not trust and not self.isValidDyckPath(dyckPath):
             raise ValueError("The given list isn't a Dyck path")
 
         phiCycle = []
@@ -163,8 +162,8 @@ class MapGenerator:
             else:
                 p.append(i + 1)
 
-        phi = Permutation([tuple(phiCycle)])
-        alpha = Permutation(alphaCycle)
+        phi = MapPermutation([tuple(phiCycle)])
+        alpha = MapPermutation(alphaCycle)
         sigma = phi.left_action_product(alpha)
 
         return RootedMap(alpha=alpha, sigma=sigma)
@@ -245,7 +244,7 @@ class MapGenerator:
             O(numberOfEdge)
         """
         return self.getTreeFromDyckPath(
-            self.getRandomDyckPath(numberOfEdge, seed=seed)
+            self.getRandomDyckPath(numberOfEdge, seed=seed), trust=True
         )
 
     def getRandomLabelledTree(self, numberOfEdge, seed=None):
