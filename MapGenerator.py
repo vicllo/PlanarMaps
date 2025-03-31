@@ -12,7 +12,9 @@ class MapGenerator:
     """
 
     def __init__(self):
-        self._production = False
+        # Set it to true when in production
+        # during debugging to False
+        self._production = True
 
     def cube(self):
         """Returns the standard cube map."""
