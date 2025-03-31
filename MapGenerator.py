@@ -12,7 +12,7 @@ class MapGenerator:
     """
 
     def __init__(self):
-        pass
+        self._production = False
 
     def cube(self):
         """Returns the standard cube map."""
@@ -26,7 +26,7 @@ class MapGenerator:
                 (5, 2, 7),
                 (3, 8, 6),
                 (7, 4, 5),
-            ]
+            ], trust=self._production,
         )
 
     def complete_map(self, n):
@@ -38,7 +38,7 @@ class MapGenerator:
         adj = list(
             tuple((j + i) % n + 1 for j in range(1, n)) for i in range(n)
         )
-        m = RootedMap(adj=adj)
+        m = RootedMap(adj=adj, trust=self._production,)
         if n <= 4:
             m = m.force_planar()
         return m
@@ -166,7 +166,7 @@ class MapGenerator:
         alpha = MapPermutation(alphaCycle)
         sigma = phi.left_action_product(alpha)
 
-        return RootedMap(alpha=alpha, sigma=sigma)
+        return RootedMap(alpha=alpha, sigma=sigma, trust=self._production, )
 
     def getRandomLabellingTree(self, tree, seed=None):
         """
@@ -244,7 +244,7 @@ class MapGenerator:
             O(numberOfEdge)
         """
         return self.getTreeFromDyckPath(
-            self.getRandomDyckPath(numberOfEdge, seed=seed), trust=True
+            self.getRandomDyckPath(numberOfEdge, seed=seed), trust=self._production
         )
 
     def getRandomLabelledTree(self, numberOfEdge, seed=None):
@@ -311,4 +311,5 @@ class MapGenerator:
             O(numberOfEdge)
         """
         quad = self.getRandomPlanarQuadrangulation(numberOfEdge, seed=seed)
+
         return quad.inverseQuadrangulation()

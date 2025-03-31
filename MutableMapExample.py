@@ -17,7 +17,8 @@ def simpleGone(n):
         C = C.addEdgeAfter()
     U, _ = C.link(B)
     U.contract()
-    myMap.show()
+    myMap.show(use_sage_viewer=False,
+               show_vertices=False, show_halfedges=False)
     return myMap
 
 
@@ -36,7 +37,8 @@ def X(n):
         for _ in range(n):
             T = T.addEdgeAfter()
         A = A.n
-    myMap.show()
+    myMap.show(use_sage_viewer=False,
+               show_halfedges=False, show_vertices=False)
 
 
 def repeatingPolygon(n, p):
@@ -52,7 +54,8 @@ def repeatingPolygon(n, p):
         A = A.copyOn(B)[1][0]
         A = A.addEdgeAfter()
     A.delete()
-    myMap.show()
+    myMap.show(use_sage_viewer=False,
+               show_halfedges=False, show_vertices=False)
 
 
 if __name__ == "__main__":
@@ -62,5 +65,5 @@ if __name__ == "__main__":
     # X
     X(2)
 
-    # Repeating a triangle 3 times inside each other
-    repeatingPolygon(3, 3)
+    # Repeating a triangle 4 times inside each other
+    repeatingPolygon(3, 4)

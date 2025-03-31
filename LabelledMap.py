@@ -1,14 +1,12 @@
 import warnings
 from collections import deque
-from networkx import transitive_closure
-from numpy import isin
 import PermutationUtilsAbstractor
 from CustomSwap import CustomSwap
 from TopologicalDemiEdge import TopologicalDemiEdge
 from PermutationUtilsAbstractor import PermutationUtilsAbstractor
 from sage.all import Permutation, Graph  # Import sage library
-from time import time
 from MapPermutation import *
+
 try:
     import networkx as nx
 except ImportError:
@@ -62,7 +60,8 @@ class LabelledMap:
         self,
         sigma: Permutation | MapPermutation = None,
         alpha: Permutation | MapPermutation = None,
-        adj=None
+        adj=None,
+        trust=False,
     ):
         r"""
         Initializes the labelled map from either the permutations alpha
@@ -75,6 +74,18 @@ class LabelledMap:
         - ``alpha`` -- Permution ; Permutation that maps a half-edge
           to the half-edge incident to it in clockwise direction around
           the vertex it belongs to.
+        - ``ajd``-- and adjacency list be careful the order of the 
+            node in your adjaceny will be used to choose the embedding
+        - ``trust`` -- A parameter that indicates whether the validity check (i.e., whether the map is connex, etc.) 
+          should be skipped when initializing the map. It makes initialization faster but can be dangerous because 
+          if the map isn't well-formed, all the other methods become unsafe. You should be absolutely sure of your 
+          map's validity if you set this to true.
+
+          - The advantage of setting `trust` to true is that it makes the initialization faster, which is useful when 
+          you are initializing a lot of big maps (like in long bijections). 
+
+          - Therefore, the best workflow is to leave it at the default during testing, and when you are 100% sure that 
+          your code works, set `trust = true` to gain a constant factor boost. By default, it is set to false.
 
         EXAMPLES::
 
@@ -140,9 +151,9 @@ class LabelledMap:
 
         self.topologicalMap = {}
         if adj is None:
-            self._build_from_permutations(sigma, alpha)
+            self._build_from_permutations(sigma, alpha, trust)
         else:
-            self._build_from_adj(adj)
+            self._build_from_adj(adj, trust)
         self.extend()
 
     def extend(self):
@@ -152,7 +163,7 @@ class LabelledMap:
         for i in range(1, self.q+1):
             self.topologicalMap[i] = TopologicalDemiEdge(self, i)
 
-    def _build_from_permutations(self, sigma, alpha):
+    def _build_from_permutations(self, sigma, alpha, trust):
         r"""
         Initializes the labelled map from the underlying permutations.
         """
@@ -166,6 +177,9 @@ class LabelledMap:
             self.alpha = MapPermutation(self.alpha)
 
         self.phi = self.alpha.right_action_product(self.sigma)
+
+        if trust:
+            return
         size = self.sigma.size()
 
         if self.sigma.size() != self.alpha.size():
@@ -185,7 +199,7 @@ class LabelledMap:
         if not transitiveCouplePermutation(self.sigma, self.alpha):
             raise ValueError("The graph is not connected")
 
-    def _build_from_adj(self, adj):
+    def _build_from_adj(self, adj, trust):
         """
         Initializes the labelled map from an adjacency list.
 
@@ -226,7 +240,7 @@ class LabelledMap:
             raise ValueError("Invalid adjacency list")
 
         self._build_from_permutations(
-            MapPermutation(cycles), MapPermutation(pairs))
+            MapPermutation(cycles), MapPermutation(pairs), trust)
 
     def buildGraph(self):
         """
@@ -718,7 +732,7 @@ class LabelledMap:
         e = g.get_embedding()
         adj = [tuple(reversed(e[i])) for i in range(1, len(e) + 1)]
 
-        return LabelledMap(adj=adj)
+        return LabelledMap(adj=adj, trust=True)
 
     def getSpanningTree(self):
         """
@@ -779,7 +793,7 @@ class LabelledMap:
 
             Complexity is O(m) where m is the number of edges
         """
-        return LabelledMap(self.phi.inverse(), self.alpha)
+        return LabelledMap(self.phi.inverse(), self.alpha, trust=True)
 
     def diameter(self):
         """
@@ -941,7 +955,7 @@ class LabelledMap:
 
         derivedSigma = MapPermutation(derivedSigmaList)
         derivedAlpha = MapPermutation(derivedAlphaList)
-        return LabelledMap(derivedSigma, derivedAlpha).canonicalRepresentant()
+        return LabelledMap(derivedSigma, derivedAlpha, trust=True).canonicalRepresentant()
 
     def quadrangulation(self):
         """
@@ -1006,7 +1020,7 @@ class LabelledMap:
 
         return LabelledMap(
             sigma=sigmaInv,
-            alpha=alphaInv).canonicalRepresentant()
+            alpha=alphaInv, trust=True).canonicalRepresentant()
 
     def incidenceMap(self):
         """
@@ -1077,11 +1091,11 @@ class LabelledMap:
             )
 
         relabelPerm = MapPermutation(relabelList)
-        return LabelledMap(sigmaQuad, alphaQuad).relabel(
+        return LabelledMap(sigmaQuad, alphaQuad, trust=True).relabel(
             relabelPerm
         ).canonicalRepresentant()
 
-    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge, return_map_perm=False):
+    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge, return_map_perm=False, trust=False):
         """
         A method that returns a labelling of the demi-edges of this map
         giving `otherMap` while keeping `rootDemiEdge` invariant.
@@ -1092,8 +1106,9 @@ class LabelledMap:
 
         - ``otherMap`` -- LabelledMap; the other map
         - ``rootDemiEdge`` -- int; the edge on which to root
-        - ``return_map_perm`` -- ; whether or not to return a MapPermutation
-
+        - ``return_map_perm`` -- ; whether or not to return a MapPermutation default to False
+        - ``trust`` -- ; whether or not to trust that there is a correspondance default to 
+            False
         OUTPUT:
 
         Returns `t`, a permutation mapping the demi-edges of `self`
@@ -1114,7 +1129,7 @@ class LabelledMap:
 
             Complexity is O(m), where m is the number of edges.
         """
-        if otherMap.numberOfEdges() != self.numberOfEdges():
+        if not trust and otherMap.numberOfEdges() != self.numberOfEdges():
             return None
 
         m = self.numberOfEdges()
@@ -1149,7 +1164,7 @@ class LabelledMap:
         except ValueError:
             return None
 
-        if self.relabel(t) != otherMap:
+        if not trust and self.relabel(t) != otherMap:
             return None
 
         return t
@@ -1190,7 +1205,7 @@ class LabelledMap:
         relabeledAlpha = tau.left_action_product(
             invTau.right_action_product(self.alpha)
         )
-        return LabelledMap(relabeledSigma, relabeledAlpha)
+        return LabelledMap(relabeledSigma, relabeledAlpha, trust=True)
 
     def __eq__(self, other):
         """Checks equality between two LabelledMap instances."""
@@ -1346,7 +1361,7 @@ class LabelledMap:
         alphaEdgeMap = MapPermutation(alphaListEdgeMap)
         sigmaEdgeMap = MapPermutation(sigmaListEdgeMap)
 
-        return LabelledMap(sigmaEdgeMap, alphaEdgeMap).canonicalRepresentant()
+        return LabelledMap(sigmaEdgeMap, alphaEdgeMap, trust=True, ).canonicalRepresentant()
 
     def isQuandrangulation(self):
         """
@@ -1638,11 +1653,12 @@ class LabelledMap:
         alphaTree = MapPermutation(alphaTreeList)
         sigmaTree = MapPermutation(sigmaTreeList)
 
-        tree = LabelledMap(alpha=alphaTree, sigma=sigmaTree).relabel(tau)
+        tree = LabelledMap(alpha=alphaTree, sigma=sigmaTree,
+                           trust=True, ).relabel(tau)
 
         canonicalTree = tree.canonicalRepresentant()
         tauCanonical = tree.getRootedMapCorrespondance(
-            canonicalTree, rootDemiEdge=1, return_map_perm=True)
+            canonicalTree, rootDemiEdge=1, return_map_perm=True, trust=True)
 
         labelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
 
@@ -1687,7 +1703,6 @@ class LabelledMap:
             ) and quadB.schaefferTree(markedDemiEdge = markedDemiEdgeB)[0] == sct.canonicalRepresentant()
             True
         """
-        startTime = time()
         alpha = self.alpha
         sigma = self.sigma
 
@@ -1831,7 +1846,8 @@ class LabelledMap:
 
         sigmaQuad = MapPermutation(sigmaQuadCycle)
         alphaQuad = MapPermutation(alphaQuadList)
-        quad = LabelledMap(sigma=sigmaQuad, alpha=alphaQuad)
+        quad = LabelledMap(sigma=sigmaQuad, alpha=alphaQuad,
+                           trust=True, )
         numberOfQuadDemiEdge = len(alphaQuadList)
 
         phiQuad = quad.phi
@@ -1867,9 +1883,9 @@ class LabelledMap:
             quadBCanonical = quadB.canonicalRepresentant()
 
             canonicalTauA = quadA.getRootedMapCorrespondance(
-                otherMap=quadACanonical, rootDemiEdge=root, return_map_perm=True)
+                otherMap=quadACanonical, rootDemiEdge=root, return_map_perm=True, trust=True)
             canonicalTauB = quadB.getRootedMapCorrespondance(
-                otherMap=quadBCanonical, rootDemiEdge=root, return_map_perm=True)
+                otherMap=quadBCanonical, rootDemiEdge=root, return_map_perm=True, trust=True)
 
             markedDemiEdge = sigmaQuadCycle[0][0]
 
@@ -2038,7 +2054,7 @@ class LabelledMap:
         -------
         O(1)
         """
-        return LabelledMap(self.sigma, self.alpha)
+        return LabelledMap(self.sigma, self.alpha, trust=True, )
 
     def areOnTheSameNode(self, demiEdgeA, demiEdgeB):
         """
@@ -2149,3 +2165,12 @@ class LabelledMap:
         """
 
         return self.sigmaUtilsAbstractor.checkTwoInTheSameCycle(listDemiEdges)
+
+    @property
+    def g(self):
+        """
+        The genus of self
+        ----
+        O(1)
+        """
+        return self.genus()

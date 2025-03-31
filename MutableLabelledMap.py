@@ -10,6 +10,8 @@ class MutableLabelledMap(LabelledMap):
     This class represents a MutableLabelledMap , note that the indexes arent fixed when changing the map so when want to keep
     an reference to a demi edge , get his MutableTopologicalDemiEdge with self.X(index), note that it  is guaranted that when getting a MutableTopologicalDemiEdge from 
     self that when calling the method public method of self  , the topological demi edge will always point to the correct label of the demi edge until the demi edge is deleted.
+    .All the method returning map will return LabelledMap(not MutableLabelledMap) you will need to make them mutable 
+    by calling the constructor (e.g if your map is myMap call myMapMutable = MutableLabelledMap(lmap = myMap)) 
     """
 
     def __init__(
@@ -17,7 +19,12 @@ class MutableLabelledMap(LabelledMap):
         sigma: Permutation = None,
         alpha: Permutation = None,
         adj=None,
+        lmap=None
     ):
+
+        if isinstance(lmap, LabelledMap):
+            self.__init__(lmap.sigma, lmap.alpha)
+            return
 
         super().__init__(sigma, alpha, adj)
         self.sigma = RotatingPermutation(self.sigma)

@@ -1,4 +1,5 @@
 from TopologicalDemiEdge import TopologicalDemiEdge
+from MapDecorator import CheckValid
 
 
 class MutableTopologicalDemiEdge(TopologicalDemiEdge):
@@ -8,6 +9,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
     ,add between them etc.
     """
 
+    @CheckValid
     def delete(self, trust=False):
         """
         This function delete self from self.map in case of planar map it is efficient O(log(m)) otherwise O(m) for higher genus 
@@ -24,6 +26,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
 
         self.map.deleteEdge(self.raw, trust=trust)
 
+    @CheckValid
     def link(self, otherTopoDemiEdge):
         """
         This will add an edge between the node of self to otherTopoDemiEdge(note that they 
@@ -40,6 +43,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
 
         return self.map.addEdge(self.raw, otherTopoDemiEdge.raw)
 
+    @CheckValid
     def addEdgeAfter(self):
         """
         This method will create a new edge, such that it is added on the same node as self but after it in the 
@@ -51,6 +55,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
         """
         return self.map.addEdgeAfter(self.raw)
 
+    @CheckValid
     def addEdgeBefore(self):
         """
         This method will create a new edge, such that it is added on the same node as self but before it
@@ -63,6 +68,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
 
         return self.map.addEdgeBefore(self.raw)
 
+    @CheckValid
     def deleteNode(self, trust=False):
         """
         This method will delete the node attached to self, when trust = False (default) it is efficient in case of planar map O(deg(node)*log(m)) 
@@ -80,6 +86,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
 
         self.map.deleteNode(self.raw, trust=trust)
 
+    @CheckValid
     def contract(self):
         """
         Contract the edge bind to self
@@ -88,6 +95,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
         """
         self.map.contractEdge(self.raw)
 
+    @CheckValid
     def contractFace(self):
         """
         Contract the face on which self is in
@@ -96,6 +104,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
         """
         self.map.contractFace(self.raw)
 
+    @CheckValid
     def mergeMap(self, otherTopoDemiEdge):
         """
         This will merge in self.map without modifying otherTopoDemiEdge.map(if otherTopoDemiEdge.map isn't the same object as self.map),
@@ -122,6 +131,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
 
         return self.map.merge(self.raw, otherTopoDemiEdge.map, otherTopoDemiEdge.raw)
 
+    @CheckValid
     def copyOn(self, otherTopoDemiEdge):
         """
         Given that self is such that it is attached to a node of degree one (otherwise this function will raise
@@ -142,6 +152,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
                 "Self isn't attached to a node of degree one cannot copyOn")
         return self.map.copyOnDemiEdge(self.raw, otherTopoDemiEdge.map, otherTopoDemiEdge.raw)
 
+    @CheckValid
     def mergeNode(self, otherTopoDemiEdge):
         """
         Merge the node attached to self and otherTopoDemiEdge, they need to be on the same face
@@ -156,3 +167,28 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
             raise ValueError(
                 "Cannot mergeNode between two demi edge on different map")
         self.map.mergeNode(self.raw, otherTopoDemiEdge.raw)
+
+    @CheckValid
+    def isOnSameFace(self, otherTopologicalDemiEdge):
+        """
+        Args:
+            otherTopologicalDemiEdge a TopologicalDemiEdge on the same map as self
+        Returns:
+            A boolean indicating if they are on the same face
+        ----
+        O(log(m)) where m is the number of edge of self.map
+        """
+        return self.map.areOnTheSameFace(self.raw, otherTopologicalDemiEdge.raw)
+
+    @CheckValid
+    def isOnSameNode(self, otherTopologicalDemiEdge):
+        """
+        Args:
+            otherTopologicalDemiEdge a TopologicalDemiEdge on the same map as self
+        Returns:
+            A boolean indicating if they are on the same node
+        ----
+        O(log(m)) where m is the number of edge of self.map
+        """
+
+        return self.map.areOnTheSameNode(self.raw, otherTopologicalDemiEdge.raw)
