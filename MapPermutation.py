@@ -4,22 +4,33 @@ from MapError import InvalidMapPermutationArgument
 
 class MapPermutation:
     def __init__(self, lst) -> None:
+        # if isinstance(lst, Permutation):
+        #     self._init_from_permutation(lst)
+        #     return
+        # try:
+        #     if lst == int(lst) or lst > 0:
+        #         self._init_from_number(lst)
+        #         return
+        # except:
+        #     pass
+
+        # try:
+        #     if type(lst[0]) == type((42,)):
+        #         self._init_from_cycle_list(lst)
+        #         return
+        #     self._init_from_list(lst)
+        # except:
+        #     raise InvalidMapPermutationArgument()
+
         if isinstance(lst, Permutation):
             self._init_from_permutation(lst)
-            return
-        try:
-            if lst == int(lst) or lst > 0:
-                self._init_from_number(lst)
-                return
-        except:
-            pass
-
-        try:
-            if type(lst[0]) == type((42,)):
-                self._init_from_cycle_list(lst)
-                return
+        elif isinstance(lst, int):
+            self._init_from_number(lst)
+        elif isinstance(lst, list) and isinstance(lst[0], tuple):
+            self._init_from_cycle_list(lst)
+        elif isinstance(lst, list) and isinstance(lst[0], int):
             self._init_from_list(lst)
-        except:
+        else:
             raise InvalidMapPermutationArgument()
 
     def _init_from_cycle_list(self, lst):
@@ -31,8 +42,8 @@ class MapPermutation:
     def _init_from_permutation(self, perm):
         self._perm = perm
 
-    def _init_from_list(self, list):
-        self._perm = Permutation(list)
+    def _init_from_list(self, lst):
+        self._perm = Permutation(lst)
 
     def size(self):
         return self._perm.size()
@@ -49,7 +60,7 @@ class MapPermutation:
         return f"MapPermutation: {self.to_cycles()}"
 
     def pretty_print(self):
-        """ 
+        """
         Print self in a more pretty form
         """
         print(self.pretty_repr())
@@ -82,7 +93,7 @@ class MapPermutation:
 
     def __next__(self):
         if self.index < len(self):
-            result = self(self.index+1)
+            result = self(self.index + 1)
             self.index += 1
             return result
         else:
@@ -101,7 +112,7 @@ class MapPermutation:
         This function calculate self*perm where * is the composition operation between permutation
         -------
         Args:
-            -rperm: Another MapPermutation 
+            -rperm: Another MapPermutation
         Returns:
             -A MapPermutation of size max(rperm.size(),self.size()) representing the composition self*rperm
         -------
@@ -111,7 +122,7 @@ class MapPermutation:
         """
         outSize = max(self.size(), rperm.size())
 
-        outList = [self(rperm(i)) for i in range(1, outSize+1)]
+        outList = [self(rperm(i)) for i in range(1, outSize + 1)]
 
         return MapPermutation(outList)
 

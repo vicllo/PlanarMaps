@@ -162,7 +162,8 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         tree, labelled = super().schaefferTree(markedDemiEdge=markedDemiEdge)
-        return RootedMap(labelledMap=tree, isAlreadyCanonical=True, trust=True), labelled
+        return RootedMap(labelledMap=tree,
+                         isAlreadyCanonical=True, trust=True), labelled
 
     def inverseShaefferTree(self, labelled, returnMarkedDemiEdge=True):
         """

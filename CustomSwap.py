@@ -14,7 +14,7 @@ class CustomSwap (MapPermutation):
             self.a = min(lst[0][0], lst[0][1])
             self.b = max(lst[0][0], lst[0][1])
 
-        except:
+        except BaseException:
             raise
 
     def __eq__(self, other):
@@ -28,16 +28,17 @@ class CustomSwap (MapPermutation):
     def apply(self, i):
         if i != self.a and i != self.b:
             return i
-        return self.a+self.b-i
+        return self.a + self.b - i
 
     def number_of_fixed_points(self):
-        return self.b-(1+self.a != self.b)
+        return self.b - (1 + self.a != self.b)
 
     def to_cycles(self):
         if self.a == self.b:
-            return [(i,) for i in range(1, self.b+1)]
+            return [(i,) for i in range(1, self.b + 1)]
 
-        return [(i,) for i in range(1, self.a)] + [(self.a, self.b)] + [(j,) for j in range(self.a, self.b)]
+        return [(i,) for i in range(1, self.a)] + [(self.a, self.b)] + [(j,)
+                                                                        for j in range(self.a, self.b)]
 
     def inverse(self):
         return self

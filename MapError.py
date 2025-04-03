@@ -2,7 +2,7 @@
 
 class InvalidMapPermutationArgument(Exception):
     def __init__(self):
-        super().__init__("Invalid argument: The argument given must be Permutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a postive integer.")
+        super().__init__("Invalid argument: The argument given must be Permutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.")
 
 
 class InvalidSwapPermutationArgument(Exception):

@@ -18,7 +18,8 @@ from sage.all import Graph, Permutation, sqrt
 def check_segments_intersecting(p1, q1, p2, q2):
     def onSegment(p, q, r):
         "Check if q lies on [p, r] assuming p,q,r are colinear"
-        return q.x <= max(p.x, r.x) and q.x >= min(p.x, r.x) and q.y <= max(p.y, r.y) and q.y >= min(p.y, r.y)
+        return q.x <= max(p.x, r.x) and q.x >= min(
+            p.x, r.x) and q.y <= max(p.y, r.y) and q.y >= min(p.y, r.y)
 
     def orient(p, q, r):
         "Returns the orientation of (p, q, r)."
@@ -32,7 +33,8 @@ def check_segments_intersecting(p1, q1, p2, q2):
             return 1
         return 2
 
-    o1, o2, o3, o4 = orient(p1,q1,p2), orient(p1,q1,q2), orient(p2,q2,p1), orient(p2,q2,q1)
+    o1, o2, o3, o4 = orient(p1, q1, p2), orient(
+        p1, q1, q2), orient(p2, q2, p1), orient(p2, q2, q1)
 
     return (
         (o1 != o2 and o3 != o4) or
@@ -48,7 +50,8 @@ def check_polygon_intersecting(segments):
 
     for (p1, q1) in segments:
         for (p2, q2) in segments:
-            if p1 == p2 or p1 == q2 or q1 == p2 or q1 == q2:        # this case is already handled by the embedding check
+            # this case is already handled by the embedding check
+            if p1 == p2 or p1 == q2 or q1 == p2 or q1 == q2:
                 continue
 
             if check_segments_intersecting(p1, q1, p2, q2):
@@ -58,7 +61,7 @@ def check_polygon_intersecting(segments):
 
 
 class Vector2D:
-    def __init__(self, x = 0.0, y = 0.0):
+    def __init__(self, x=0.0, y=0.0):
         self.x = float(x)
         self.y = float(y)
 
@@ -70,7 +73,8 @@ class Vector2D:
 
     def normalized(self):
         if self.norm() == 0.0:
-            # hopefully, this should cancel out if trying to use a normalized null vector
+            # hopefully, this should cancel out if trying to use a normalized
+            # null vector
             return Vector2D(1.0, 0.0)
 
         return self / self.norm()
@@ -88,7 +92,8 @@ class Vector2D:
 
     def angle_towards(self, other):
         "Returns the angle between self and other (counterclockwise) in the range [0, 2pi[."
-        a = math.atan2(self.x * other.y - self.y * other.x, self.x * other.x + self.y * other.y)
+        a = math.atan2(self.x * other.y - self.y * other.x,
+                       self.x * other.x + self.y * other.y)
         if a < 0.0:
             return a + 2.0 * math.pi
         return a
@@ -128,43 +133,61 @@ class Vector2D:
 
 
 class DynamicShow:
-    # force expressions are heavily inspired by planarmap.js (https://github.com/tgbudd/planarmap.js)
+    # force expressions are heavily inspired by planarmap.js
+    # (https://github.com/tgbudd/planarmap.js)
 
-    repulsionVVRRCoef = 3.0			# controls the vertex-vertex repulsion force between red nodes (real nodes)
-    repulsionVVRWCoef = 2.0           # controls the vertex-vertex repulsion force between a red node and a white node (artificial node to split multiedges & loops)
-    repulsionVVWWCoef = 2.0            # controls the vertex-vertex repulsion force between white nodes
+    # controls the vertex-vertex repulsion force between red nodes (real nodes)
+    repulsionVVRRCoef = 3.0
+    # controls the vertex-vertex repulsion force between a red node and a
+    # white node (artificial node to split multiedges & loops)
+    repulsionVVRWCoef = 2.0
+    # controls the vertex-vertex repulsion force between white nodes
+    repulsionVVWWCoef = 2.0
 
-    torsionCoef = 3.0				# controls the torsion force between the consecutive edges around a vertex
+    # controls the torsion force between the consecutive edges around a vertex
+    torsionCoef = 3.0
     torsionPower = 3.0                  # exponent of the angle in the torsion force
-    torsionScale = math.pi / 6               # angles are divided by this quantity in the torsion force
+    # angles are divided by this quantity in the torsion force
+    torsionScale = math.pi / 6
 
     springCoef = 3.0				# controls the strength of the spring force for each edge
     springLength = 1.0                 # controls the default length of an edge
-    useLogSpring = True                 # if true, spring force is proportional to log(r / springLength); if false, proportional to r - springLength
+    # if true, spring force is proportional to log(r / springLength); if
+    # false, proportional to r - springLength
+    useLogSpring = True
 
-    repulsionVertexEdgeCoef = 3.0       # controls the strength of the repulsive force between nodes & edges
+    # controls the strength of the repulsive force between nodes & edges
+    repulsionVertexEdgeCoef = 3.0
     repulsionVertexEdgePower = 2.0      # exponent of the node-edge distance
 
-    weakSpringCoef = 0.01            # controls the strength of the force pulling all nodes towards (0, 0)
+    # controls the strength of the force pulling all nodes towards (0, 0)
+    weakSpringCoef = 0.01
 
-    maxDispl = springLength * 2.0       # maximum distance a node is allowed to travel during a single iteration
+    # maximum distance a node is allowed to travel during a single iteration
+    maxDispl = springLength * 2.0
 
     # first model
     fast_delta_t = 1.0                  # delta_t of the first iterations
-    slow_delta_t = 0.1                 # delta_t of the last iterations
+    slow_delta_t = 0.02                 # delta_t of the last iterations
 
     # second model
     default_delta_t = 1.0              # delta_t of the first iteration
-    exp_decrease = 0.2               # delta_t will equal to default_delta_t * exp(frame / (exp_decrease * n_edges))
+    # delta_t will equal to default_delta_t * exp(frame / (exp_decrease *
+    # n_edges))
+    exp_decrease = 0.2
 
     use_exponential_model = False
 
-    convergence_limit = 0.0005              # consider that the optimum is found when all nodes move less than this value in a single tick (when rescaled to [0,1])
+    # consider that the optimum is found when all nodes move less than this
+    # value in a single tick (when rescaled to [0,1])
+    convergence_limit = 0.0005
 
     max_iter_tick = 3                  # max number of iterations during a single tick
 
-    time_profile = True                  # print informations about time use of different functions
-    break_down_num = 5                 # break each duplicate edge into this number of small edges
+    # print information about time use of different functions
+    time_profile = True
+    # break each duplicate edge into this number of small edges
+    break_down_num = 5
 
     useVVForce = True
     useTorsionForce = True
@@ -172,11 +195,15 @@ class DynamicShow:
     useWeakSpringForce = True
     useEEForce = True
 
-    current_penalty = 0                 # for each valid frame, current_penalty decrease by one
-    wrong_move_penalty = 1             # for each wrong frame, current_penalty increase by this value
+    # for each valid frame, current_penalty decrease by one
+    current_penalty = 0
+    # for each wrong frame, current_penalty increase by this value
+    wrong_move_penalty = 1
 
     validFrames = 0
-    validFramesThreshold = 20           # start increasing current_delta_t -> delta_t after this number of valid frames
+    # start increasing current_delta_t -> delta_t after this number of valid
+    # frames
+    validFramesThreshold = 20
 
     def __init__(self, map: LabelledMap):
         # initialize the map
@@ -198,7 +225,8 @@ class DynamicShow:
             """Ensure edges always go from lowest to highest vertex id."""
             return min(i, j), max(i, j)
 
-        corres = [0] * (2 * m + 1)  # Map half-edge i to its corresponding vertex
+        # Map half-edge i to its corresponding vertex
+        corres = [0] * (2 * m + 1)
         for i in range(1, len(vertices) + 1):
             for k in vertices[i - 1]:
                 corres[k] = i
@@ -217,20 +245,25 @@ class DynamicShow:
         def break_down(i, break_down_num):
             nonlocal alpha, sigma, corres, vertices, m
             # Add a new vertex v, and break down the edge whose half-edges
-            # are i & alpha(i) into break_down_num edges (i, 2*m+1), (2*m+2, 2*m+3), .., (2*m+2*(break_down_num-1), alpha(i)).
+            # are i & alpha(i) into break_down_num edges (i, 2*m+1), (2*m+2,
+            # 2*m+3), .., (2*m+2*(break_down_num-1), alpha(i)).
 
             # print ("breaking down", i)
 
-            self.edge_labels_middle[(corres[i]-1, len(vertices))] = i
-            self.edge_labels_middle[(corres[alpha(i)]-1, len(vertices) + break_down_num - 2)] = alpha(i)
+            self.edge_labels_middle[(corres[i] - 1, len(vertices))] = i
+            self.edge_labels_middle[(
+                corres[alpha(i)] - 1, len(vertices) + break_down_num - 2)] = alpha(i)
 
             rem(i)
             rem(alpha(i))
 
-            alpha_cycles = [(alpha(i), 2*m + 1, i, 2*m + 2*(break_down_num-1))] + [(2*k, 2*k + 1) for k in range(m + 1, m + break_down_num - 1)]
+            alpha_cycles = [(alpha(i), 2 * m + 1, i, 2 * m + 2 * (break_down_num - 1))] + \
+                [(2 * k, 2 * k + 1)
+                 for k in range(m + 1, m + break_down_num - 1)]
             alpha *= Permutation(alpha_cycles)
 
-            sigma_cycles = [(2*k - 1, 2 * k) for k in range(m+1, m + break_down_num)]
+            sigma_cycles = [(2 * k - 1, 2 * k)
+                            for k in range(m + 1, m + break_down_num)]
             sigma *= Permutation(sigma_cycles)
 
             for k in range(break_down_num - 1):
@@ -252,7 +285,8 @@ class DynamicShow:
             if corres[i] == corres[alpha(i)]:
                 break_loop(i)
 
-        break_all_down = True           # if True, break down each multiedge; if False, break down all but one
+        # if True, break down each multiedge; if False, break down all but one
+        break_all_down = True
 
         # Handle each vertex and break down edges if needed.
         for v in range(1, len(vertices) + 1):
@@ -266,11 +300,15 @@ class DynamicShow:
                     break_down(i, self.break_down_num)
                 else:
                     seen_vertices[corres[alpha(i)]] = i
-                    if corres[i] <= real_n_vertices and corres[alpha(i)] <= real_n_vertices:
-                        if corres[i] < corres[alpha(i)] and i not in self.edge_labels_middle.values():
-                            self.edge_labels_head[minmax(corres[i]-1, corres[alpha(i)]-1)] = i
+                    if corres[i] <= real_n_vertices and corres[alpha(
+                            i)] <= real_n_vertices:
+                        if corres[i] < corres[alpha(
+                                i)] and i not in self.edge_labels_middle.values():
+                            self.edge_labels_head[minmax(
+                                corres[i] - 1, corres[alpha(i)] - 1)] = i
                         elif corres[i] > corres[alpha(i)] and i not in self.edge_labels_middle.values():
-                            self.edge_labels_tail[minmax(corres[i]-1, corres[alpha(i)]-1)] = i
+                            self.edge_labels_tail[minmax(
+                                corres[i] - 1, corres[alpha(i)] - 1)] = i
 
         # Build the graph embedding
         embedding = {
@@ -289,9 +327,12 @@ class DynamicShow:
 
         # initialize positions to a valid (but ugly) layout
 
-        self.edges = [(i-1, j-1) for (i, j) in edges_num1]      # but internally, it's more convenient to use zero-indexing
-        self.faces = [[corres[j]-1 for j in face] for face in alpha.right_action_product(sigma).to_cycles()]
-        self.embedding = [[j-1 for j in embedding[i]] for i in range(1, self.nVertices+1)]
+        # but internally, it's more convenient to use zero-indexing
+        self.edges = [(i - 1, j - 1) for (i, j) in edges_num1]
+        self.faces = [[corres[j] - 1 for j in face]
+                      for face in alpha.right_action_product(sigma).to_cycles()]
+        self.embedding = [[j - 1 for j in embedding[i]]
+                          for i in range(1, self.nVertices + 1)]
 
         g = Graph(edges_num1, loops=False, multiedges=False)
         g.set_embedding(embedding)
@@ -300,11 +341,11 @@ class DynamicShow:
             return min(i, j), max(i, j)
 
         self.G = nx.DiGraph()
-        self.G.add_edges_from(minmax(i-1, j-1) for (i, j, _) in g.edges())
+        self.G.add_edges_from(minmax(i - 1, j - 1) for (i, j, _) in g.edges())
 
         layout = g.layout_planar() if map.genus() == 0 else g.layout()
 
-        self.pos = [Vector2D(*layout[i+1]) for i in range(self.nVertices)]
+        self.pos = [Vector2D(*layout[i + 1]) for i in range(self.nVertices)]
         # self.speed = [Vector2D(0, 0) for i in range(self.nVertices)]
 
         self.max_extent = 1
@@ -314,12 +355,13 @@ class DynamicShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, frameByFrame = False, show_halfedges = True):
+    def start(self, frameByFrame=False, show_halfedges=False):
         # initialize the matplotlib figure
         size = 7
 
-        self.fig = plt.figure(figsize = (size, size+1), layout = "constrained")
-        gs = matplotlib.gridspec.GridSpec(2, 2, figure = self.fig, width_ratios = [1, 4], height_ratios = [1, size])
+        self.fig = plt.figure(figsize=(size, size + 1), layout="constrained")
+        gs = matplotlib.gridspec.GridSpec(2, 2, figure=self.fig, width_ratios=[
+                                          1, 4], height_ratios=[1, size])
 
         self.ax = self.fig.add_subplot(gs[1, :])
         txt_ax = self.fig.add_subplot(gs[0, 0])
@@ -327,14 +369,18 @@ class DynamicShow:
 
         pos_centered = self.centerPos()
 
-        self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax = self.ax, nodelist = list(range(self.nVertices)),
-                    node_color="red", node_size=[min(300, 1000 / self.nVertices**.5)] * self.real_n_vertices + [0] * (self.nVertices - self.real_n_vertices))
-        self.edges_plt = nx.draw_networkx_edges(self.G, pos_centered, ax = self.ax, arrows = False)
+        self.nodes_plt = nx.draw_networkx_nodes(self.G, pos_centered, ax=self.ax, nodelist=list(range(self.nVertices)),
+                                                node_color="red", node_size=[min(300, 1000 / self.nVertices**.5)] * self.real_n_vertices + [0] * (self.nVertices - self.real_n_vertices))
+        self.edges_plt = nx.draw_networkx_edges(
+            self.G, pos_centered, ax=self.ax, arrows=False)
 
         if show_halfedges:
-            self.labels_head = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
-            self.labels_tail = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
-            self.labels_middle = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+            self.labels_head = nx.draw_networkx_edge_labels(
+                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
+            self.labels_tail = nx.draw_networkx_edge_labels(
+                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
+            self.labels_middle = nx.draw_networkx_edge_labels(
+                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
 
         self.show_halfedges = show_halfedges
 
@@ -355,7 +401,7 @@ class DynamicShow:
         # self.slider.valtext.set_text("1.000")
         # self.force_delta_t = False
 
-        #self.fig.tight_layout()
+        # self.fig.tight_layout()
 
         self.fig.canvas.mpl_connect('button_press_event', self.onClick)
         self.fig.canvas.mpl_connect('key_press_event', self.onKey)
@@ -365,7 +411,7 @@ class DynamicShow:
 
         if frameByFrame:
             self.anim_running = False
-            #self.anim.event_source.stop()
+            # self.anim.event_source.stop()
         else:
             self.anim_running = True
 
@@ -388,10 +434,13 @@ class DynamicShow:
         self.currentMaxDispl = self.maxDispl
         self.prev_pos_centered = None
 
-        self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data = False, blit = True, interval = 1)
+        self.anim = FuncAnimation(
+            self.fig, self.update_fig, cache_frame_data=False, blit=True, interval=1)
 
-        self.ax.callbacks.connect('xlim_changed', lambda event: self.anim._blit_cache.clear())
-        self.ax.callbacks.connect('ylim_changed', lambda event: self.anim._blit_cache.clear())
+        self.ax.callbacks.connect(
+            'xlim_changed', lambda event: self.anim._blit_cache.clear())
+        self.ax.callbacks.connect(
+            'ylim_changed', lambda event: self.anim._blit_cache.clear())
 
     def reset_forces(self):
         self.forces_to_compute = []
@@ -431,11 +480,14 @@ class DynamicShow:
 
     def print_timers(self):
         if self.time_profile and self.frame > 0:
-            print ("Average correctness check time:", int(self.check_pos_correct_time * 1000 / self.frame))
-            print ("Average forces computing time:", int(self.update_forces_time * 1000 / self.frame))
+            print("Average correctness check time:", int(
+                self.check_pos_correct_time * 1000 / self.frame))
+            print("Average forces computing time:", int(
+                self.update_forces_time * 1000 / self.frame))
 
             for force in self.forces_to_compute:
-                print ('\t', force.__name__, '\t', int(self.forces_times[force.__name__] * 1000 / self.frame))
+                print('\t', force.__name__, '\t', int(
+                    self.forces_times[force.__name__] * 1000 / self.frame))
             print()
 
     def onClick(self, event):
@@ -454,10 +506,10 @@ class DynamicShow:
 
         if event.key == "enter":
             if self.anim_running:
-                #self.anim.event_source.stop()
+                # self.anim.event_source.stop()
                 self.anim_running = False
             else:
-                #self.anim.event_source.start()
+                # self.anim.event_source.start()
                 self.anim_running = True
 
         if event.key == "p":
@@ -473,7 +525,7 @@ class DynamicShow:
 
     def computeRepulsionVVForces(self):
         for i in range(self.nVertices):
-            for j in range(i+1, self.nVertices):
+            for j in range(i + 1, self.nVertices):
                 r = self.pos[j] - self.pos[i]
                 if i < self.real_n_vertices and j < self.real_n_vertices:
                     coef = self.repulsionVVRRCoef
@@ -482,7 +534,8 @@ class DynamicShow:
                 else:
                     coef = self.repulsionVVRWCoef
 
-                force = coef * r.normalized() / r.normSq()     # force applied to i (going away from j)
+                # force applied to i (going away from j)
+                force = coef * r.normalized() / r.normSq()
                 self.forces[i] -= force
                 self.forces[j] += force
 
@@ -496,7 +549,8 @@ class DynamicShow:
                 length = self.springLength / self.break_down_num
 
             if self.useLogSpring:
-                force = self.springCoef * math.log(r.norm() / length) * r.normalized()
+                force = self.springCoef * \
+                    math.log(r.norm() / length) * r.normalized()
             else:
                 force = self.springCoef * (r.norm() - length) * r.normalized()
 
@@ -514,19 +568,24 @@ class DynamicShow:
         for i in range(self.nVertices):
             if len(self.embedding[i]) > 1:
                 for k in range(len(self.embedding[i])):
-                    u1 = self.embedding[i][k]                                   # simulates an angular spring force between u1 and u2
-                    u2 = self.embedding[i][(k+1) % len(self.embedding[i])]
+                    # simulates an angular spring force between u1 and u2
+                    u1 = self.embedding[i][k]
+                    u2 = self.embedding[i][(k + 1) % len(self.embedding[i])]
 
-                    v1, v2 = self.pos[u1] - self.pos[i], self.pos[u2] - self.pos[i]
+                    v1, v2 = self.pos[u1] - \
+                        self.pos[i], self.pos[u2] - self.pos[i]
 
                     angle = abs(v1.angle_towards(v2))
                     goal = 2.0 * math.pi / len(self.embedding[i])
 
-                    energy = self.torsionCoef * math.tanh(angle / self.torsionScale) ** self.torsionPower
+                    energy = self.torsionCoef * \
+                        math.tanh(
+                            angle / self.torsionScale) ** self.torsionPower
 
-                    #scale = -2.0 * self.torsionPower * 10 * energy / self.torsionScale / math.sinh(2.0 * angle / self.torsionScale)
+                    # scale = -2.0 * self.torsionPower * 10 * energy / self.torsionScale / math.sinh(2.0 * angle / self.torsionScale)
 
-                    scale = self.torsionCoef * abs(angle - goal) ** self.torsionPower
+                    scale = self.torsionCoef * \
+                        abs(angle - goal) ** self.torsionPower
                     if angle < goal:
                         scale = -scale
 
@@ -537,11 +596,13 @@ class DynamicShow:
                     self.forces[i] += force2 - force1
                     self.forces[u2] -= force2
 
-    def computeNodeEdgeForce(self, node, e1, e2):   # compute the repulsion force between node and edge (e1, e2)
+    # compute the repulsion force between node and edge (e1, e2)
+    def computeNodeEdgeForce(self, node, e1, e2):
         if node == e1 or node == e2:
             return
 
-        distdiff = (self.pos[node] - self.pos[e1]).norm() + (self.pos[node] - self.pos[e2]).norm() - (self.pos[e2] - self.pos[e1]).norm()
+        distdiff = (self.pos[node] - self.pos[e1]).norm() + (self.pos[node] -
+                                                             self.pos[e2]).norm() - (self.pos[e2] - self.pos[e1]).norm()
 
         energy = (distdiff / self.springLength) ** (-self.repulsionVertexEdgePower)
 
@@ -557,9 +618,11 @@ class DynamicShow:
 
     def computeRepulsionEEForces(self):
         for face in self.faces:
-            for i in range(len(face)):      # iterate over every pair (node, edge)
+            for i in range(
+                    len(face)):      # iterate over every pair (node, edge)
                 for j in range(len(face)):
-                    self.computeNodeEdgeForce(face[i], face[j], face[(j+1) % len(face)])
+                    self.computeNodeEdgeForce(
+                        face[i], face[j], face[(j + 1) % len(face)])
 
     def check_pos_correct(self, pos):
         # check if the embedding is still respected
@@ -567,35 +630,40 @@ class DynamicShow:
             if len(self.embedding) > 2:
                 angle_sum = 0
                 for k in range(len(self.embedding[i])):
-                    u1 = self.embedding[i][k]                                   # simulates an angular spring force between u1 and u2
-                    u2 = self.embedding[i][(k+1) % len(self.embedding[i])]
+                    # simulates an angular spring force between u1 and u2
+                    u1 = self.embedding[i][k]
+                    u2 = self.embedding[i][(k + 1) % len(self.embedding[i])]
 
-                    angle_sum += 2.0 * math.pi - (pos[u1] - pos[i]).angle_towards(pos[u2] - pos[i])   # embedding is given clockwise
+                    # embedding is given clockwise
+                    angle_sum += 2.0 * math.pi - \
+                        (pos[u1] - pos[i]).angle_towards(pos[u2] - pos[i])
 
                 # if the embedding is correct, angle_sum = 2pi
                 # otherwise, it's way bigger (>= 4pi?)
 
                 if angle_sum >= 2.1 * math.pi:  # account for float inaccuracies
-                    print ("bad!! bad angle (sum", angle_sum, "!)")
+                    # print ("bad!! bad angle (sum", angle_sum, "!)")
                     # print (pos[i])
                     # for k in self.embedding[i]:
                     #    print (pos[k])
                     return False
 
         # check that there is no edge crossing
-        # it suffices to check that for each face, none of the edges cross each other
+        # it suffices to check that for each face, none of the edges cross each
+        # other
 
         for face in self.faces:
             segments = []
             for i in range(len(face)):
-                segments.append(tuple(sorted((pos[face[i]], pos[face[(i+1) % len(face)]]))))
+                segments.append(
+                    tuple(sorted((pos[face[i]], pos[face[(i + 1) % len(face)]]))))
 
             # remove all identical segments
             segments = list(set(segments))
 
             if check_polygon_intersecting(segments):
-                print ("bad!! intersecting")
-                #print (segments)
+                # print ("bad!! intersecting")
+                # print (segments)
                 return False
 
         return True
@@ -620,14 +688,21 @@ class DynamicShow:
 
     def tick(self):
         if self.use_exponential_model:
-            base_delta_t = self.default_delta_t * math.exp(-self.frame / (self.exp_decrease * self.nEdges))
+            base_delta_t = self.default_delta_t * \
+                math.exp(-self.frame / (self.exp_decrease * self.nEdges))
             iters = 1
 
         else:
-            full_force_frames = int(self.nVertices * 2)   # after this number of iterations, we should be closer to the optimum; start going slower to refine the positions
-            several_iter_frames = int(self.nVertices * 4) # after this number of iterations, we start doing several frame at once with decreasing delta_t to reach the optimum
+            # after this number of iterations, we should be closer to the
+            # optimum; start going slower to refine the positions
+            full_force_frames = int(self.nVertices * 2)
+            # after this number of iterations, we start doing several frame at
+            # once with decreasing delta_t to reach the optimum
+            several_iter_frames = int(self.nVertices * 4)
 
-            power = 1.5                                     # delta_t will be proportional to 1 / frame ^ power when this number is reached
+            # delta_t will be proportional to 1 / frame ^ power when this
+            # number is reached
+            power = 1.5
 
             if self.frame < full_force_frames:
                 base_delta_t = self.fast_delta_t
@@ -637,7 +712,9 @@ class DynamicShow:
             if self.frame < several_iter_frames:
                 iters = 1
             else:
-                iters = self.max_iter_tick      # we do several iterations with geometrically decreasing delta_t to reach the optimum without flickering
+                # we do several iterations with geometrically decreasing
+                # delta_t to reach the optimum without flickering
+                iters = self.max_iter_tick
 
         delta_t = base_delta_t
         delta_t /= (self.current_penalty + 1)
@@ -645,20 +722,20 @@ class DynamicShow:
         self.current_delta_t = delta_t
 
         while iters > 0:
-            #self.current_penalty = 0
-            #currentMaxDispl = self.maxDispl / math.sqrt(self.current_penalty + 1)
-            #currentMaxDispl = self.maxDispl / (2 ** self.current_penalty)
-            #delta_t = base_delta_t / (2 ** self.current_penalty)
+            # self.current_penalty = 0
+            # currentMaxDispl = self.maxDispl / math.sqrt(self.current_penalty + 1)
+            # currentMaxDispl = self.maxDispl / (2 ** self.current_penalty)
+            # delta_t = base_delta_t / (2 ** self.current_penalty)
 
             if self.time_profile:
                 debut = time.perf_counter()
-            self.update_forces() # LONG ? Et si oui, quelle force ?
+            self.update_forces()  # LONG ? Et si oui, quelle force ?
             if self.time_profile:
                 fin = time.perf_counter()
                 self.update_forces_time += float(fin - debut)
 
             maxForce = max(map(Vector2D.normSq, self.forces))
-            #if maxForce > 0:
+            # if maxForce > 0:
             #    delta_t = min(delta_t, 2.0 / maxForce)
 
             newpos = [Vector2D() for i in range(self.nVertices)]
@@ -678,7 +755,7 @@ class DynamicShow:
             if self.time_profile:
                 debut = time.perf_counter()
 
-            if not self.is_planar or self.check_pos_correct(newpos): # LONG ?
+            if not self.is_planar or self.check_pos_correct(newpos):  # LONG ?
                 self.pos = newpos
                 iters -= 1
                 delta_t /= 3.0
@@ -690,7 +767,8 @@ class DynamicShow:
             else:
                 # we're going too fast... reduce delta_t & maxDispl
                 self.validFrames = 0
-                self.current_penalty = (self.current_penalty + self.wrong_move_penalty) * 2
+                self.current_penalty = (
+                    self.current_penalty + self.wrong_move_penalty) * 2
 
                 delta_t /= 2.0
                 self.currentMaxDispl /= 2.0
@@ -708,14 +786,15 @@ class DynamicShow:
         if frame > 5 and (self.anim_running or self.doFrame):
             self.tick()
             self.doFrame = False
-            #self.pos[0].x += (random.random() - 0.5) / 5
+            # self.pos[0].x += (random.random() - 0.5) / 5
         else:
             self.current_delta_t = 0
 
-        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else "") + " " + str(round(self.current_delta_t, 3)))
+        self.text.set_text("Frame: " + str(self.frame) + (
+            "; done" if self.done else "") + " " + str(round(self.current_delta_t, 3)))
 
-        #plt.axis("on")
-        #plt.cla()
+        # plt.axis("on")
+        # plt.cla()
 
         # self.pos[0] += Vector2D((random.random()-.5), (random.random()-.5))
 
@@ -737,17 +816,19 @@ class DynamicShow:
         pos_centered = self.centerPos()
 
         if self.prev_pos_centered:
-            dist = max((pos_centered[i][0] - self.prev_pos_centered[i][0]) ** 2.0 + (pos_centered[i][1] - self.prev_pos_centered[i][1]) ** 2.0 for i in range(self.nVertices))
+            dist = max((pos_centered[i][0] - self.prev_pos_centered[i][0]) ** 2.0 + (
+                pos_centered[i][1] - self.prev_pos_centered[i][1]) ** 2.0 for i in range(self.nVertices))
 
             if dist < self.convergence_limit ** 2.0 and self.anim_running and not self.done:
-                print ("STOP")
-                #self.anim.event_source.stop()
+                print("Convergence found")
+                # self.anim.event_source.stop()
                 self.anim_running = False
                 self.done = True
 
         self.prev_pos_centered = pos_centered
 
-        edges_pos = [(pos_centered[i], pos_centered[j]) for (i, j) in self.edges]
+        edges_pos = [(pos_centered[i], pos_centered[j])
+                     for (i, j) in self.edges]
 
         self.nodes_plt.set_offsets(pos_centered)
         self.edges_plt.set_segments(edges_pos)
@@ -755,9 +836,9 @@ class DynamicShow:
         ret = [self.nodes_plt, self.edges_plt, self.text]
 
         if self.show_halfedges:
-            #labels_head = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
-            #labels_tail = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
-            #labels_middle = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+            # labels_head = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
+            # labels_tail = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
+            # labels_middle = nx.draw_networkx_edge_labels(self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
 
             # for (source, dest) in [(labels_head, self.labels_head), (labels_tail, self.labels_tail), (labels_middle, self.labels_middle)]:
             #    for (edge, txt) in source.items():
@@ -765,10 +846,13 @@ class DynamicShow:
 
             #        ret.append(dest[edge])
 
-            for (d, prop) in ((self.labels_head, 0.7), (self.labels_tail, 0.3), (self.labels_middle, 0.5)):
+            for (d, prop) in ((self.labels_head, 0.7),
+                              (self.labels_tail, 0.3), (self.labels_middle, 0.5)):
                 for (edge, txt) in d.items():
-                    txt.set_x(pos_centered[edge[0]][0] * prop + pos_centered[edge[1]][0] * (1 - prop))
-                    txt.set_y(pos_centered[edge[0]][1] * prop + pos_centered[edge[1]][1] * (1 - prop))
+                    txt.set_x(pos_centered[edge[0]][0] * prop +
+                              pos_centered[edge[1]][0] * (1 - prop))
+                    txt.set_y(pos_centered[edge[0]][1] * prop +
+                              pos_centered[edge[1]][1] * (1 - prop))
 
                     ret.append(txt)
 
