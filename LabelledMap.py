@@ -1103,7 +1103,7 @@ class LabelledMap:
             relabelPerm
         ).canonicalRepresentant()
 
-    def getRootedMapcorrespondence(
+    def getRootedMapCorrespondance(
             self, otherMap, rootDemiEdge, return_map_perm=False, trust=False):
         """
         A method that returns a labelling of the demi-edges of this map
