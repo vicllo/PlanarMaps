@@ -47,7 +47,7 @@ class CycleUtilsProvider:
             raise ValueError(f"{otherIndex} isn't a fixed point ")
         splayTree = None
         value = 0
-        if not index in self.nodeMap:
+        if index not in self.nodeMap:
             splayTree = SplayTree()
             splayTree.insert(index)
             self.nodeMap[index] = splayTree.getNode(index)
@@ -56,10 +56,10 @@ class CycleUtilsProvider:
             splayTree = self.nodeMap[index].getSplayTree()
             value = splayTree.root.value + splayTree.root.offset
 
-        leftSplayTree, rightSplayTree = splayTree.split(value+1/2)
-        leftSplayTree.insert(value+1)
+        leftSplayTree, rightSplayTree = splayTree.split(value + 1 / 2)
+        leftSplayTree.insert(value + 1)
 
-        self.nodeMap[otherIndex] = leftSplayTree.getNode(value+1)
+        self.nodeMap[otherIndex] = leftSplayTree.getNode(value + 1)
 
         leftSplayTree.shift(-1)
         rightSplayTree.merge(leftSplayTree)
@@ -117,14 +117,14 @@ class CycleUtilsProvider:
     # OK
     # O(log(n))
     def swapIndex(self, index, otherIndex):
-        if not index in self.nodeMap and not otherIndex in self.nodeMap:
+        if index not in self.nodeMap and otherIndex not in self.nodeMap:
             return
-        if not index in self.nodeMap and otherIndex in self.nodeMap:
+        if index not in self.nodeMap and otherIndex in self.nodeMap:
             self.nodeMap[index] = self.nodeMap[otherIndex]
             self.nodeMap[index].index = index
             self.nodeMap.pop(otherIndex)
             return
-        if index in self.nodeMap and not otherIndex in self.nodeMap:
+        if index in self.nodeMap and otherIndex not in self.nodeMap:
             self.nodeMap[otherIndex] = self.nodeMap[index]
             self.nodeMap[otherIndex].index = otherIndex
             self.nodeMap.pop(index)
@@ -163,14 +163,14 @@ class CycleUtilsProvider:
     # O(log(n))
     # OK
     def isFixedPoint(self, index):
-        return not index in self.nodeMap
+        return index not in self.nodeMap
 
     # OK
     # O(log(n))
     def getValue(self, index):
         if self.isFixedPoint(index):
-            raise ValueError(f"A fixed point doesn't have a value: {
-                             index} is a fixed point")
+            raise ValueError(
+                f"A fixed point doesn't have a value: {index} is a fixed point")
         splayTree = self.getSplayTree(index)
         return splayTree.root.value + splayTree.root.offset
 
@@ -178,8 +178,8 @@ class CycleUtilsProvider:
     # O(log(n))
     def getSplayTree(self, index):
         if self.isFixedPoint(index):
-            raise ValueError(f"A fixed point doens't have a splay tree : {
-                             index} is a fixed point")
+            raise ValueError(
+                f"A fixed point doesn't have a splay tree : {index} is a fixed point")
         return self.nodeMap[index].getSplayTree()
     # OK
     # O(log(n))
@@ -193,8 +193,8 @@ class CycleUtilsProvider:
         if splayTree.min() == value:
             return
 
-        left, right = splayTree.split(value-1/2)
-        left.shift(right.max()+1-left.min())
+        left, right = splayTree.split(value - 1 / 2)
+        left.shift(right.max() + 1 - left.min())
         left.merge(right)
     # OK
     # O(log(n))
@@ -207,16 +207,16 @@ class CycleUtilsProvider:
 
         if splayTree.max() == value:
             return
-        left, right = splayTree.split(value+1/2)
-        left.shift(right.max()+1-left.min())
+        left, right = splayTree.split(value + 1 / 2)
+        left.shift(right.max() + 1 - left.min())
         left.merge(right)
 
     # OK
     # O(log(n))
     def merge(self, beforeIndex, afterIndex):
         if self.sameCycle(beforeIndex, afterIndex):
-            raise ValueError(f"Cannot merge detache two indexes in the same cycle  : {
-                             beforeIndex} and {afterIndex}")
+            raise ValueError(
+                f"Cannot merge detache two indexes in the same cycle  : {beforeIndex} and {afterIndex}")
 
         self._safeIndex(beforeIndex)
         self._safeIndex(afterIndex)
@@ -227,15 +227,15 @@ class CycleUtilsProvider:
         leftTree = self.getSplayTree(beforeIndex)
         rightSplayTree = self.getSplayTree(afterIndex)
 
-        rightSplayTree.shift(leftTree.max()+1-rightSplayTree.min())
+        rightSplayTree.shift(leftTree.max() + 1 - rightSplayTree.min())
         rightSplayTree.merge(leftTree)
 
     # OK
     # O(log(n))
     def cut(self, startIndex, endIndex):
         if not self.sameCycle(startIndex, endIndex):
-            raise ValueError(f"Cut can only be called for index in the same cycle {
-                             startIndex} and {endIndex} are not")
+            raise ValueError(
+                f"Cut can only be called for index in the same cycle {startIndex} and {endIndex} are not")
         if startIndex == endIndex:
             self.detach(startIndex)
             return
@@ -244,11 +244,11 @@ class CycleUtilsProvider:
         splayTree = self.getSplayTree(startIndex)
 
         if startValue < endValue:
-            left, otherRight = splayTree.split(endValue+1/2)
-            otherLeft, _ = left.split(startValue-1/2)
+            left, otherRight = splayTree.split(endValue + 1 / 2)
+            otherLeft, _ = left.split(startValue - 1 / 2)
             otherRight.merge(otherLeft)
         else:
-            otherLeft, right = splayTree.split(startValue-1/2)
-            left, otherRight = otherLeft.split(endValue+1/2)
-            left.shift(right.max()+1-left.min())
+            otherLeft, right = splayTree.split(startValue - 1 / 2)
+            left, otherRight = otherLeft.split(endValue + 1 / 2)
+            left.shift(right.max() + 1 - left.min())
             left.merge(right)

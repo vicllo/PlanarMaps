@@ -4,6 +4,7 @@ import numpy as np
 
 
 class MapPermutation:
+
     def __init__(self, lst, trust=False) -> None:
         if isinstance(lst, Permutation):
             self._init_from_permutation(lst, trust=trust)
@@ -129,7 +130,7 @@ class MapPermutation:
 
     def __next__(self):
         if self.index < len(self):
-            result = self(self.index+1)
+            result = self(self.index + 1)
             self.index += 1
             return result
         else:
@@ -158,7 +159,7 @@ class MapPermutation:
         """
         outSize = max(self.size(), rperm.size())
 
-        outList = [self(rperm(i)) for i in range(1, outSize+1)]
+        outList = [self(rperm(i)) for i in range(1, outSize + 1)]
 
         return MapPermutation(outList)
 

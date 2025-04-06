@@ -49,48 +49,50 @@ class RotatingPermutation(MapPermutation):
 
         try:
             if lst == int(lst) and lst > 0:
-                # If lst is an integer we just set our permutation to be the identity
+                # If lst is an integer we just set our permutation to be the
+                # identity
                 self._n = lst
                 self._numCycles = self._n
                 self.provider = CycleUtilsProvider([])
                 return
-        except:
+        except BaseException:
             pass
 
         mx = 0
         seen = []
         try:
-            # We're directly using the cycle representation to initialise the permutation
-            if type(lst[0]) == type((42,)):
+            # We're directly using the cycle representation to initialise the
+            # permutation
+            if isinstance(lst[0], type((42,))):
                 for l in lst:
                     for i in l:
                         mx = max(i, mx)
                         if i != int(i) or i <= 0:
-                            raise ValueError(f"Invalid argument: {
-                                             i} isn't a strictly positive integer in the list given")
-                seen = [False for i in range(mx+1)]
+                            raise ValueError(
+                                f"Invalid argument: {i} isn't a strictly positive integer in the list given")
+                seen = [False for i in range(mx + 1)]
                 cnt = 0
                 for l in lst:
                     k = 0
                     while k < len(l):
                         i = l[k]
                         if seen[i]:
-                            raise ValueError(f"Invalid argument: {
-                                             i} appears at least two times in list given it cannot be a permutation.")
+                            raise ValueError(
+                                f"Invalid argument: {i} appears at least two times in list given it cannot be a permutation.")
                         seen[i] = True
                         k += 1
                         while k < len(l) and l[k] == i:
                             k += 1
                             continue
                         cnt += 1
-                self._numCycles += mx-cnt
-                self._numberOfFixedPoint += mx-cnt
+                self._numCycles += mx - cnt
+                self._numberOfFixedPoint += mx - cnt
                 for l in lst:
                     prevNode = None
                     for i in l:
                         newNode = CyclicChainedList(i)
                         self._permCycle[i] = newNode
-                        if not prevNode is None:
+                        if prevNode is not None:
                             prevNode.insertAfter(newNode)
                         prevNode = newNode
                     self._numberOfFixedPoint += len(l) == 1
@@ -100,20 +102,20 @@ class RotatingPermutation(MapPermutation):
                 mx = len(lst)
                 for i in lst:
                     if i != int(i) or i <= 0:
-                        raise ValueError(f"Invalid argument : {
-                                         i} isn't a strictly positive integer in the list given")
+                        raise ValueError(
+                            f"Invalid argument : {i} isn't a strictly positive integer in the list given")
                     if i > len(lst):
                         raise ValueError(
                             f"{i} is bigger than the size of the given list")
-                seen = [False for i in range(mx+1)]
+                seen = [False for i in range(mx + 1)]
                 for i in lst:
                     if seen[i]:
-                        raise ValueError(f"Invalid argument: {
-                                         i} appears at least two time in the list given it cannot be a permutation..")
+                        raise ValueError(
+                            f"Invalid argument: {i} appears at least two time in the list given it cannot be a permutation..")
                     seen[i] = True
 
-                seen = [False for i in range(mx+1)]
-                for i in range(1, mx+1):
+                seen = [False for i in range(mx + 1)]
+                for i in range(1, mx + 1):
                     if seen[i]:
                         continue
                     prevNode = None
@@ -122,18 +124,18 @@ class RotatingPermutation(MapPermutation):
                     while not seen[curElement]:
                         newNode = CyclicChainedList(curElement)
                         self._permCycle[curElement] = newNode
-                        if not prevNode is None:
+                        if prevNode is not None:
                             prevNode.insertAfter(newNode)
                         prevNode = newNode
                         seen[curElement] = True
-                        curElement = lst[curElement-1]
+                        curElement = lst[curElement - 1]
                         cnt += 1
                     self._numCycles += 1
                     self._numberOfFixedPoint += cnt == 1
         except ValueError as e:
             raise
-        except:
-            raise ValueError("Invalid argument: The argument given must be Permutation or MapPermutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a postive integer.")
+        except BaseException:
+            raise ValueError("Invalid argument: The argument given must be Permutation or MapPermutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.")
         self._n = mx
         self.provider = CycleUtilsProvider(self.to_cycles())
 
@@ -156,8 +158,8 @@ class RotatingPermutation(MapPermutation):
             - k the number of node to delete
         """
         if k > self.size():
-            raise ValueError(f"Cannot delete {
-                             k} last element in a RotatingPermutation of size {self.size()}")
+            raise ValueError(
+                f"Cannot delete {k} last element in a RotatingPermutation of size {self.size()}")
         for _ in range(k):
             self.delete(self._n)
 
@@ -211,7 +213,7 @@ class RotatingPermutation(MapPermutation):
                 self._permCycle[index] = self._permCycle[nPrev]
 
                 self._permCycle.pop(nPrev)
-            except:
+            except BaseException:
                 pass
 
     # OK
@@ -228,7 +230,7 @@ class RotatingPermutation(MapPermutation):
             raise ValueError("{i} isn't a positive integer")
         try:
             return self._permCycle[i].prev.val
-        except:
+        except BaseException:
             return i
     # OK
 
@@ -277,17 +279,17 @@ class RotatingPermutation(MapPermutation):
         O(log(n))
         """
         if newIndexEnd == newIndexStart:
-            raise ValueError(f"{newIndexEnd} and {
-                             newIndexStart} must be different")
-        if newIndexStart <= self.size() or newIndexStart > self.size()+2:
-            raise ValueError(f"{newIndexStart} must be  >{
-                             self.size()} and <= {self.size()+2}")
-        if newIndexEnd <= self.size() or newIndexEnd > self.size()+2:
-            raise ValueError(f"{newIndexEnd} must be  >{
-                             self.size()} and <= {self.size()+2}")
+            raise ValueError(
+                f"{newIndexEnd} and {newIndexStart} must be different")
+        if newIndexStart <= self.size() or newIndexStart > self.size() + 2:
+            raise ValueError(
+                f"{newIndexStart} must be  >{self.size()} and <= {self.size() + 2}")
+        if newIndexEnd <= self.size() or newIndexEnd > self.size() + 2:
+            raise ValueError(
+                f"{newIndexEnd} must be  >{self.size()} and <= {self.size() + 2}")
         if not self.sameCycle(startIndex, endIndex):
-            raise ValueError(f"{newIndexEnd} and {
-                             newIndexStart} must be in the same cycle to use cutAdd")
+            raise ValueError(
+                f"{newIndexEnd} and {newIndexStart} must be in the same cycle to use cutAdd")
         if startIndex == endIndex:
             self.addBefore(startIndex)
             self.addBefore(startIndex)
@@ -349,7 +351,7 @@ class RotatingPermutation(MapPermutation):
 
         indexCandidate = set()
         for j in range(len(indexMap)):
-            indexCandidate.add(self.size()-j)
+            indexCandidate.add(self.size() - j)
 
         for index in list(indexCandidate):
             if index in indexMap:
@@ -358,7 +360,7 @@ class RotatingPermutation(MapPermutation):
 
         corresOut = {}
         for index in list(indexMap):
-            if not index in indexMap:
+            if index not in indexMap:
                 continue
             corresIndex = indexCandidate.pop()
             corresOut[index] = corresIndex
@@ -379,8 +381,8 @@ class RotatingPermutation(MapPermutation):
         O(len(cycles)*log(n))
         """
         for c in cycles:
-            for i in range(len(c)-1):
-                self.addAfterGeneral(c[i], c[i+1])
+            for i in range(len(c) - 1):
+                self.addAfterGeneral(c[i], c[i + 1])
 
     # OK
     def addCycles(self, cycles):
@@ -402,7 +404,7 @@ class RotatingPermutation(MapPermutation):
         for c in cycles:
             for e in c:
                 testSet.add(e)
-                if e <= self.size() or e <= 0 or e != int(e) or e > self.size()+N:
+                if e <= self.size() or e <= 0 or e != int(e) or e > self.size() + N:
                     raise ValueError("{cycles} isn't valid")
         if len(testSet) != N:
             raise ValueError("{cycles} isn't valid")
@@ -441,8 +443,8 @@ class RotatingPermutation(MapPermutation):
         if index == otherIndex:
             return
         if not self.provider.isFixedPoint(otherIndex):
-            raise ValueError(f"Can only add after fixed point {
-                             otherIndex} isn't one")
+            raise ValueError(
+                f"Can only add after fixed point {otherIndex} isn't one")
 
         self._numberOfFixedPoint -= self.provider.isFixedPoint(index)
         self.provider.addAfter(index, otherIndex)
@@ -490,12 +492,13 @@ class RotatingPermutation(MapPermutation):
 
         self.labelToTheEnd([index, otherIndex])
 
-        if self.provider.isFixedPoint(self._n) or self.provider.isFixedPoint(self._n-1):
+        if self.provider.isFixedPoint(
+                self._n) or self.provider.isFixedPoint(self._n - 1):
             self.deleteLastKIndex(2)
             return
 
         beforeIndex = self.inverseApply(self._n)
-        afterIndex = self.apply(self._n-1)
+        afterIndex = self.apply(self._n - 1)
 
         self.deleteLastKIndex(2)
 
@@ -551,7 +554,7 @@ class RotatingPermutation(MapPermutation):
 
         try:
             node = self._permCycle[index]
-        except:
+        except BaseException:
             node = CyclicChainedList(index)
             self._permCycle[index] = node
         return node
@@ -561,7 +564,7 @@ class RotatingPermutation(MapPermutation):
     def stretch(self, m):
         """
         This function will increase the size of the permutation by m,all the new index will
-        be fixed point 
+        be fixed point
         -----
         O(1)
         -----
@@ -574,7 +577,7 @@ class RotatingPermutation(MapPermutation):
     def addAfter(self, index):
         """
         Let denote n=self.size() given that  n>=index>=1, this will increase the size of self by one and add
-        the new element n+1 on the cycle of index after index.You should note that if index>self.size() this will raise an error.  
+        the new element n+1 on the cycle of index after index.You should note that if index>self.size() this will raise an error.
         -----
         O(log(n))
         """
@@ -587,11 +590,11 @@ class RotatingPermutation(MapPermutation):
 
         self.stretch(1)
 
-        self.provider.addAfter(index, nPrev+1)
+        self.provider.addAfter(index, nPrev + 1)
 
         node = self.getNode(index)
 
-        newNode = self.getNode(nPrev+1)
+        newNode = self.getNode(nPrev + 1)
 
         self._numberOfFixedPoint -= 1
         self._numCycles -= 1
@@ -602,7 +605,7 @@ class RotatingPermutation(MapPermutation):
     def addBefore(self, index):
         """
         Let denote n=self.size() given that  n>=index>=1, this will increase the size of self by one and add
-        the new element n+1 on the cycle of index before index.You should note that if index>self.size() this will raise an error.  
+        the new element n+1 on the cycle of index before index.You should note that if index>self.size() this will raise an error.
         -----
         O(log(n))
         """
@@ -645,7 +648,7 @@ class RotatingPermutation(MapPermutation):
             -i an strictly positive integer
             -j an strictly positive integer
 
-        Returns: 
+        Returns:
             A boolean indicating whether of not i and j are on the same cycle of self
         -------
         O(log(n))
@@ -669,7 +672,7 @@ class RotatingPermutation(MapPermutation):
 
     # OK
     def pretty_print(self):
-        """ 
+        """
         Print self in a more pretty form
         """
         print(self.pretty_repr())
@@ -685,9 +688,9 @@ class RotatingPermutation(MapPermutation):
         O(n)
         where n is the number of element of self
         """
-        seen = [False for i in range(self.size()+1)]
+        seen = [False for i in range(self.size() + 1)]
         cycles = []
-        for i in range(1, self.size()+1):
+        for i in range(1, self.size() + 1):
             if seen[i]:
                 continue
             try:
@@ -696,7 +699,7 @@ class RotatingPermutation(MapPermutation):
                 cycles.append(tuple(cycle))
                 for j in cycle:
                     seen[j] = True
-            except:
+            except BaseException:
                 cycles.append((i,))
 
         return cycles
@@ -725,7 +728,7 @@ class RotatingPermutation(MapPermutation):
             raise ValueError("{i} isn't a positive integer")
         try:
             return self._permCycle[i].nxt.val
-        except:
+        except BaseException:
             return i
 
     # OK

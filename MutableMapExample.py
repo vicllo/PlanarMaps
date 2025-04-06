@@ -13,7 +13,7 @@ def simpleGone(n):
     A = myMap.X(1)
     B = A.c
     C = A
-    for i in range(n-1):
+    for i in range(n - 1):
         C = C.addEdgeAfter()
     U, _ = C.link(B)
     U.contract()
@@ -50,7 +50,7 @@ def repeatingPolygon(n, p):
     A = myMap.X(1)
     A = A.addEdgeBefore()
     B = triangle.X(1)
-    for _ in range(p-1):
+    for _ in range(p - 1):
         A = A.copyOn(B)[1][0]
         A = A.addEdgeAfter()
     A.delete()

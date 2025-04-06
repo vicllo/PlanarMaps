@@ -1,7 +1,8 @@
 
 # This file contain an implementation of a custom
 # Variant of SplayTree used in CycleUtilsProviderMain
-# Mainly because it isn't the main focus I didn't add exhaustive documentation for now
+# Mainly because it isn't the main focus I didn't add exhaustive
+# documentation for now
 
 
 # OK
@@ -10,10 +11,10 @@ def swapRight(node, otherNode):
     node.right = otherNode.right
     otherNode.right = tmp
 
-    if not node.right is None:
+    if node.right is not None:
         node.right.parent = node
 
-    if not otherNode.right is None:
+    if otherNode.right is not None:
         otherNode.right.parent = otherNode
 
 
@@ -23,10 +24,10 @@ def swapLeft(node, otherNode):
     node.left = otherNode.left
     otherNode.left = tmp
 
-    if not node.left is None:
+    if node.left is not None:
         node.left.parent = node
 
-    if not otherNode.left is None:
+    if otherNode.left is not None:
         otherNode.left.parent = otherNode
 
 
@@ -127,11 +128,11 @@ def valueToTheRight(parentValue, value):
 
 
 def isLeftChild(parentNode, node):
-    return valueToTheLeft(parentNode.value, node.value+node.offset)
+    return valueToTheLeft(parentNode.value, node.value + node.offset)
 
 
 def isRightChild(parentNode, node):
-    return valueToTheRight(parentNode.value, node.value+node.offset)
+    return valueToTheRight(parentNode.value, node.value + node.offset)
 
 
 class Node:
@@ -155,11 +156,11 @@ class Node:
         self.splay()
 
     def getSplayTree(self):
-        # It is guaranted after colling this function that self is the root
+        # It is guaranteed after colling this function that self is the root
         root = self.getRoot()
         self.splay()
         splayTree = root.splayTree
-        if not splayTree is None:
+        if splayTree is not None:
             splayTree.changeRoot(self)
         return splayTree
 
@@ -174,30 +175,30 @@ class Node:
         if self.isEmpty():
             return -1
         maxChildHeight = -1
-        if not self.right is None:
+        if self.right is not None:
             maxChildHeight = self.right.height()
-        if not self.left is None:
+        if self.left is not None:
             maxChildHeight = max(self.left.height(), maxChildHeight)
-        return 1+maxChildHeight
+        return 1 + maxChildHeight
 
     def sortedList(self, offset=0):
         if self.isEmpty():
             return []
-        out = [self.value+offset+self.offset]
-        if not self.right is None:
-            out = out + self.right.sortedList(self.offset+offset)
-        if not self.left is None:
-            out = self.left.sortedList(offset+self.offset)+out
+        out = [self.value + offset + self.offset]
+        if self.right is not None:
+            out = out + self.right.sortedList(self.offset + offset)
+        if self.left is not None:
+            out = self.left.sortedList(offset + self.offset) + out
         return out
 
     def indexList(self):
         if self.isEmpty():
             return []
         out = [self.index]
-        if not self.right is None:
+        if self.right is not None:
             out = out + self.right.indexList()
-        if not self.left is None:
-            out = self.left.indexList()+out
+        if self.left is not None:
+            out = self.left.indexList() + out
         return out
 
     def isEmpty(self):
@@ -212,9 +213,9 @@ class Node:
         bestNode = node
         bestOffset = self.offset
         while True:
-            if value == node.value+offset:
+            if value == node.value + offset:
                 return node, offset
-            if valueToTheLeft(node.value+offset, value):
+            if valueToTheLeft(node.value + offset, value):
                 bestNode = node
                 bestOffset = offset
                 if node.left is None:
@@ -235,9 +236,9 @@ class Node:
         bestNode = node
         bestOffset = self.offset
         while True:
-            if value == node.value+offset:
+            if value == node.value + offset:
                 return node, offset
-            if valueToTheLeft(node.value+offset, value):
+            if valueToTheLeft(node.value + offset, value):
                 if node.left is None:
                     return bestNode, bestOffset
                 node = node.left
@@ -257,18 +258,18 @@ class Node:
         node = self
         offset = self.offset
         while (True):
-            if node.value+offset == newValue:
+            if node.value + offset == newValue:
                 return False, node, offset
-            if valueToTheLeft(node.value+offset, newValue):
+            if valueToTheLeft(node.value + offset, newValue):
                 if node.left is None:
-                    node.left = Node(newValue-offset, node)
+                    node.left = Node(newValue - offset, node)
                     node.left.addCountUpward(1)
                     return True, node.left, offset
                 else:
                     node = node.left
             else:
                 if node.right is None:
-                    node.right = Node(newValue-offset, node)
+                    node.right = Node(newValue - offset, node)
                     node.right.addCountUpward(1)
                     return True, node.right, offset
                 else:
@@ -288,9 +289,9 @@ class Node:
         node = self
         offset = self.offset
         while True:
-            if value == node.value+offset:
+            if value == node.value + offset:
                 return node, offset
-            if valueToTheLeft(node.value+offset, value):
+            if valueToTheLeft(node.value + offset, value):
                 if node.left is None:
                     return node, offset
                 node = node.left
@@ -303,7 +304,7 @@ class Node:
     def min(self):
         minimum = self
         offset = self.offset
-        while not minimum.left is None:
+        while minimum.left is not None:
             minimum = minimum.left
             offset += minimum.offset
         return minimum, offset
@@ -313,7 +314,7 @@ class Node:
             return self
 
         node, offset = self.find(value)
-        if node.value+offset != value:
+        if node.value + offset != value:
             return node
 
         if node.left is None and node.right is None:
@@ -328,7 +329,7 @@ class Node:
             node.parent.right = None
             return node.parent
 
-        if node.left is None and not node.right is None:
+        if node.left is None and node.right is not None:
             node.right.parent = node.parent
             if node.parent is None:
                 return node.right
@@ -344,7 +345,7 @@ class Node:
             node.parent.addCountUpward(-1)
             return node.right
 
-        if node.right is None and not node.left is None:
+        if node.right is None and node.left is not None:
             node.left.parent = node.parent
             if node.parent is None:
                 return node.left
@@ -366,11 +367,11 @@ class Node:
         else:
             rep.parent.right = rep.right
 
-        if not rep.right is None:
+        if rep.right is not None:
             rep.right.parent = rep.parent
             rep.right.offset += rep.offset
 
-        node.value = rep.value+repOffset
+        node.value = rep.value + repOffset
         rep.parent.addCountUpward(-1)
 
         # This line is mainly here to not break the association
@@ -382,7 +383,7 @@ class Node:
     def max(self):
         maximum = self
         offset = self.offset
-        while not maximum.right is None:
+        while maximum.right is not None:
             maximum = maximum.right
             offset += maximum.offset
         return maximum, offset
@@ -390,15 +391,15 @@ class Node:
     def _isBst(self, offset=0):
         if self.isEmpty():
             return None, None
-        min = self.value+self.offset+offset
-        max = self.value+self.offset+offset
-        if not self.left is None:
-            minLeft, maxLeft = self.left._isBst(self.offset+offset)
-            assert valueToTheLeft(self.value+offset+self.offset, maxLeft)
+        min = self.value + self.offset + offset
+        max = self.value + self.offset + offset
+        if self.left is not None:
+            minLeft, maxLeft = self.left._isBst(self.offset + offset)
+            assert valueToTheLeft(self.value + offset + self.offset, maxLeft)
             min = minLeft
-        if not self.right is None:
+        if self.right is not None:
             minRight, maxRight = self.right._isBst()
-            assert valueToTheRight(self.value+offset+self.offset, minRight)
+            assert valueToTheRight(self.value + offset + self.offset, minRight)
             max = maxRight
         return min, max
 
@@ -415,14 +416,14 @@ class Node:
             return self
 
         # Parent
-        if not self.parent is None:
+        if self.parent is not None:
             parent = self.parent
             if isLeftChild(parent, self):
                 parent.left = oldLeft
             else:
                 parent.right = oldLeft
 
-        if not oldLeft.right is None:
+        if oldLeft.right is not None:
             oldLeft.right.parent = self
 
         oldLeft.parent = self.parent
@@ -432,9 +433,9 @@ class Node:
         x = oldLeft.offset
         y = self.offset
 
-        oldLeft.offset = x+y
+        oldLeft.offset = x + y
         self.offset = -x
-        if not oldLeft.right is None:
+        if oldLeft.right is not None:
             oldLeft.right.offset += x
 
         # Cnt
@@ -460,14 +461,14 @@ class Node:
             return self
 
         # Parent
-        if not self.parent is None:
+        if self.parent is not None:
             parent = self.parent
             if isLeftChild(parent, self):
                 parent.left = oldRight
             else:
                 parent.right = oldRight
 
-        if not oldRight.left is None:
+        if oldRight.left is not None:
             oldRight.left.parent = self
 
         oldRight.parent = self.parent
@@ -476,9 +477,9 @@ class Node:
         # Offset
         y = self.offset
         x = oldRight.offset
-        oldRight.offset = x+y
+        oldRight.offset = x + y
         self.offset = -x
-        if not oldRight.left is None:
+        if oldRight.left is not None:
             oldRight.left.offset += x
 
         # Cnt
@@ -562,7 +563,7 @@ class SplayTree():
 
     def changeRoot(self, root):
         if not root.isRoot():
-            ValueError("The argument must be the root of his tree")
+            raise ValueError("The argument must be the root of his tree")
         self.root.splayTree = None
         self.root = root
         self.root.splayTree = self
@@ -585,7 +586,7 @@ class SplayTree():
         """
         if self.valid:
             return
-        raise ValueError("This isn't anymore a valid instance of a splayTree")
+        raise ValueError("This isn't a valid instance of a splayTree anymore")
 
     def split(self, value):
         """
@@ -608,7 +609,7 @@ class SplayTree():
         self.root.right = None
         self.root.cnt -= numberOfElement(right)
 
-        if not right is None:
+        if right is not None:
             right.parent = None
             right.offset += self.root.offset
         return self, SplayTree(root=right)
@@ -682,7 +683,7 @@ class SplayTree():
 
     def _isBst(self):
         """
-        Returns: A boolean indicating if self is a valid binary search tree  
+        Returns: A boolean indicating if self is a valid binary search tree
         -------
         O(n) where n =  self.size()
         """
@@ -691,12 +692,12 @@ class SplayTree():
         try:
             self.root.isBst()
             return True
-        except:
+        except BaseException:
             return False
 
     def _isRoot(self):
         """
-        Returns : A boolean indicating if self.root is really the root 
+        Returns : A boolean indicating if self.root is really the root
         -------
         O(1)
         """
@@ -709,8 +710,8 @@ class SplayTree():
         note that node.value+node.getOffSet() == value and not node.value == value.
         ------
         Args: value
-        Returns:  The node corresponding to value in the tree if value is in the tree otherwise 
-                it return None 
+        Returns:  The node corresponding to value in the tree if value is in the tree otherwise
+                it return None
         ------
         O(log(n))
         """
@@ -753,7 +754,7 @@ class SplayTree():
         """
         This method return the minimum of self
         -------
-        Returns: the minimum of self if self isn't empty and None otherwise 
+        Returns: the minimum of self if self isn't empty and None otherwise
         -------
         O(log(n)) where n = self.size()
         """
@@ -763,13 +764,13 @@ class SplayTree():
         node, _ = self.root.min()
         self.changeRoot(node.splay())
 
-        return self.root.value+self.root.offset
+        return self.root.value + self.root.offset
 
     def max(self):
         """
         This method return the maximum of self
         -------
-        Returns: the maximum of self if self isn't empty and None otherwise 
+        Returns: the maximum of self if self isn't empty and None otherwise
         -------
         O(log(n)) where n = self.size()
         """
@@ -779,14 +780,14 @@ class SplayTree():
             return None
         node, _ = self.root.max()
         self.changeRoot(node.splay())
-        return self.root.value+self.root.offset
+        return self.root.value + self.root.offset
 
     def find(self, value):
         """
-        This return a boolean indicating if value is in self 
+        This return a boolean indicating if value is in self
         -------
         Args: value
-        Returns: A boolean indicating if value is in self 
+        Returns: A boolean indicating if value is in self
         -------
         O(log(n)) where n = self.size()
         """
@@ -796,7 +797,7 @@ class SplayTree():
             return False
         node, _ = self.root.find(value)
         self.changeRoot(node.splay())
-        return self.root.value+self.root.offset == value
+        return self.root.value + self.root.offset == value
 
     def insertList(self, list):
         """
@@ -813,10 +814,10 @@ class SplayTree():
 
     def findSmallestGreater(self, value):
         """
-        This will return the smallest element of self >= value or None if it doens't exist
+        This will return the smallest element of self >= value or None if it doesn't exist
         -------
         Args: value
-        Returns: the smallest element of self >= value or None if it  doesn't exist 
+        Returns: the smallest element of self >= value or None if it  doesn't exist
         -------
         O(log(n)) where n = self.size()
         """
@@ -826,9 +827,9 @@ class SplayTree():
             return None
         node, _ = self.root.findSmallestGreater(value)
         self.changeRoot(node.splay())
-        if self.root.value+self.root.offset < value:
+        if self.root.value + self.root.offset < value:
             return None
-        return self.root.value+self.root.offset
+        return self.root.value + self.root.offset
 
     def size(self):
         """
@@ -841,10 +842,10 @@ class SplayTree():
 
     def findBiggestSmaller(self, value):
         """
-        This will return the smallest element of self <= value or None if it doens't exist
+        This will return the smallest element of self <= value or None if it doesn't exist
         -------
         Args: value
-        Returns: the biggest element of self <= value or None if doesn't exist 
+        Returns: the biggest element of self <= value or None if doesn't exist
         -------
         O(log(n)) where n = self.size()
         """
@@ -854,6 +855,6 @@ class SplayTree():
             return None
         node, _ = self.root.findBiggestSmaller(value)
         self.changeRoot(node.splay())
-        if self.root.value+self.root.offset > value:
+        if self.root.value + self.root.offset > value:
             return None
         return self.root.value + self.root.offset

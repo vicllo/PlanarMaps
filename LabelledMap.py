@@ -37,7 +37,7 @@ def transitiveCouplePermutation(sigma, alpha):
         if not seen[sigma(i)]:
             todo.append(sigma(i))
             seen[sigma(i)] = True
-    return not False in seen
+    return False not in seen
 
 
 class LabelledMap:
@@ -71,20 +71,20 @@ class LabelledMap:
         INPUT:
         - ``sigma`` -- Permutation ; Fixed-point free involution whose
           cycles are given by the edges.
-        - ``alpha`` -- Permution ; Permutation that maps a half-edge
+        - ``alpha`` -- Permutation ; Permutation that maps a half-edge
           to the half-edge incident to it in clockwise direction around
           the vertex it belongs to.
-        - ``ajd``-- and adjacency list be careful the order of the 
+        - ``ajd``-- and adjacency list be careful the order of the
             node in your adjaceny will be used to choose the embedding
-        - ``trust`` -- A parameter that indicates whether the validity check (i.e., whether the map is connex, etc.) 
-          should be skipped when initializing the map. It makes initialization faster but can be dangerous because 
-          if the map isn't well-formed, all the other methods become unsafe. You should be absolutely sure of your 
+        - ``trust`` -- A parameter that indicates whether the validity check (i.e., whether the map is connex, etc.)
+          should be skipped when initializing the map. It makes initialization faster but can be dangerous because
+          if the map isn't well-formed, all the other methods become unsafe. You should be absolutely sure of your
           map's validity if you set this to true.
 
-          - The advantage of setting `trust` to true is that it makes the initialization faster, which is useful when 
-          you are initializing a lot of big maps (like in long bijections). 
+          - The advantage of setting `trust` to true is that it makes the initialization faster, which is useful when
+          you are initializing a lot of big maps (like in long bijections).
 
-          - Therefore, the best workflow is to leave it at the default during testing, and when you are 100% sure that 
+          - Therefore, the best workflow is to leave it at the default during testing, and when you are 100% sure that
           your code works, set `trust = true` to gain a constant factor boost. By default, it is set to false.
 
         EXAMPLES::
@@ -166,7 +166,7 @@ class LabelledMap:
         self.sigmaUtilsAbstractor = PermutationUtilsAbstractor(self.sigma)
         self.phiUtilsAbstractor = PermutationUtilsAbstractor(self.phi)
         # Initialising the topologicalMap
-        for i in range(1, self.q+1):
+        for i in range(1, self.q + 1):
             self.topologicalMap[i] = TopologicalDemiEdge(self, i)
 
     def _build_from_permutations(self, sigma, alpha, trust):
@@ -491,7 +491,8 @@ class LabelledMap:
             'Labelled map | Sigma : [1, 3, 2, 5, 4, 6], Alpha : [2, 1, 4, 3, 6, 5]'
 
         """
-        return "Labelled map | Sigma : " + str(self.sigma) + ", Alpha : " + str(self.alpha)
+        return "Labelled map | Sigma : " + \
+            str(self.sigma) + ", Alpha : " + str(self.alpha)
 
     def _numberOfFaces(self):
         """
@@ -669,7 +670,7 @@ class LabelledMap:
 
             Complexity is O(1)
         """
-        return self.sigma.size()//2
+        return self.sigma.size() // 2
 
     def genus(self):
         """
@@ -756,7 +757,7 @@ class LabelledMap:
 
         tree = Graph()
 
-        seen = [False] * (n+1)
+        seen = [False] * (n + 1)
         seen[0] = True
 
         def dfs(u):
@@ -937,7 +938,7 @@ class LabelledMap:
 
             Complexity is O(m) where m is the number of edges
         """
-        K = 8*self.m+1
+        K = 8 * self.m + 1
 
         derivedAlphaList = list(range(1, K))
         derivedSigmaList = list(range(1, K))
@@ -947,18 +948,18 @@ class LabelledMap:
         m = int(self.m)
 
         for i in list(range(1, K)):
-            if i <= 2*m:
-                derivedAlphaList[i-1] = i+2*m
-                derivedSigmaList[i-1] = self.sigma(i)
-            elif i > 2*m and i <= 4*m:
-                derivedAlphaList[i-1] = i-2*m
-                derivedSigmaList[i-1] = i+4*m
-            elif i > 4*m and i <= 6*m:
-                derivedAlphaList[i-1] = i+2*m
-                derivedSigmaList[i-1] = invPhi(i-4*m)+4*m
+            if i <= 2 * m:
+                derivedAlphaList[i - 1] = i + 2 * m
+                derivedSigmaList[i - 1] = self.sigma(i)
+            elif i > 2 * m and i <= 4 * m:
+                derivedAlphaList[i - 1] = i - 2 * m
+                derivedSigmaList[i - 1] = i + 4 * m
+            elif i > 4 * m and i <= 6 * m:
+                derivedAlphaList[i - 1] = i + 2 * m
+                derivedSigmaList[i - 1] = invPhi(i - 4 * m) + 4 * m
             else:
-                derivedAlphaList[i-1] = i-2*m
-                derivedSigmaList[i-1] = self.alpha(i-6*m)+2*m
+                derivedAlphaList[i - 1] = i - 2 * m
+                derivedSigmaList[i - 1] = self.alpha(i - 6 * m) + 2 * m
 
         derivedSigma = MapPermutation(derivedSigmaList, trust=self._production)
         derivedAlpha = MapPermutation(derivedAlphaList, trust=self._production)
@@ -1102,7 +1103,8 @@ class LabelledMap:
             relabelPerm
         ).canonicalRepresentant()
 
-    def getRootedMapCorrespondance(self, otherMap, rootDemiEdge, return_map_perm=False, trust=False):
+    def getRootedMapcorrespondence(
+            self, otherMap, rootDemiEdge, return_map_perm=False, trust=False):
         """
         A method that returns a labelling of the demi-edges of this map
         giving `otherMap` while keeping `rootDemiEdge` invariant.
@@ -1114,7 +1116,7 @@ class LabelledMap:
         - ``otherMap`` -- LabelledMap; the other map
         - ``rootDemiEdge`` -- int; the edge on which to root
         - ``return_map_perm`` -- ; whether or not to return a MapPermutation default to False
-        - ``trust`` -- ; whether or not to trust that there is a correspondance default to 
+        - ``trust`` -- ; whether or not to trust that there is a correspondence default to
             False
         OUTPUT:
 
@@ -1129,7 +1131,7 @@ class LabelledMap:
             sage: tau = Permutation([(1, 3)])
             sage: Map = LabelledMap(sigma, alpha)
             sage: relabelMap = Map.relabel(tau)
-            sage: Map.getRootedMapCorrespondance(relabelMap, 2)
+            sage: Map.getRootedMapcorrespondence(relabelMap, 2)
             [3, 2, 1, 4, 5, 6]
 
         .. NOTE::
@@ -1348,22 +1350,22 @@ class LabelledMap:
         m = self.m
 
         # The number of edge in the edge map
-        L = int(2*m)
+        L = int(2 * m)
 
-        alphaListEdgeMap = [-1 for k in range(2*L)]
-        sigmaListEdgeMap = [-1 for k in range(2*L)]
+        alphaListEdgeMap = [-1 for k in range(2 * L)]
+        sigmaListEdgeMap = [-1 for k in range(2 * L)]
 
         # Construction of alpha and sigma for the edge map
-        for k in range(1, L+1):
-            alphaListEdgeMap[k-1] = k+L
-            alphaListEdgeMap[k+L-1] = k
+        for k in range(1, L + 1):
+            alphaListEdgeMap[k - 1] = k + L
+            alphaListEdgeMap[k + L - 1] = k
 
             t = invSigma(k)
-            sigmaListEdgeMap[k-1] = L+t
+            sigmaListEdgeMap[k - 1] = L + t
 
             j = sigma(k)
 
-            sigmaListEdgeMap[k+L-1] = alpha(j)
+            sigmaListEdgeMap[k + L - 1] = alpha(j)
 
         alphaEdgeMap = MapPermutation(alphaListEdgeMap, trust=self._production)
         sigmaEdgeMap = MapPermutation(sigmaListEdgeMap, trust=self._production)
@@ -1372,7 +1374,7 @@ class LabelledMap:
 
     def isQuandrangulation(self):
         """
-        A function to test wheter or not self is a quandrangulation
+        A function to test whether or not self is a quandrangulation
         ---
         Returns:
             A boolean indicating if self is a quandrangulation or not
@@ -1411,7 +1413,7 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        clr = [-1 for i in range(2*self.m+1)]
+        clr = [-1 for i in range(2 * self.m + 1)]
         clr[1] = 0
         alpha = self.alpha
         sigma = self.sigma
@@ -1419,28 +1421,28 @@ class LabelledMap:
         p = []
         p.append(1)
 
-        seen = [False for i in range(2*self.m)]
+        seen = [False for i in range(2 * self.m)]
 
         seen[0] = True
         cnt = 2
         while len(p) > 0:
             u = p.pop()
-            if not seen[sigma(u)-1]:
-                seen[sigma(u)-1] = True
+            if not seen[sigma(u) - 1]:
+                seen[sigma(u) - 1] = True
                 p.append(sigma(u))
                 clr[sigma(u)] = clr[u]
 
-            if not seen[alpha(u)-1]:
-                seen[alpha(u)-1] = True
+            if not seen[alpha(u) - 1]:
+                seen[alpha(u) - 1] = True
                 p.append(alpha(u))
-                clr[alpha(u)] = (1+clr[u]) % 2
+                clr[alpha(u)] = (1 + clr[u]) % 2
         sigma_cycles = sigma.to_cycles()
         for i in range(len(sigma_cycles)):
             r = clr[sigma_cycles[i][0]]
             for j in range(len(sigma_cycles[i])):
                 if r != clr[sigma_cycles[i][j]]:
                     return None
-        for i in range(1, 2*self.m+1):
+        for i in range(1, 2 * self.m + 1):
             if clr[i] == clr[alpha(i)]:
                 return None
 
@@ -1458,34 +1460,34 @@ class LabelledMap:
         O(m)
         where m is the number of edges
         """
-        relabelList = [-1 for i in range(2*self.m)]
+        relabelList = [-1 for i in range(2 * self.m)]
         alphaCycles = self.alpha.to_cycles()
 
         sigma = self.sigma
         alpha = self.alpha
         rootDemiEdge = 1
-        relabelList[rootDemiEdge-1] = rootDemiEdge
+        relabelList[rootDemiEdge - 1] = rootDemiEdge
 
         p = deque()
 
         p.append(rootDemiEdge)
 
-        seen = [False for i in range(2*self.m)]
+        seen = [False for i in range(2 * self.m)]
 
-        seen[rootDemiEdge-1] = True
+        seen[rootDemiEdge - 1] = True
         cnt = 2
         while len(p) > 0:
             u = p.popleft()
-            if not seen[sigma(u)-1]:
-                seen[sigma(u)-1] = True
+            if not seen[sigma(u) - 1]:
+                seen[sigma(u) - 1] = True
                 p.append(sigma(u))
-                relabelList[sigma(u)-1] = cnt
+                relabelList[sigma(u) - 1] = cnt
                 cnt += 1
 
-            if not seen[alpha(u)-1]:
-                seen[alpha(u)-1] = True
+            if not seen[alpha(u) - 1]:
+                seen[alpha(u) - 1] = True
                 p.append(alpha(u))
-                relabelList[alpha(u)-1] = cnt
+                relabelList[alpha(u) - 1] = cnt
                 cnt += 1
 
         relabel = MapPermutation(relabelList, trust=self._production)
@@ -1504,13 +1506,13 @@ class LabelledMap:
         where m is the number of edges
         """
         return self.numberOfFaces() == 1 \
-            and self.numberOfEdges() == self.numberOfNodes()-1
+            and self.numberOfEdges() == self.numberOfNodes() - 1
 
     def schaefferTree(self, markedDemiEdge):
         """
         The Schaeffer surjection from rooted bipartite quadrangulation of genus g with k face and a marked node to
         rooted one face map (tree in the case g=0) of genus g with k edges and a labelling of its nodes (i.e a function on the nodes of the tree considered up to translation
-        such that if u and v are adjacent f(u) and f(v) differs by atmost one) such that for every rooted one face map T only two rooted marked bipartite quadrangulation give T.
+        such that if u and v are adjacent f(u) and f(v) differs by at most one) such that for every rooted one face map T only two rooted marked bipartite quadrangulation give T.
         Given a markDemiEdge which is the corresponding marked node(a node is just a cycle of self.sigma) , this method will return the canonical representant of the
         rooted one face map associated to rooted(self) and a labelling on its demi edge such that f(node) is the common value of all its demi edge(note that labelling[0] is present but it deosn't have any meaning).
         If self isn't a bipartite quandrangulation this function will raise an error.
@@ -1519,7 +1521,7 @@ class LabelledMap:
             -markedDemiEdge a demi edge on the node which is marked
         Returns:
             - tree: The canonical representant of the rooted one face map corresponding to the above description
-            - labelling: A list of labelling on the demi edge of tree cooresponding to the above description
+            - labelling: A list of labelling on the demi edge of tree corresponding to the above description
         -------
         O(m)
         where m is the number of edges
@@ -1530,13 +1532,13 @@ class LabelledMap:
         sigma = self.sigma
         alpha = self.alpha
         phi = self.phi
-        labellingQuad = [-1 for i in range(2*self.m+1)]
+        labellingQuad = [-1 for i in range(2 * self.m + 1)]
 
         p = deque()
 
         nodes = sigma.to_cycles()
 
-        demiEdgeToNodeId = [-1 for i in range(2*self.m+1)]
+        demiEdgeToNodeId = [-1 for i in range(2 * self.m + 1)]
 
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
@@ -1563,14 +1565,14 @@ class LabelledMap:
                 alphaDemiEdge = alpha(demiEdge)
                 alphaNodeId = demiEdgeToNodeId[alphaDemiEdge]
                 if not seen[alphaNodeId]:
-                    distNodes[alphaNodeId] = 1+distNodes[nodeId]
+                    distNodes[alphaNodeId] = 1 + distNodes[nodeId]
                     seen[alphaNodeId] = True
                     p.append(alphaNodeId)
 
         phi_cycles = phi.to_cycles()
 
-        corres = [-1 for i in range(2*len(phi_cycles)+1)]
-        invCorres = [-1 for i in range(2*self.m+1)]
+        corres = [-1 for i in range(2 * len(phi_cycles) + 1)]
+        invCorres = [-1 for i in range(2 * self.m + 1)]
 
         cnt = 1
         for i in range(len(phi_cycles)):
@@ -1600,18 +1602,18 @@ class LabelledMap:
             invCorres[link[1]] = cnt
             cnt += 1
 
-        numberOfTreeDemiEdge = cnt-1
+        numberOfTreeDemiEdge = cnt - 1
 
         alphaTreeList = [-1 for i in range(numberOfTreeDemiEdge)]
         sigmaTreeList = [-1 for i in range(numberOfTreeDemiEdge)]
 
-        prelabelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
+        prelabelling = [-1 for i in range(numberOfTreeDemiEdge + 1)]
 
-        for treeDemiEdge in range(1, numberOfTreeDemiEdge+1):
+        for treeDemiEdge in range(1, numberOfTreeDemiEdge + 1):
             if treeDemiEdge % 2 == 0:
-                alphaTreeList[treeDemiEdge-1] = treeDemiEdge-1
+                alphaTreeList[treeDemiEdge - 1] = treeDemiEdge - 1
             else:
-                alphaTreeList[treeDemiEdge-1] = treeDemiEdge+1
+                alphaTreeList[treeDemiEdge - 1] = treeDemiEdge + 1
 
             U = corres[treeDemiEdge]
             prelabelling[treeDemiEdge] = labellingQuad[U]
@@ -1620,7 +1622,7 @@ class LabelledMap:
             while invCorres[turnU] == -1:
                 turnU = sigma(turnU)
 
-            sigmaTreeList[treeDemiEdge-1] = invCorres[turnU]
+            sigmaTreeList[treeDemiEdge - 1] = invCorres[turnU]
 
         A, D, C, B = 1, phi(1), phi(phi(1)), phi(phi(phi(1)))
 
@@ -1664,12 +1666,13 @@ class LabelledMap:
                            trust=self._production, ).relabel(tau)
 
         canonicalTree = tree.canonicalRepresentant()
+
         tauCanonical = tree.getRootedMapCorrespondance(
             canonicalTree, rootDemiEdge=1, return_map_perm=True, trust=self._production)
 
-        labelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
+        labelling = [-1 for i in range(numberOfTreeDemiEdge + 1)]
 
-        for i in range(1, numberOfTreeDemiEdge+1):
+        for i in range(1, numberOfTreeDemiEdge + 1):
             labelling[tauCanonical(tau(i))] = prelabelling[i]
 
         return canonicalTree, labelling
@@ -1719,36 +1722,42 @@ class LabelledMap:
         backAction = nextAction.inverse()
         # In case the labelling isn't such that the minimum labelling is 1
         # We update the labelling
-        maxLabel = labelled[1]
-        minLabel = labelled[1]
-        for i in range(1, len(labelled)):
-            if labelled[i] < minLabel:
-                minLabel = labelled[i]
-            if labelled[i] > maxLabel:
-                maxLabel = labelled[i]
+        # maxLabel = labelled[1]
+        # minLabel = labelled[1]
+        # for i in range(1, len(labelled)):
+        #     # if labelled[i] < minLabel:
+        #     #     minLabel = labelled[i]
+        #     # if labelled[i] > maxLabel:
+        #     #     maxLabel = labelled[i]
+
+        #     minLabel = min(minLabel, labelled[i])
+        #     maxLabel = max(maxLabel, labelled[i])
+
+        maxLabel = max(labelled[1:])
+        minLabel = min(labelled[1:])
 
         for i in range(1, len(labelled)):
-            labelled[i] -= minLabel-1
-        maxLabel -= minLabel-1
+            labelled[i] -= minLabel - 1
+        maxLabel -= minLabel - 1
         minLabel = 1
         nodes = sigma.to_cycles()
 
-        # We get a correspondance between nodes and demiEdge
-        nodesId = [-1 for i in range(2*self.m+1)]
+        # We get a correspondence between nodes and demiEdge
+        nodesId = [-1 for i in range(2 * self.m + 1)]
         for i in range(len(nodes)):
             for j in range(len(nodes[i])):
-                nodesId[nodes[i][j]] = i+1
+                nodesId[nodes[i][j]] = i + 1
 
-        alphaQuadList = [-1 for i in range(4*self.m)]
-        p = [[] for i in range(maxLabel+1)]
-        sigmaQuadCycleDemiEdge = [deque() for i in range(2*self.m+1)]
+        alphaQuadList = [-1 for i in range(4 * self.m)]
+        p = [[] for i in range(maxLabel + 1)]
+        sigmaQuadCycleDemiEdge = [deque() for i in range(2 * self.m + 1)]
         sigmaQuadCycle = [[]]
 
-        check = [-1 for i in range(2*self.m+1)]
+        check = [-1 for i in range(2 * self.m + 1)]
 
         oneOrdered = []
-        backPartner = [-1 for i in range(2*self.m+1)]
-        corres = [-1 for i in range(2*self.m+1)]
+        backPartner = [-1 for i in range(2 * self.m + 1)]
+        corres = [-1 for i in range(2 * self.m + 1)]
 
         # We're turning around the tree in a  clockwise manner
         # When we connect each demi edge A the first demiEdge before it
@@ -1763,15 +1772,16 @@ class LabelledMap:
         root = 1
         cnt = 1
         curDemiEdge = root
-        N = 2*self.m
+        N = 2 * self.m
         while N != 0:
             curLabel = labelled[curDemiEdge]
             curNode = -1
             otherNodeId = -1
-            if curLabel > 1 and len(p[curLabel-1]) > 0 and check[curDemiEdge] == -1:
+            if curLabel > 1 and len(
+                    p[curLabel - 1]) > 0 and check[curDemiEdge] == -1:
                 check[curDemiEdge] = -2
 
-                otherDemiEdge = p[curLabel-1][-1]
+                otherDemiEdge = p[curLabel - 1][-1]
 
                 N -= 1
 
@@ -1781,9 +1791,9 @@ class LabelledMap:
                 corres[curDemiEdge] = cnt
 
                 sigmaQuadCycleDemiEdge[curDemiEdge].appendleft(cnt)
-                sigmaQuadCycleDemiEdge[otherDemiEdge].append(cnt+1)
+                sigmaQuadCycleDemiEdge[otherDemiEdge].append(cnt + 1)
 
-                alphaQuadList[cnt-1] = cnt+1
+                alphaQuadList[cnt - 1] = cnt + 1
                 alphaQuadList[cnt] = cnt
 
                 cnt += 2
@@ -1797,9 +1807,9 @@ class LabelledMap:
 
                 sigmaQuadCycleDemiEdge[curDemiEdge].appendleft(cnt)
 
-                sigmaQuadCycle[otherNodeId].append(cnt+1)
+                sigmaQuadCycle[otherNodeId].append(cnt + 1)
 
-                alphaQuadList[cnt-1] = cnt+1
+                alphaQuadList[cnt - 1] = cnt + 1
                 alphaQuadList[cnt] = cnt
                 cnt += 2
                 N -= 1
@@ -1809,8 +1819,9 @@ class LabelledMap:
         # For demi edge  A such that sigmaQuadCycleDemiEdge[A]>1 we need
         # We need to make a shift on sigmaQuadCycleDemiEdge[A] such that the first demi edge in the cycle is
         # The one corresponding to his back partner
-        # This is needed to have a correct merge later on when we merge them by node
-        for curDemiEdge in range(1, 2*self.m+1):
+        # This is needed to have a correct merge later on when we merge them by
+        # node
+        for curDemiEdge in range(1, 2 * self.m + 1):
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = list(
                 sigmaQuadCycleDemiEdge[curDemiEdge])
@@ -1828,14 +1839,16 @@ class LabelledMap:
             P = len(restDemiEdgeQuad)
 
             for i in range(P):
-                if alphaQuadList[restDemiEdgeQuad[i]-1] == corres[otherDemiEdge]:
+                if alphaQuadList[restDemiEdgeQuad[i] -
+                                 1] == corres[otherDemiEdge]:
                     startId = i
 
             newDemiEdgeQuadCycle = []
             newDemiEdgeQuadCycle.append(firstDemiEdgeQuad)
 
             for i in range(P):
-                newDemiEdgeQuadCycle.append(restDemiEdgeQuad[(i+startId) % P])
+                newDemiEdgeQuadCycle.append(
+                    restDemiEdgeQuad[(i + startId) % P])
 
             sigmaQuadCycleDemiEdge[curDemiEdge] = newDemiEdgeQuadCycle
 
@@ -1952,7 +1965,7 @@ class LabelledMap:
         canonicalAlpha = canonicalTree.alpha
         canonicalPhi = canonicalTree.phi
 
-        seen = [False for i in range(2*self.m+1)]
+        seen = [False for i in range(2 * self.m + 1)]
 
         curDemiEdge = 1
 
@@ -1971,14 +1984,14 @@ class LabelledMap:
         ----
         O(1)
         """
-        return 2*self.m
+        return 2 * self.m
 
     def getTopologicalDemiEdge(self, demiEdge):
         """
         Args:
             demiEdge an index
         Returns:
-            The TopologicalDemiEdge associated to demiEdge 
+            The TopologicalDemiEdge associated to demiEdge
         ----
         O(1)
         """
@@ -1993,7 +2006,7 @@ class LabelledMap:
         O(m)
         """
         lst = []
-        for i in range(1, self.q+1):
+        for i in range(1, self.q + 1):
             lst.append(self.getTopologicalDemiEdge(i))
         return lst
 
@@ -2002,7 +2015,7 @@ class LabelledMap:
         Args:
             demiEdge an index
         Returns:
-            The TopologicalDemiEdge associated to demiEdge 
+            The TopologicalDemiEdge associated to demiEdge
         ----
         O(1)
         """
@@ -2081,7 +2094,7 @@ class LabelledMap:
         Returns:
             A boolean indicating whether or note demiEdgeA and demiEdgeB are on the same face
         -------
-        O(1) 
+        O(1)
         """
         return self.phiUtilsAbstractor.sameCycle(demiEdgeA, demiEdgeB)
 
@@ -2144,13 +2157,13 @@ class LabelledMap:
 
     def checkTwoInTheSameFace(self, listDemiEdges):
         """
-        A method that will return a boolean indicating whether or not 
+        A method that will return a boolean indicating whether or not
         two demiEdge are on the same face
         -----
         Args:
             listDemiEdges: A list of demi edges
         OUTPUT:
-            a boolean indicating whether or not there is two demi edge on the 
+            a boolean indicating whether or not there is two demi edge on the
             same face
         -----
         O(len(listDemiEdges))
@@ -2159,13 +2172,13 @@ class LabelledMap:
 
     def checkTwoInTheSameNode(self, listDemiEdges):
         """
-        A method that will return a boolean indicating whether or not 
+        A method that will return a boolean indicating whether or not
         two demiEdge are on the same node
         -----
         Args:
             listDemiEdges: A list of demi edges
         OUTPUT:
-            a boolean indicating whether or not there is two demi edge on the 
+            a boolean indicating whether or not there is two demi edge on the
             same node
         -----
         O(len(listDemiEdges))

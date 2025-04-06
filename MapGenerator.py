@@ -28,7 +28,8 @@ class MapGenerator:
                 (5, 2, 7),
                 (3, 8, 6),
                 (7, 4, 5),
-            ], trust=self._production,
+            ],
+            trust=self._production,
         )
 
     def complete_map(self, n):
@@ -37,10 +38,11 @@ class MapGenerator:
         graph with n nodes. The genus is guaranteed to be zero if the
         graph is planar (i.e., n <= 4).
         """
-        adj = list(
-            tuple((j + i) % n + 1 for j in range(1, n)) for i in range(n)
+        adj = list(tuple((j + i) % n + 1 for j in range(1, n)) for i in range(n))
+        m = RootedMap(
+            adj=adj,
+            trust=self._production,
         )
-        m = RootedMap(adj=adj, trust=self._production,)
         if n <= 4:
             m = m.force_planar()
         return m
@@ -51,8 +53,7 @@ class MapGenerator:
 
         INPUT:
             - ``n`` -- int; size of the path
-            - ``seed`` -- int; A random seed;
-            if None is used, no random seed will be set.
+            - ``seed`` -- int; A random seed; if None is used, no random seed will be set.
 
         OUTPUT:
             A list of size 2*n with +1 for up and
@@ -96,8 +97,7 @@ class MapGenerator:
 
         Args:
             n : The size of the permutation.
-            seed : A random seed; if None is used,
-                   no random seed will be set.
+            seed : A random seed; if None is used, no random seed will be set.
 
         Returns:
             A random permutation of size n.
@@ -139,9 +139,9 @@ class MapGenerator:
         Given a Dyck path, this function returns the associated rooted tree.
 
         Args:
-            dyckPath : A list representing a Dyck path, with +1 for up and
-                       -1 for down.
-            trust: A boolean indicating whether to trust that we have a dyckPath 
+            dyckPath : A list representing a Dyck path, with +1 for up and -1 for down.
+            trust: A boolean indicating whether to trust that we have a dyckPath
+
         Returns:
             The corresponding rooted plane tree if dyckPath is valid;
             otherwise, raises an error.
@@ -168,7 +168,11 @@ class MapGenerator:
         alpha = MapPermutation(alphaCycle)
         sigma = phi.left_action_product(alpha)
 
-        return RootedMap(alpha=alpha, sigma=sigma, trust=self._production, )
+        return RootedMap(
+            alpha=alpha,
+            sigma=sigma,
+            trust=self._production,
+        )
 
     def getRandomLabellingTree(self, tree, seed=None):
         """
@@ -223,9 +227,7 @@ class MapGenerator:
                 alphaNodeId = demiEdgeToNodeId[alphaDemiEdge]
                 if not seen[alphaNodeId]:
                     dLabel = rng.sample(transition, 1)[0]
-                    labellingNodes[alphaNodeId] = (
-                        dLabel + labellingNodes[nodeId]
-                    )
+                    labellingNodes[alphaNodeId] = dLabel + labellingNodes[nodeId]
                     seen[alphaNodeId] = True
                     p.append(alphaNodeId)
 

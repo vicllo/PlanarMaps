@@ -38,7 +38,7 @@ class TopologicalDemiEdge():
     @property
     def c(self):
         """
-        The next TopologicalDemiEdge  on the edge on which self is on 
+        The next TopologicalDemiEdge  on the edge on which self is on
         ----
         O(1)
         """
@@ -56,7 +56,7 @@ class TopologicalDemiEdge():
     @property
     def n(self):
         """
-        The next TopologicalDemiEdge on the node on which self is on 
+        The next TopologicalDemiEdge on the node on which self is on
         ----
         O(1)
         """
@@ -101,7 +101,7 @@ class TopologicalDemiEdge():
     @CheckValid
     def nextOnEdge(self):
         """
-        Returns: The next TopologicalDemiEdge  on the edge on which self is on 
+        Returns: The next TopologicalDemiEdge  on the edge on which self is on
         ----
         O(1)
         """
@@ -133,7 +133,8 @@ class TopologicalDemiEdge():
         ----
         O(1)
         """
-        return self.map.getTopologicalDemiEdge(self.map.phi.inverseApply(self.raw))
+        return self.map.getTopologicalDemiEdge(
+            self.map.phi.inverseApply(self.raw))
 
     @CheckValid
     def prevOnNode(self):
@@ -142,7 +143,8 @@ class TopologicalDemiEdge():
         ----
         O(1)
         """
-        return self.map.getTopologicalDemiEdge(self.map.sigma.inverseApply(self.raw))
+        return self.map.getTopologicalDemiEdge(
+            self.map.sigma.inverseApply(self.raw))
 
     @CheckValid
     def face(self):
@@ -182,7 +184,8 @@ class TopologicalDemiEdge():
         ----
         O(1)
         """
-        return self.map.areOnTheSameFace(self.raw, otherTopologicalDemiEdge.raw)
+        return self.map.areOnTheSameFace(
+            self.raw, otherTopologicalDemiEdge.raw)
 
     @CheckValid
     def isOnSameNode(self, otherTopologicalDemiEdge):
@@ -195,11 +198,12 @@ class TopologicalDemiEdge():
         O(1)
         """
 
-        return self.map.areOnTheSameNode(self.raw, otherTopologicalDemiEdge.raw)
+        return self.map.areOnTheSameNode(
+            self.raw, otherTopologicalDemiEdge.raw)
 
     def _invalidate(self):
         """
-        Make self invalid 
+        Make self invalid
         -----
         O(1)
         """
@@ -220,7 +224,7 @@ class TopologicalDemiEdge():
 
     def _swapIndex(self, otherTopoDemiEdge):
         """
-        Swap indexes wiht otherTopoDemiEdge
+        Swap indexes with otherTopoDemiEdge
         ----
         Args: otherTopoDemiEdge
         ----
