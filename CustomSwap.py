@@ -30,6 +30,9 @@ class CustomSwap (MapPermutation):
             return i
         return self.a+self.b-i
 
+    def inverseApply(self, i):
+        return self(i)
+
     def number_of_fixed_points(self):
         return self.b-(1+self.a != self.b)
 

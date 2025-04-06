@@ -1,11 +1,12 @@
-from sage.all import Permutation, Permutations
+from sage.all import Permutation
 from MapError import InvalidMapPermutationArgument
+import numpy as np
 
 
 class MapPermutation:
-    def __init__(self, lst) -> None:
+    def __init__(self, lst, trust=False) -> None:
         if isinstance(lst, Permutation):
-            self._init_from_permutation(lst)
+            self._init_from_permutation(lst, trust=trust)
             return
         try:
             if lst == int(lst) or lst > 0:
@@ -16,31 +17,64 @@ class MapPermutation:
 
         try:
             if type(lst[0]) == type((42,)):
-                self._init_from_cycle_list(lst)
+                self._init_from_cycle_list(lst, trust=trust)
                 return
             self._init_from_list(lst)
         except:
             raise InvalidMapPermutationArgument()
 
-    def _init_from_cycle_list(self, lst):
-        self._perm = Permutation(lst)
+    def _init_from_cycle_list(self, lst, trust=False):
+        cnt = np.sum(np.array(list(map(lambda x: len(x), lst))))
+        self._tab = np.zeros(cnt, dtype=int)
+        self._rtab = np.zeros(cnt, dtype=int)
+        for e in lst:
+            prev = 0
+            for i in e:
+                if i <= 0:
+                    raise InvalidMapPermutationArgument()
+
+                if prev != 0:
+                    self._rtab[i-1] = prev
+                    self._tab[prev-1] = i
+                prev = i
+
+            self._tab[e[-1]-1] = e[0]
+            self._rtab[e[0]-1] = e[-1]
+
+        if trust:
+            return
+
+        if (self._tab == 0).sum() != 0:
+            raise InvalidMapPermutationArgument()
 
     def _init_from_number(self, n):
-        self._perm = Permutations(n).identity()
+        self._tab = np.arange(1, n+1)
+        self._rtab = np.arange(1, n+1)
 
-    def _init_from_permutation(self, perm):
-        self._perm = perm
+    def _init_from_permutation(self, perm, trust=False):
+        self._init_from_list(list(perm), trust=trust)
 
-    def _init_from_list(self, list):
-        self._perm = Permutation(list)
+    def _init_from_list(self, list, trust=False):
+        self._tab = np.array(list)
+        self._rtab = np.zeros(len(list), dtype=int)
+        self._rtab[self._tab-1] = np.arange(1, len(list)+1)
+        if trust:
+            return
+        if not np.issubdtype(self._tab.dtype, np.integer) or ((self._tab > len(self._tab)) + (self._tab <= 0)).sum() != 0 or len(np.unique(self._tab)) != len(self._tab):
+            raise InvalidMapPermutationArgument()
 
     def size(self):
-        return self._perm.size()
+        return len(self._tab)
 
     def apply(self, i):
         if i > self.size():
             return i
-        return self._perm(i)
+        return self._tab[i-1]
+
+    def inverseApply(self, i):
+        if i > self.size():
+            return i
+        return self._rtab[i-1]
 
     def __repr__(self) -> str:
         return str(list(self))
@@ -49,13 +83,26 @@ class MapPermutation:
         return f"MapPermutation: {self.to_cycles()}"
 
     def pretty_print(self):
-        """ 
+        """
         Print self in a more pretty form
         """
         print(self.pretty_repr())
 
     def to_cycles(self):
-        return self._perm.to_cycles()
+        check = np.zeros(self.size()+1)
+        cycles = []
+        for i in range(1, self.size()+1):
+            if check[i]:
+                continue
+            check[i] = 1
+            cycle = [i]
+            curIndex = self(i)
+            while curIndex != i:
+                check[curIndex] = 1
+                cycle.append(curIndex)
+                curIndex = self(curIndex)
+            cycles.append(tuple(cycle))
+        return cycles
 
     def inverse(self):
         """
@@ -68,7 +115,7 @@ class MapPermutation:
         where n is the number of element of the permutation
         -------
         """
-        return MapPermutation(self._perm.inverse())
+        return MapPermutation(list(self._rtab))
 
     def __call__(self, i):
         return self.apply(i)
@@ -101,7 +148,7 @@ class MapPermutation:
         This function calculate self*perm where * is the composition operation between permutation
         -------
         Args:
-            -rperm: Another MapPermutation 
+            -rperm: Another MapPermutation
         Returns:
             -A MapPermutation of size max(rperm.size(),self.size()) representing the composition self*rperm
         -------
@@ -119,7 +166,7 @@ class MapPermutation:
         """
         Returns: the number of fixed point ( we only consider i such that i<=self.size())
         """
-        return self._perm.number_of_fixed_points()
+        return np.sum(self._tab == np.arange(1, self.size()+1))
 
     def right_action_product(self, lperm):
         """

@@ -1,4 +1,3 @@
-from sage.all import true
 from LabelledMap import LabelledMap
 
 
@@ -16,6 +15,7 @@ class RootedMap(LabelledMap):
         isAlreadyCanonical=False,
         trust=False,
     ):
+        self._production = True
         if labelledMap is None:
             labelledMap = LabelledMap(
                 sigma=sigma, alpha=alpha, adj=adj, trust=trust)
@@ -23,7 +23,7 @@ class RootedMap(LabelledMap):
         if not isAlreadyCanonical:
             canonicalRepresentant = labelledMap.canonicalRepresentant()
         super().__init__(
-            canonicalRepresentant.sigma, canonicalRepresentant.alpha, trust=True
+            canonicalRepresentant.sigma, canonicalRepresentant.alpha, trust=self._production
         )
 
     def tetravalance(self):
@@ -40,7 +40,7 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         return RootedMap(
-            labelledMap=super().tetravalance(), isAlreadyCanonical=True, trust=true
+            labelledMap=super().tetravalance(), isAlreadyCanonical=True, trust=self._production
         )
 
     def edgeMap(self):
@@ -53,7 +53,7 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         return RootedMap(
-            labelledMap=super().edgeMap(), isAlreadyCanonical=True, trust=True,
+            labelledMap=super().edgeMap(), isAlreadyCanonical=True, trust=self._production,
         )
 
     def incidenceMap(self):
@@ -66,7 +66,7 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         return RootedMap(
-            labelledMap=super().incidenceMap(), isAlreadyCanonical=True, trust=True
+            labelledMap=super().incidenceMap(), isAlreadyCanonical=True, trust=self._production
         )
 
     def quadrangulation(self):
@@ -81,7 +81,7 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         return RootedMap(
-            labelledMap=super().quadrangulation(), isAlreadyCanonical=True, trust=True
+            labelledMap=super().quadrangulation(), isAlreadyCanonical=True, trust=self._production
         )
 
     def derivedMap(self):
@@ -94,7 +94,7 @@ class RootedMap(LabelledMap):
         O(m)
         """
         return RootedMap(
-            labelledMap=super().derivedMap(), isAlreadyCanonical=True, trust=True
+            labelledMap=super().derivedMap(), isAlreadyCanonical=True, trust=self._production
         )
 
     def dual(self):
@@ -106,7 +106,7 @@ class RootedMap(LabelledMap):
         -------
         O(m), where m is the number of edges.
         """
-        return RootedMap(labelledMap=super().dual(), trust=true)
+        return RootedMap(labelledMap=super().dual(), trust=self._production)
 
     def __repr__(self):
         return (
@@ -132,7 +132,7 @@ class RootedMap(LabelledMap):
         return RootedMap(
             labelledMap=super().inverseQuadrangulation(),
             isAlreadyCanonical=True,
-            trust=True,
+            trust=self._production,
         )
 
     def relabel(self, tau):
@@ -140,7 +140,7 @@ class RootedMap(LabelledMap):
         This method, inherited from LabelledMap, is not applicable to
         RootedMap. It will simply return a copy of self.
         """
-        return RootedMap(labelledMap=self, isAlreadyCanonical=True, trust=True)
+        return RootedMap(labelledMap=self, isAlreadyCanonical=True, trust=self._production)
 
     def schaefferTree(self, markedDemiEdge):
         """
@@ -162,7 +162,7 @@ class RootedMap(LabelledMap):
         O(m), where m is the number of edges.
         """
         tree, labelled = super().schaefferTree(markedDemiEdge=markedDemiEdge)
-        return RootedMap(labelledMap=tree, isAlreadyCanonical=True, trust=True), labelled
+        return RootedMap(labelledMap=tree, isAlreadyCanonical=True, trust=self._production), labelled
 
     def inverseShaefferTree(self, labelled, returnMarkedDemiEdge=True):
         """
@@ -196,9 +196,9 @@ class RootedMap(LabelledMap):
 
             return (
                 RootedMap(labelledMap=quadA,
-                          isAlreadyCanonical=True, trust=True),
+                          isAlreadyCanonical=True, trust=self._production),
                 RootedMap(labelledMap=quadB,
-                          isAlreadyCanonical=True, trust=True),
+                          isAlreadyCanonical=True, trust=self._production),
                 markedDemiEdgeA,
                 markedDemiEdgeB,
             )
@@ -206,8 +206,8 @@ class RootedMap(LabelledMap):
             labelled, returnMarkedDemiEdge=returnMarkedDemiEdge
         )
         return RootedMap(
-            labelledMap=quadA, isAlreadyCanonical=True, trust=True
-        ), RootedMap(labelledMap=quadB, isAlreadyCanonical=True, trust=True)
+            labelledMap=quadA, isAlreadyCanonical=True, trust=self._production
+        ), RootedMap(labelledMap=quadB, isAlreadyCanonical=True, trust=self._production)
 
     def copy(self):
         """
@@ -216,7 +216,7 @@ class RootedMap(LabelledMap):
         ----
         O(m)
         """
-        return RootedMap(sigma=self.sigma, alpha=self.alpha, trust=True)
+        return RootedMap(sigma=self.sigma, alpha=self.alpha, trust=self._production)
 
     @property
     def root(self):

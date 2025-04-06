@@ -140,6 +140,12 @@ class LabelledMap:
             and permutations
         """
 
+        # Set it to false during
+        # Debugging
+        self._production = True
+        if not self._production:
+            trust = False
+
         if sigma is None and alpha is None and adj is None:
             raise ValueError("sigma and alpha and adj cannot all be none")
 
@@ -171,10 +177,10 @@ class LabelledMap:
         self.sigma = sigma
 
         if isinstance(self.sigma, Permutation):
-            self.sigma = MapPermutation(self.sigma)
+            self.sigma = MapPermutation(self.sigma, trust=trust)
 
         if isinstance(self.alpha, Permutation):
-            self.alpha = MapPermutation(self.alpha)
+            self.alpha = MapPermutation(self.alpha, trust=trust)
 
         self.phi = self.alpha.right_action_product(self.sigma)
 
@@ -326,7 +332,8 @@ class LabelledMap:
 
             # Add a new vertex v, and break down the edge whose half-edges
             # are i & alpha(i) into 2 edges (i, 2*m+1) and (2*m+2, alpha(i)).
-            alpha *= MapPermutation([(alpha(i), 2 * m + 1, i, 2 * m + 2)])
+            alpha *= MapPermutation([(alpha(i), 2 *
+                                    m + 1, i, 2 * m + 2)], trust=self._production)
             sigma *= CustomSwap([(2 * m + 1, 2 * m + 2)])
 
             corres.append(len(vertices) + 1)
@@ -732,7 +739,7 @@ class LabelledMap:
         e = g.get_embedding()
         adj = [tuple(reversed(e[i])) for i in range(1, len(e) + 1)]
 
-        return LabelledMap(adj=adj, trust=True)
+        return LabelledMap(adj=adj, trust=self._production)
 
     def getSpanningTree(self):
         """
@@ -793,7 +800,7 @@ class LabelledMap:
 
             Complexity is O(m) where m is the number of edges
         """
-        return LabelledMap(self.phi.inverse(), self.alpha, trust=True)
+        return LabelledMap(self.phi.inverse(), self.alpha, trust=self._production)
 
     def diameter(self):
         """
@@ -953,9 +960,9 @@ class LabelledMap:
                 derivedAlphaList[i-1] = i-2*m
                 derivedSigmaList[i-1] = self.alpha(i-6*m)+2*m
 
-        derivedSigma = MapPermutation(derivedSigmaList)
-        derivedAlpha = MapPermutation(derivedAlphaList)
-        return LabelledMap(derivedSigma, derivedAlpha, trust=True).canonicalRepresentant()
+        derivedSigma = MapPermutation(derivedSigmaList, trust=self._production)
+        derivedAlpha = MapPermutation(derivedAlphaList, trust=self._production)
+        return LabelledMap(derivedSigma, derivedAlpha, trust=self._production).canonicalRepresentant()
 
     def quadrangulation(self):
         """
@@ -1015,12 +1022,12 @@ class LabelledMap:
                 alpha(sigma(alpha(corres[invDemiEdge])))
             ]
 
-        alphaInv = MapPermutation(alphaInvList)
-        sigmaInv = MapPermutation(sigmaInvList)
+        alphaInv = MapPermutation(alphaInvList, trust=self._production)
+        sigmaInv = MapPermutation(sigmaInvList, trust=self._production)
 
         return LabelledMap(
             sigma=sigmaInv,
-            alpha=alphaInv, trust=True).canonicalRepresentant()
+            alpha=alphaInv, trust=self._production).canonicalRepresentant()
 
     def incidenceMap(self):
         """
@@ -1080,8 +1087,8 @@ class LabelledMap:
             alphaQuadList[quadDemiEdge - 1] = quadDemiEdge + numberOfQuadEdge
             alphaQuadList[quadDemiEdge + numberOfQuadEdge - 1] = quadDemiEdge
 
-        alphaQuad = MapPermutation(alphaQuadList)
-        sigmaQuad = MapPermutation(sigmaQuadList)
+        alphaQuad = MapPermutation(alphaQuadList, trust=self._production)
+        sigmaQuad = MapPermutation(sigmaQuadList, trust=self._production)
         relabelList = [i + 1 for i in range(2 * numberOfQuadEdge)]
 
         for quadDemiEdge in range(1, numberOfQuadEdge + 1):
@@ -1090,8 +1097,8 @@ class LabelledMap:
                 relabelList[quadDemiEdge - 1] + numberOfQuadEdge
             )
 
-        relabelPerm = MapPermutation(relabelList)
-        return LabelledMap(sigmaQuad, alphaQuad, trust=True).relabel(
+        relabelPerm = MapPermutation(relabelList, trust=self._production)
+        return LabelledMap(sigmaQuad, alphaQuad, trust=self._production).relabel(
             relabelPerm
         ).canonicalRepresentant()
 
@@ -1160,7 +1167,7 @@ class LabelledMap:
             if not return_map_perm:
                 t = Permutation(tList)
             else:
-                t = MapPermutation(tList)
+                t = MapPermutation(tList, trust=trust)
         except ValueError:
             return None
 
@@ -1197,7 +1204,7 @@ class LabelledMap:
             Complexity is O(m), where m is the number of edges.
         """
         if isinstance(tau, Permutation):
-            tau = MapPermutation(tau)
+            tau = MapPermutation(tau, trust=self._production)
         invTau = tau.inverse()
         relabeledSigma = tau.left_action_product(
             invTau.right_action_product(self.sigma)
@@ -1205,7 +1212,7 @@ class LabelledMap:
         relabeledAlpha = tau.left_action_product(
             invTau.right_action_product(self.alpha)
         )
-        return LabelledMap(relabeledSigma, relabeledAlpha, trust=True)
+        return LabelledMap(relabeledSigma, relabeledAlpha, trust=self._production)
 
     def __eq__(self, other):
         """Checks equality between two LabelledMap instances."""
@@ -1358,10 +1365,10 @@ class LabelledMap:
 
             sigmaListEdgeMap[k+L-1] = alpha(j)
 
-        alphaEdgeMap = MapPermutation(alphaListEdgeMap)
-        sigmaEdgeMap = MapPermutation(sigmaListEdgeMap)
+        alphaEdgeMap = MapPermutation(alphaListEdgeMap, trust=self._production)
+        sigmaEdgeMap = MapPermutation(sigmaListEdgeMap, trust=self._production)
 
-        return LabelledMap(sigmaEdgeMap, alphaEdgeMap, trust=True, ).canonicalRepresentant()
+        return LabelledMap(sigmaEdgeMap, alphaEdgeMap, trust=self._production, ).canonicalRepresentant()
 
     def isQuandrangulation(self):
         """
@@ -1481,7 +1488,7 @@ class LabelledMap:
                 relabelList[alpha(u)-1] = cnt
                 cnt += 1
 
-        relabel = MapPermutation(relabelList)
+        relabel = MapPermutation(relabelList, trust=self._production)
 
         return self.relabel(relabel)
 
@@ -1650,15 +1657,15 @@ class LabelledMap:
             treeRoot = invCorres[B]
 
         tau = CustomSwap([(1, treeRoot)])
-        alphaTree = MapPermutation(alphaTreeList)
-        sigmaTree = MapPermutation(sigmaTreeList)
+        alphaTree = MapPermutation(alphaTreeList, trust=self._production)
+        sigmaTree = MapPermutation(sigmaTreeList, trust=self._production)
 
         tree = LabelledMap(alpha=alphaTree, sigma=sigmaTree,
-                           trust=True, ).relabel(tau)
+                           trust=self._production, ).relabel(tau)
 
         canonicalTree = tree.canonicalRepresentant()
         tauCanonical = tree.getRootedMapCorrespondance(
-            canonicalTree, rootDemiEdge=1, return_map_perm=True, trust=True)
+            canonicalTree, rootDemiEdge=1, return_map_perm=True, trust=self._production)
 
         labelling = [-1 for i in range(numberOfTreeDemiEdge+1)]
 
@@ -1844,10 +1851,10 @@ class LabelledMap:
 
             sigmaQuadCycle.append(tuple(accum))
 
-        sigmaQuad = MapPermutation(sigmaQuadCycle)
-        alphaQuad = MapPermutation(alphaQuadList)
+        sigmaQuad = MapPermutation(sigmaQuadCycle, trust=self._production)
+        alphaQuad = MapPermutation(alphaQuadList, trust=self._production)
         quad = LabelledMap(sigma=sigmaQuad, alpha=alphaQuad,
-                           trust=True, )
+                           trust=self._production, )
         numberOfQuadDemiEdge = len(alphaQuadList)
 
         phiQuad = quad.phi
@@ -1883,9 +1890,9 @@ class LabelledMap:
             quadBCanonical = quadB.canonicalRepresentant()
 
             canonicalTauA = quadA.getRootedMapCorrespondance(
-                otherMap=quadACanonical, rootDemiEdge=root, return_map_perm=True, trust=True)
+                otherMap=quadACanonical, rootDemiEdge=root, return_map_perm=True, trust=self._production)
             canonicalTauB = quadB.getRootedMapCorrespondance(
-                otherMap=quadBCanonical, rootDemiEdge=root, return_map_perm=True, trust=True)
+                otherMap=quadBCanonical, rootDemiEdge=root, return_map_perm=True, trust=self._production)
 
             markedDemiEdge = sigmaQuadCycle[0][0]
 
@@ -2054,7 +2061,7 @@ class LabelledMap:
         -------
         O(1)
         """
-        return LabelledMap(self.sigma, self.alpha, trust=True, )
+        return LabelledMap(self.sigma, self.alpha, trust=self._production, )
 
     def areOnTheSameNode(self, demiEdgeA, demiEdgeB):
         """
