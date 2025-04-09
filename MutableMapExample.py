@@ -17,8 +17,7 @@ def simpleGone(n):
         C = C.addEdgeAfter()
     U, _ = C.link(B)
     U.contract()
-    myMap.show(use_sage_viewer=False,
-               show_vertices=False, show_halfedges=False)
+    myMap.pretty_print()
     return myMap
 
 
@@ -60,10 +59,10 @@ def repeatingPolygon(n, p):
 
 if __name__ == "__main__":
     # Pentagone
-    simpleGone(5)
+    simpleGone(5).show()
 
     # X
-    X(2)
+#    X(2)
 
     # Repeating a triangle 4 times inside each other
-    repeatingPolygon(3, 4)
+#    repeatingPolygon(3, 4)
