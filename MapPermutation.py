@@ -25,9 +25,10 @@ class MapPermutation:
             raise InvalidMapPermutationArgument()
 
     def _init_from_cycle_list(self, lst, trust=False):
-        cnt = np.sum(np.array(list(map(lambda x: len(x), lst))))
-        self._tab = np.zeros(cnt, dtype=int)
-        self._rtab = np.zeros(cnt, dtype=int)
+        cnt = np.max(np.array(list(map(lambda x: np.max(np.array(x)), lst))))
+        print(cnt)
+        self._tab = np.arange(1, cnt+1, dtype=int)
+        self._rtab = np.arange(1, cnt+1, dtype=int)
         for e in lst:
             prev = 0
             for i in e:
