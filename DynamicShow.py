@@ -355,7 +355,7 @@ class DynamicShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, frameByFrame=False, show_halfedges=False):
+    def start(self, frameByFrame=False, show_halfedges=False, plt_show = True):
         # initialize the matplotlib figure
         size = 7
 
@@ -441,6 +441,9 @@ class DynamicShow:
             'xlim_changed', lambda event: self.anim._blit_cache.clear())
         self.ax.callbacks.connect(
             'ylim_changed', lambda event: self.anim._blit_cache.clear())
+        
+        if plt_show:
+            plt.show()
 
     def reset_forces(self):
         self.forces_to_compute = []

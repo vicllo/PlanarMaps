@@ -59,6 +59,6 @@ c = gen.cube()
 l = gen.getRandomPlanarQuadrangulation(30, seed)
 
 d = DynamicShow(c.derivedMap())
-d.start(True)
+d.start(True, plt_show = False)
 
 plt.show()
