@@ -1,7 +1,7 @@
 #!/bin/python3
 
-from dcode import bitToTree
-from dcode import bitToTreeDebug
+from triangulationDev import bitToTree
+from triangulationDev import bitToTreeDebug
 from LabelledMap import LabelledMap
 
 
@@ -19,7 +19,7 @@ def test_1():
 
 
 def test_0():
-    for i in range(7, 8):
+    for i in range(40, 61):
         for _ in range(1000):
             try:
                 myMap = bitToTree(i)
@@ -30,4 +30,4 @@ def test_0():
 
 
 if __name__ == "__main__":
-    test_1()
+    test_0()

@@ -202,9 +202,9 @@ def bitToTree(n):
     while i < len(b) and j <= 6 * n - 2:
         if b[i] == 1:
             D[j] = h+1
+            Q[h+1].append(j)
             D[j-1] = h
             Q[h].append(j-1)
-            Q[h+1].append(j)
             j += 2
             h += 1
             i += 1
@@ -222,6 +222,7 @@ def bitToTree(n):
                     sigmaCycle.append(tuple(Q[h]))
                     Q[h] = []
                 h -= 1
+                i += 1
             j += 2
             i += 1
             continue
@@ -291,6 +292,7 @@ def bitToTreeDebug(b):
                     sigmaCycle.append(tuple(Q[h]))
                     Q[h] = []
                 h -= 1
+                i += 1
             j += 2
             i += 1
             continue
