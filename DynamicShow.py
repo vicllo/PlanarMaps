@@ -355,7 +355,16 @@ class DynamicShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, frameByFrame=False, show_halfedges=False, plt_show = True):
+    def start(self, show_halfedges="auto", plt_show=True, frame_by_frame=False):
+        """
+        Dynamically show the map in a new matplotlib figure.
+        Use Enter to pause or resume; if paused, use Space to compute a single frame; use q or Esc to quit.
+
+        INPUT:
+            - ``show_halfedges`` -- bool or "auto"; whether to show halfedges (if "auto", it will be True if nEdges <= 10)
+            - ``plt_show`` -- bool; whether to call plt.show(). if False, use plt.ion() to show the map in a non-blocking way.
+            - ``frame_by_frame`` -- bool; if False, automatically advance until convergence is found.
+        """
         # initialize the matplotlib figure
         size = 7
 
@@ -364,8 +373,8 @@ class DynamicShow:
                                           1, 4], height_ratios=[1, size])
 
         self.ax = self.fig.add_subplot(gs[1, :])
-        txt_ax = self.fig.add_subplot(gs[0, 0])
-        slider_ax = self.fig.add_subplot(gs[0, 1])
+        txt_ax = self.fig.add_subplot(gs[0, :])
+        #slider_ax = self.fig.add_subplot(gs[0, 1])
 
         pos_centered = self.centerPos()
 
@@ -392,7 +401,7 @@ class DynamicShow:
         txt_ax.set_xlim(left=0, right=1)
         txt_ax.set_ylim(bottom=0, top=1)
 
-        slider_ax.axis("off")
+        #slider_ax.axis("off")
 
         self.text = txt_ax.text(0, 0.5, "Frame: 0")
 
@@ -409,7 +418,7 @@ class DynamicShow:
         self.doFrame = False
         self.frame = 0
 
-        if frameByFrame:
+        if frame_by_frame:
             self.anim_running = False
             # self.anim.event_source.stop()
         else:
@@ -793,8 +802,7 @@ class DynamicShow:
         else:
             self.current_delta_t = 0
 
-        self.text.set_text("Frame: " + str(self.frame) + (
-            "; done" if self.done else "") + " " + str(round(self.current_delta_t, 3)))
+        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else ""))
 
         # plt.axis("on")
         # plt.cla()
@@ -822,7 +830,7 @@ class DynamicShow:
             dist = max((pos_centered[i][0] - self.prev_pos_centered[i][0]) ** 2.0 + (
                 pos_centered[i][1] - self.prev_pos_centered[i][1]) ** 2.0 for i in range(self.nVertices))
 
-            if dist < self.convergence_limit ** 2.0 and self.anim_running and not self.done:
+            if dist < self.convergence_limit ** 2.0 and self.anim_running and not self.done and self.frame > 10:
                 print("Convergence found")
                 # self.anim.event_source.stop()
                 self.anim_running = False
