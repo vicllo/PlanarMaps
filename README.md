@@ -1,90 +1,134 @@
-# Planar Maps Library for SageMath
+# Maps Library for SageMath
 
-This project is a **SageMath library** for manipulating **planar maps**.  Maps are **embeddings of graphs on surfaces**, commonly used in **graph theory, combinatorics, and topology**.  
-This library provides **tools for creating, visualizing, and manipulating planar maps** within the SageMath environment.
+This project is a SageMath library for manipulating maps. Maps are embeddings of graphs on surfaces, commonly used in graph theory, combinatorics, and topology.  
+This library provides tools for creating, visualizing, and manipulating planar maps within the SageMath environment.
 
 ---
 
 ## Documentation
 
-The implementation of planar maps is primarily based on the following references:
+The implementation of maps is primarily based on the following references:
 
-- **[1]** *Handbook on Enumerative Combinatorics*, Gilles Schaeffer, 2015 [Website](https://www.taylorfrancis.com/chapters/edit/10.1201/b18255-11/planar-maps-gillesschaeffer)
-- **[2]** *An Introduction to Map Enumeration*, Guillaume Chapuy, 2014 [Website](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
-- **[3]** *Enumeration and Random Generation of Planar Maps*, Ivan Geffner, Master’s Final Thesis, Universitat Politècnica de Catalunya, 2014 [Website](https://upcommons.upc.edu/handle/2099.1/23114)
+- [1] *Handbook on Enumerative Combinatorics*, Gilles Schaeffer, 2015 [Website](https://www.taylorfrancis.com/chapters/edit/10.1201/b18255-11/planar-maps-gillesschaeffer)
+
+- [2] *An Introduction to Map Enumeration*, Guillaume Chapuy, 2014 [Website](https://www.irif.fr/~chapuy/AEC/coursHagenberg.pdf)
+
+- [3] *Enumeration and Random Generation of Planar Maps*, Ivan Geffner, Master’s Final Thesis, Universitat Politècnica de Catalunya, 2014 [Website](https://upcommons.upc.edu/handle/2099.1/23114)
+
+- [4] *Optimal Coding and Sampling of Triangulations*, Dominique Poulalhon and Gilles Schaeffer, LIX – CNRS Ecole Polytechnique [Website](https://www.lix.polytechnique.fr/Labo/Dominique.Poulalhon/Articles/PoSc_cod_ICALP.pdf)
 
 ---
 
 ## Getting Started
 
-This library requires a **working SageMath installation**.  
+This library requires a working SageMath installation.  
 Before using it, we highly recommend reading the official SageMath documentation:
 
-- **[SageMath README](https://doc.sagemath.org/html/en/README.html)**
-- **[Sage Installation Guide](https://doc.sagemath.org/html/en/installation/index.html)**
+- [SageMath README](https://doc.sagemath.org/html/en/README.html)
+- [Sage Installation Guide](https://doc.sagemath.org/html/en/installation/index.html)
+
+We recommend using Conda Forge:
+
+- [Sage Installation Guide (Conda Forge)](https://doc.sagemath.org/html/en/installation/conda.html)
+
+After completing the installation, check the file `example.py` for usage examples or run it by : python example.py to see them in action.
 
 ---
 
 ## Overview
 
-The library contains **four main classes**:
+The library contains five main classes:
 
-- [**Labelled Map**](#labelled-map)
-- [**Rooted Map**](#rooted-map)
-- [**Mutable Labelled Map**](#mutable-labelled-map)
-- [**Map Generator**](#map-generator)
+- [LabelledMap](#labelled-map)
+- [RootedMap](#rooted-map)
+- [MutableLabelledMap](#mutable-labelled-map)
+- [MapGenerator](#map-generator)
+- [DynamicShow](#dynamicshow)
 
-Each class provides specific functionalities for working with planar maps.
+Each class provides specific functionalities for working with maps.
 
 ---
 
 ## Labelled Map
 
-A **Labelled Map** is a **graph representation** equipped with a **rotation system** and an arbitrary **labelling of its \(2n\) half-edges** with numbers in `[1 ... 2n]`.  
+A *Labelled Map* is a graph representation equipped with a rotation system and an arbitrary labeling of its \(2n\) half-edges with numbers in `[1 ... 2n]`.
 
-This class provides **two constructors**:
+This class provides two constructors:
 
-1. **From permutations** (`σ` and `α`), following the notation in **[2]**.
-2. **From an adjacency list**.
+1. From permutations (`σ` and `α`), following the notation in [2].
+2. From an adjacency list.
 
-### **Main Methods**
+### Main Methods
+
 - Compute:
-  - **Face count**, **number of nodes**, **edges**, **genus**, **diameter**.
-- Construct various **derived maps**:
-  - **Spanning Tree**, **Dual Graph**, **Derived Map**, **Incidence Map**.
-- **Visualization**:
-  - `show()` method for **plotting the map**.
+  - Face count, number of nodes, edges, genus, diameter, etc.
+- Construct various derived maps:
+  - Spanning Tree, Dual Graph, Derived Map, Incidence Map, etc.
+- Visualization:
+  - `show()` method for plotting the map.
+
+It also provides a more user-friendly way to interact with demi-edges other than raw indices, by allowing the use of `TopologicalDemiEdge`.
 
 ---
 
 ## Rooted Map
 
-A **Rooted Map** is an **equivalence class of labelled maps** under relabelling of `[1 ... 2n]`, preserving the **root half-edge** (labelled as `1`).  
-The **half-edge labelled `1`** serves as the **root** of the map.
+A *Rooted Map* is an equivalence class of labelled maps under relabeling of `[1 ... 2n]`, preserving the root half-edge (labelled as `1`).  
+The half-edge labelled `1` serves as the root of the map. All methods that return a map will return a `RootedMap`.
 
-This class **inherits** from `LabelledMap`.
+This class inherits from `LabelledMap`.
 
 ---
 
 ## Mutable Labelled Map
 
-This class **inherits** from `LabelledMap` and provides **methods for modifying** the map, such as:
+This class inherits from `LabelledMap` and provides methods for modifying the map, such as:
 
-- **Adding or removing edges**.
-- **Deleting vertices**.
-- **Contracting edges**.
-- **Contracting faces**.
+- Adding or removing edges
+- Deleting vertices
+- Contracting edges
+- Contracting faces
+- etc.
+
+Some notes:
+
+- All methods that return a map will return a `LabelledMap`, not a `MutableLabelledMap`.
+- Most methods that modify the map will alter its labels. To keep track of demi-edges even when labels change, please use `MutableTopologicalDemiEdge`, which guarantees that the label associated with it is updated accordingly.
 
 ---
 
 ## Map Generator
 
-Provides methods for **generating maps**, including:
+Provides methods for generating maps or map-related objects, including:
 
-- A method for generating a **uniformly random rooted map** with a fixed number of edges.
+- A method for generating a uniformly random rooted map with a fixed number of edges.
+- A method for generating a uniformly random rooted tree of fixed size.
+- etc.
+
+---
+
+## DynamicShow
+
+This class provides a more advanced and customizable way for users to display maps than the default `show` method.
+
+---
+
+## Other Classes
+
+- `TopologicalDemiEdge`: A more user-friendly way to interact with demi-edges than using raw indices.
+- `MutableTopologicalDemiEdge`: Inherits from `TopologicalDemiEdge`; adds methods only possible with mutable maps.
+- `MapPermutation`: A custom implementation of permutations used internally by the library.
+- `RotatingPermutation`: Inherits from `MapPermutation`; a special kind of mutable permutation with performant query time \(O(\log n)\) operations (e.g., checking if two indices are on the same cycle) and efficient operations like deleting or adding indices in a cycle.
+- `CustomSwap`: Inherits from `MapPermutation`; a special class for transpositions, more efficient in some cases than using `MapPermutation` directly.
+- `PermutationUtilsAbstractor`: An internal class used to abstract some methods related to map permutations.
+- `RotatingPermutationUtilsAbstractor`: Inherits from `PermutationUtilsAbstractor`, adapted for `RotatingPermutation`.
+- `CyclicChainedList`: An implementation of a mutable cyclic list used in `RotatingPermutation`.
+- `CyclicUtilsProvider`: A class that abstracts operations (e.g., querying whether two indices are on the same cycle), used in `RotatingPermutation`.
+- `SplayTree`: An implementation of a modified [splay tree](https://en.wikipedia.org/wiki/Splay_tree) data structure with some tweaks useful in `CyclicUtilsProvider`.
 
 ---
 
 ## Contact
 
-For **questions, issues, or feature requests**, please **open an issue** on the **GitHub repository**.
+For questions, issues, or feature requests, please open an issue on the GitHub repository.
+
