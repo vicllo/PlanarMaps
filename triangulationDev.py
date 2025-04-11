@@ -1,7 +1,7 @@
 import random
 from MapPermutation import MapPermutation
 from LabelledMap import LabelledMap
-
+from queue import deque
 
 def generateRandomBitstring(n):
     L = 4 * n - 2
@@ -141,17 +141,66 @@ def generateValidCodeword(n):
             chosen = random.choice(valid_shifts)
             return cyclicShift(b, chosen)
 
+def fastGenerateValidCodeword(n):
+    L = 4 * n - 2
+    b = generateRandomBitstring(n)
+    elems = [4 * bit - 1 for bit in b]          # maps 0 to -1 and 1 to 3
+
+    q = deque()
+    s = 0
+    # our goal is to find the valid shifts of b, i. e. such that the value of every prefix is > -2 (and = -2 for the whole string)
+    # note that here, the value of a string is 3 * (number of bits equal ro 1) - (number of bits equal to 0)
+
+    # at each iteration i, s is the value of b from index 0 to i excluded
+    # q is a deque of pairs (index, value) such that, at each iteration i:
+    #   - if (j, v) is in q, the value of the bitstring from i to j included is v - s
+    #   - the deque is ordered both by increasing indices and values (ie if (j, v) is before (j', v') in q, it holds that j<j' and v<=v')
+
+    # note that we aren't interested in (j, v), (j', v') such that j < j' and v > v' because
+    # the sum from i to j' will always be greater than the sum from i to j
+
+    # at each iteration i, we just have to check that the value of the minimum, ie. the first element of the deque - s, is equal to -2
+    # and that this minimum is reached at the end of the deque
+
+    def add(j, v):
+        while q and q[-1][1] > v:
+            q.pop()
+        q.append((j,v))
+
+    # initialize the deque
+    for i in range(L):
+        s += elems[i]
+        add(i, s)
+
+    s = 0
+
+    valid_shifts = []
+
+    for i in range(L):
+        if q[0][1] - s == -2 and q[0][0] == i + L - 1:
+            valid_shifts.append(i)
+
+        if q[0][0] == i:
+            q.popleft()
+        s += elems[i]
+
+        add(i + L, -2 + s)
+    
+    assert len(valid_shifts) == 2
+    
+    return cyclicShift(b, random.choice(valid_shifts))
+
 
 # Example usage for n = 3:
 """
 
 n = 3
-codeword = generateValidCodeword(n)
+codeword = fastGenerateValidCodeword(n)
 print("Valid bitstring (length {}):".format(4*n-2), codeword)
 L = [1, 0, 0, 1, 0, 0, 0, 0, 0, 0]
 count = 0
 for i in range(1000000):
-    G = generateValidCodeword(n)
+    G = fastGenerateValidCodeword(n)
     if not checkPrefixCondition(G) :
         print("stop")
         break
@@ -183,7 +232,7 @@ def transitiveCouplePermutation(sigma, alpha):
 
 
 def bitToTree(n):
-    b = generateValidCodeword(n)
+    b = fastGenerateValidCodeword(n)
     alphaCycle = [(i, i+1) for i in range(1, 6*n-1, 2)]
     sigmaCycle = []
 

@@ -168,7 +168,8 @@ class DynamicShow:
 
     # first model
     fast_delta_t = 1.0                  # delta_t of the first iterations
-    slow_delta_t = 0.02                 # delta_t of the last iterations
+    slow_delta_t = 0.05                 # delta_t of the last iterations
+    decrease_power = 1.5                # delta_t = slow_delta_t * (frame / fullForceFrames) ** power in the second phase
 
     # second model
     default_delta_t = 1.0              # delta_t of the first iteration
@@ -186,8 +187,6 @@ class DynamicShow:
 
     # print information about time use of different functions
     time_profile = True
-    # break each duplicate edge into this number of small edges
-    break_down_num = 5
 
     useVVForce = True
     useTorsionForce = True
@@ -205,10 +204,18 @@ class DynamicShow:
     # frames
     validFramesThreshold = 20
 
-    def __init__(self, map: LabelledMap):
+    def __init__(self, map: LabelledMap, break_down_num: int = 5):
+        """
+        Initializes DynamicShow object.
+
+        INPUT:
+            - ``map`` -- LabelledMap: the map to show
+            - ``break_down_num`` -- int: each cycle and multiedge will be split into this number of smaller edges to allow visualization
+        """
         # initialize the map
 
         self.map = map
+        self.break_down_num = break_down_num
 
         vertices = map.sigma.to_cycles()
 
@@ -366,6 +373,11 @@ class DynamicShow:
             - ``frame_by_frame`` -- bool; if False, automatically advance until convergence is found.
         """
         # initialize the matplotlib figure
+        if show_halfedges == "auto":
+            show_halfedges = self.nEdges <= 10
+        print ("hI")
+        if not isinstance(show_halfedges, bool):
+            raise ValueError("Invalid value for show_halfedges")
         size = 7
 
         self.fig = plt.figure(figsize=(size, size + 1), layout="constrained")
@@ -714,12 +726,11 @@ class DynamicShow:
 
             # delta_t will be proportional to 1 / frame ^ power when this
             # number is reached
-            power = 1.5
 
             if self.frame < full_force_frames:
                 base_delta_t = self.fast_delta_t
             else:
-                base_delta_t = self.slow_delta_t * full_force_frames**power / self.frame**power
+                base_delta_t = self.slow_delta_t * full_force_frames**self.decrease_power / self.frame**self.decrease_power
 
             if self.frame < several_iter_frames:
                 iters = 1
