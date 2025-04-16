@@ -2,9 +2,11 @@
 
 from triangulationDev import getRandomRootedTwoLeafTree, rootedTwoLeafTreeFromBit, checkPrefixCondition
 from MapPermutation import MapPermutation
-from triangulationDev import treeToTriangulation
 from LabelledMap import LabelledMap
 from MutableLabelledMap import MutableLabelledMap
+from MapGenerator import MapGenerator
+
+mapGenerator = MapGenerator()
 
 
 def test_0():
@@ -29,7 +31,7 @@ def test_1():
     tree = MutableLabelledMap(alpha=MapPermutation(
         alpha), sigma=MapPermutation(sigma))
     tree.pretty_print()
-    treeToTriangulation(tree)
+    mapGenerator.randomTreeToTriangulation(tree)
 
 
 def test_2():
@@ -41,20 +43,21 @@ def test_2():
     tree = MutableLabelledMap(alpha=MapPermutation(
         alpha), sigma=MapPermutation(sigma))
     tree.pretty_print()
-    treeToTriangulation(tree)
+    mapGenerator.randomTreeToTriangulation(tree)
 
 
 def test_3():
     tree = MutableLabelledMap(lmap=rootedTwoLeafTreeFromBit(tricky))
-    out = treeToTriangulation(tree)
+    out = mapGenerator.randomTreeToTriangulation(tree)
     out.show()
 
 
 def test_4():
-    N = 10*1000
+    N = 1000
     tree = MutableLabelledMap(lmap=getRandomRootedTwoLeafTree(N))
     tree.pretty_print()
-    treeToTriangulation(tree)
+    out = mapGenerator.randomTreeToTriangulation(tree)
+    out.show()
 
 
 def test_5():
@@ -62,4 +65,4 @@ def test_5():
 
 
 if __name__ == "__main__":
-    test_3()
+    test_4()
