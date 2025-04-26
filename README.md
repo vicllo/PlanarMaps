@@ -116,8 +116,9 @@ Some notes:
 
 Provides methods for generating maps or map-related objects, including:
 
-- A method for generating a uniformly random rooted map with a fixed number of edges.
-- A method for generating a uniformly random rooted tree of fixed size.
+- A method for generating  uniformly random rooted map with a fixed number of edges.
+- A method for generating  uniformly random rooted tree of fixed size.
+- A method for generating  uniformly random Triangulations of fixed size  
 - etc.
 
 ---
