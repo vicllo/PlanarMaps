@@ -37,11 +37,12 @@ After completing the installation, check the file `example.py` for usage example
 
 ## Overview
 
-The library contains five main classes:
+The library contains 6 main classes:
 
 - [LabelledMap](#labelled-map)
 - [RootedMap](#rooted-map)
 - [MutableLabelledMap](#mutable-labelled-map)
+- [PrimitiveMutableLabelledMap](#primitive-mutable-labelled-map)
 - [MapGenerator](#map-generator)
 - [DynamicShow](#dynamicshow)
 
@@ -97,6 +98,20 @@ Some notes:
 
 ---
 
+
+## Primitive Mutable Labelled Map
+
+This class inherits from `LabelledMap` and provides methods for modifying the map, it is much more primitive than MutableLabelledMap and place more responsability on the user and if he isn't care it can make the map not stable , some methods of LabelledMap are not implemented for this class and will raise an error.Only usefuf because on some operations it is O(1) instead of O(log(m)), if it isn't critical for you work  we advised you to use MutableLabelledMap instead.
+
+Some notes:
+
+- All methods that return a map will return a `LabelledMap`, not a `PrimitiveMutableLabelledMap`.
+- Most methods that modify the map will alter its labels. To keep track of demi-edges even when labels change, please use `PrimitiveMutableTopologicalDemiEdge`, which guarantees that the label associated with it is updated accordingly.
+
+
+
+---
+
 ## Map Generator
 
 Provides methods for generating maps or map-related objects, including:
@@ -118,10 +133,15 @@ This class provides a more advanced and customizable way for users to display ma
 - `TopologicalDemiEdge`: A more user-friendly way to interact with demi-edges than using raw indices.
 - `MutableTopologicalDemiEdge`: Inherits from `TopologicalDemiEdge`; adds methods only possible with mutable maps.
 - `MapPermutation`: A custom implementation of permutations used internally by the library.
-- `RotatingPermutation`: Inherits from `MapPermutation`; a special kind of mutable permutation with performant query time \(O(\log n)\) operations (e.g., checking if two indices are on the same cycle) and efficient operations like deleting or adding indices in a cycle.
+- `RotatingPermutation`: Inherits from `PrimitiveRotatingPermutation`; a special kind of mutable permutation with performant query time \(O(\log n)\) operations (e.g., checking if two indices are on the same cycle) and efficient operations like deleting or adding indices in a cycle.
+
+- `PrimitiveRotatingPermutation`: Inherits from `MapPermutation`; a more primitive version of RotatingPermutation it support modification operations in O(1).
+
 - `CustomSwap`: Inherits from `MapPermutation`; a special class for transpositions, more efficient in some cases than using `MapPermutation` directly.
 - `PermutationUtilsAbstractor`: An internal class used to abstract some methods related to map permutations.
 - `RotatingPermutationUtilsAbstractor`: Inherits from `PermutationUtilsAbstractor`, adapted for `RotatingPermutation`.
+- `PrimitiveRotatingPermutationUtilsAbstractor`: Inherits from `PermutationUtilsAbstractor`, adapted for `PrimitiveRotatingPermutation`.
+
 - `CyclicChainedList`: An implementation of a mutable cyclic list used in `RotatingPermutation`.
 - `CyclicUtilsProvider`: A class that abstracts operations (e.g., querying whether two indices are on the same cycle), used in `RotatingPermutation`.
 - `SplayTree`: An implementation of a modified [splay tree](https://en.wikipedia.org/wiki/Splay_tree) data structure with some tweaks useful in `CyclicUtilsProvider`.
