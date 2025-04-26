@@ -6,8 +6,8 @@ import numpy as np
 from CustomSwap import CustomSwap
 from MapPermutation import MapPermutation
 from queue import deque
-from MutableLabelledMap import MutableLabelledMap
 from RootedMap import RootedMap
+from PrimitiveMutableLabelledMap import PrimitiveMutableLabelledMap
 
 
 class MapGenerator:
@@ -501,7 +501,7 @@ class MapGenerator:
         def isSpecial(Z):
             return isOnLeafEdge(extremeOnEdgeAfter(Z)) and isOnLeafEdge(Z)
 
-        triangulation = MutableLabelledMap(lmap=tree)
+        triangulation = PrimitiveMutableLabelledMap(lmap=tree)
 
         root = triangulation.X(1)
 
@@ -526,7 +526,7 @@ class MapGenerator:
                 cntSpecial -= isSpecial(C.c)
 
                 N, _ = A.link(C.c)
-                N.contract()
+                N.contract(sameNode=False)
                 A = (C.c).pf
                 B, C = A.f, (A.f).f
             else:
@@ -544,8 +544,8 @@ class MapGenerator:
 
         def closeOp(U, V):
             W = U.addEdgeAfter()
-            W.link(V)[0].contract()
-            W.contract()
+            W.link(V)[0].contract(sameNode=False)
+            W.contract(sameNode=False)
             return V
 
         def enclose(A, D):
@@ -558,8 +558,9 @@ class MapGenerator:
                 if V == D:
                     break
                 V = nxt
-        enclose(A, D)
-        enclose(C, B)
+        if A != D:
+            enclose(A, D)
+            enclose(C, B)
 
         X, Y = A.link(C)
 
@@ -579,7 +580,7 @@ class MapGenerator:
         """
         returns a random rooted triangulation of size n (i.e with 2n faces, 3n edge and  n+2 node)
         uniformly
-
-        O(mlog(m))
+        ----
+        O(n)
         """
         return self.randomTreeToTriangulation(self.getRandomRootedTwoLeafTree(n, seed=seed), seed=seed)

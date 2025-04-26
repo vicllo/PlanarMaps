@@ -2064,8 +2064,8 @@ class LabelledMap:
         """
         print(f"""
             Alpha: {self.alpha.to_cycles()}
-            Sigma: {self.sigma.to_cycles()}
-            Phi : {self.phi.to_cycles()}
+            Sigma (Node): {self.sigma.to_cycles()}
+            Phi (Face): {self.phi.to_cycles()}
         """)
 
     def copy(self):
@@ -2194,3 +2194,16 @@ class LabelledMap:
         O(1)
         """
         return self.genus()
+
+    def isTriangulation(self):
+        """
+        Returns: A boolean indicating if self is a triangulation or not
+        ----
+        O(m)
+        """
+
+        faces = self.faces()
+        for face in faces:
+            if len(face) != 3:
+                return False
+        return True

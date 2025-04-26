@@ -3,7 +3,7 @@ from MapPermutation import *
 
 class CustomSwap (MapPermutation):
     """
-    A custom class that permit to Initializes faster simple swap permutation
+    A custom class that permit to Initializes faster simple transposition permutation
     """
 
     def __init__(self, lst) -> None:

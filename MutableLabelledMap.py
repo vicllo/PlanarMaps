@@ -242,7 +242,7 @@ class MutableLabelledMap(LabelledMap):
 
         if demiEdge != self.q:
             self.labelToTheEnd([demiEdge, otherDemiEdge])
-            self.deleteEdge(self.q)
+            self._BruteDeleteEdge(self.q)
             return
 
         # TopologicalDemiEdge thing
