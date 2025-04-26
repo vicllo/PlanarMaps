@@ -101,7 +101,7 @@ Some notes:
 
 ## Primitive Mutable Labelled Map
 
-This class inherits from `LabelledMap` and provides methods for modifying the map, it is much more primitive than MutableLabelledMap and place more responsability on the user and if he isn't care it can make the map not stable , some methods of LabelledMap are not implemented for this class and will raise an error.Only usefuf because on some operations it is O(1) instead of O(log(m)), if it isn't critical for you work  we advised you to use MutableLabelledMap instead.
+This class inherits from `LabelledMap` and provides methods for modifying the map, it is much more primitive than MutableLabelledMap and place more responsability on the user and if you aren't careful the map may become not stable , some methods of LabelledMap are not implemented for this class and will raise an error.Only useful compared to MutableLabelledMap because on some operations it is O(1) instead of O(log(m)), if it isn't critical for your work we advised you to use MutableLabelledMap instead.
 
 Some notes:
 
