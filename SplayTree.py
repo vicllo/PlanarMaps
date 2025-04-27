@@ -1,9 +1,7 @@
 
 # This file contain an implementation of a custom
 # Variant of SplayTree used in CycleUtilsProviderMain
-# Mainly because it isn't the main focus I didn't add exhaustive
-# documentation for now
-
+# Be careful when modifying this file to make sure that it is coherent with what is done in CycleUtilsProvider
 
 # OK
 def swapRight(node, otherNode):
@@ -33,6 +31,11 @@ def swapLeft(node, otherNode):
 
 # OK
 def SwapNonTopologicalExceptIndex(node, otherNode):
+    """
+    Swap every attribute of node and otherNode except splayTree,right,left
+    ---- 
+    O(1)
+    """
     # Value
     tmp = node.value
     node.value = otherNode.value
@@ -56,6 +59,9 @@ def SwapNonTopologicalExceptIndex(node, otherNode):
 
 # OK
 def makeParentKnow(node):
+    """
+    Make the parent know(by changing is left or right attribute) that node is his new children
+    """
     if node.parent is None:
         return
     parent = node.parent
@@ -67,7 +73,11 @@ def makeParentKnow(node):
 
 # OK
 def swapNodeButNotIndex(node, otherNode):
-
+    """
+    Swap every attribute except index
+    ---
+    O(1)
+    """
     # OK
     if node == otherNode:
         return
@@ -116,39 +126,92 @@ def swapNodeButNotIndex(node, otherNode):
 
 
 def numberOfElement(node):
+    """
+    Returns the number of element in the subtree of node or 0 if node is None
+    ----
+    O(1)
+    """
     return 0 if node is None else node.cnt
 
 
 def valueToTheLeft(parentValue, value):
+    """
+    Returns a boolean indciating if parentValue>value
+    ---- 
+    O(1)
+    """
     return parentValue > value
 
 
 def valueToTheRight(parentValue, value):
+    """
+    Returns a boolean indciating if parentValue<value
+    ----
+    O(1)
+    """
     return parentValue < value
 
 
 def isLeftChild(parentNode, node):
+    """
+    Returns a boolean indicating if node is th left Child of parentNode 
+    assuming node is a child
+    ----
+    O(1)
+    """
     return valueToTheLeft(parentNode.value, node.value + node.offset)
 
 
 def isRightChild(parentNode, node):
+    """
+    Returns a boolean indicating if node is the right Child of parentNode 
+    assuming node is a child
+    ----
+    O(1)
+    """
     return valueToTheRight(parentNode.value, node.value + node.offset)
 
 
 class Node:
+    """
+    This class is an internal class used in SplayTree and CycleUtilsProvider,
+    most operation are O(log(n)) amortized where n is the size of the tree if there is
+    a splay after them which is done most of the time outiside of this class by the splay tree
+    on which it is attached.
+    """
+
     def __init__(self, value=None, parent=None) -> None:
+        # The value contained in the node note that
+        # It doesn't represent the key associated to node
+        # Which is the sum of the value and offset
         self.value = value
 
+        # Left child
         self.left = None
+        # Right child
         self.right = None
+
+        # Parent if it is None it means this is the
+        # Root
         self.parent = parent
 
+        # The number of node in the subtree of node
         self.cnt = 0
+
+        # The offset contained in the node
         self.offset = 0
+
+        # The splay tree on which the node is attached
         self.splayTree = None
+
+        # The index which is associated
         self.index = None
 
     def SafeSplay(self):
+        """
+        This will splay self while being sure that after self.splayTree point to the correct value
+        and oldRoot.splayTree is None
+        """
         oldRoot = self.getRoot()
         if oldRoot != self:
             self.splayTree = oldRoot.splayTree
@@ -156,6 +219,12 @@ class Node:
         self.splay()
 
     def getSplayTree(self):
+        """
+        This return a reference to the splay tree of self , and make self the root of the splay tree or None
+        if it doesn't exist
+        ------
+        O(log(m))
+        """
         # It is guaranteed after colling this function that self is the root
         root = self.getRoot()
         self.splay()
@@ -165,6 +234,11 @@ class Node:
         return splayTree
 
     def getRoot(self):
+        """
+        The root of the tree on which self is attached
+        ----
+        O(n)
+        """
         node = self
         while not node.isRoot():
             node = node.parent
@@ -172,6 +246,11 @@ class Node:
         return node
 
     def height(self):
+        """
+        The height of the subtree 
+        -----
+        O(n)
+        """
         if self.isEmpty():
             return -1
         maxChildHeight = -1
@@ -182,6 +261,11 @@ class Node:
         return 1 + maxChildHeight
 
     def sortedList(self, offset=0):
+        """
+        Returns the sorted list of key in the subtree 
+        ---
+        O(n)
+        """
         if self.isEmpty():
             return []
         out = [self.value + offset + self.offset]
@@ -192,6 +276,11 @@ class Node:
         return out
 
     def indexList(self):
+        """
+        Returns the list of index in the subtree associated to self in the order of their key
+        ------
+        O(n)
+        """
         if self.isEmpty():
             return []
         out = [self.index]
@@ -202,9 +291,21 @@ class Node:
         return out
 
     def isEmpty(self):
+        """
+        A boolean indcating if self is empty
+        ----
+        O(1)
+        """
         return self.value is None
 
     def findSmallestGreater(self, value):
+        """
+        This will return offset,node such that if it exist node.value+offset is the smallest value in
+        self subtree such that >= value, otherwise the biggest smaller value.
+        ----
+        O(log(n))
+        """
+
         if self.isEmpty():
             return self, 0
 
@@ -228,6 +329,12 @@ class Node:
             offset += node.offset
 
     def findBiggestSmaller(self, value):
+        """
+        This will return offset,node such that if it exist node.value+offset is the biggest value in
+        self subtree such that <= value, otherwise the smallest bigger
+        -----
+        O(log(n))
+        """
         if self.isEmpty():
             return self, 0
 
@@ -251,6 +358,12 @@ class Node:
             offset += node.offset
 
     def insert(self, newValue):
+        """
+        Insert newValue inside the tree return b,node,offset such that b=True if it was a real new value otherwise False
+        and node.value+offset = value
+        -----
+        O(log(n))
+        """
         if self.isEmpty():
             self.value = newValue
             self.addCountUpward(1)
@@ -277,6 +390,11 @@ class Node:
             offset += node.offset
 
     def addCountUpward(self, toAdd):
+        """
+        Add toAdd to the cnt attribute of all the node in the path toward the root from self
+        ----
+        O(log(n))
+        """
         node = self
         node.cnt += toAdd
         while not node.isRoot():
@@ -284,6 +402,12 @@ class Node:
             node.cnt += toAdd
 
     def find(self, value):
+        """
+        Find a node such that node.value+node.offset() == value, return the offset and the node,
+        if it doesn't exist it will return the node,offset the smallest real value i.e node.value+offset < value
+        -----
+        O(log(n))
+        """
         if self.isEmpty():
             return self, 0
         node = self
@@ -302,6 +426,11 @@ class Node:
             offset += node.offset
 
     def min(self):
+        """
+        Returns the min of self
+        ----
+        O(log(n))
+        """
         minimum = self
         offset = self.offset
         while minimum.left is not None:
@@ -310,6 +439,11 @@ class Node:
         return minimum, offset
 
     def delete(self, value):
+        """
+        Delete value from self subtree and return the nearest node to the deleted one
+        ---
+        O(log(n)) 
+        """
         if self.isEmpty():
             return self
 
@@ -375,12 +509,18 @@ class Node:
         rep.parent.addCountUpward(-1)
 
         # This line is mainly here to not break the association
-        # in CycleUtilsProviderMain between index <-> node
+        # in CycleUtilsProvider between index <-> node
         swapNodeButNotIndex(node, rep)
 
         return node.parent
 
     def max(self):
+        """
+        Returns the node and offset corresponding to the maxmimum of the subtree of self , it doesn't splay,
+        splaying is done in SplayTree
+        ----
+        O(log(n))
+        """
         maximum = self
         offset = self.offset
         while maximum.right is not None:
@@ -389,6 +529,11 @@ class Node:
         return maximum, offset
 
     def _isBst(self, offset=0):
+        """
+        Verify that self is a bst  it also returns the min and max of the subtree of self
+        ----
+        O(n)
+        """
         if self.isEmpty():
             return None, None
         min = self.value + self.offset + offset
@@ -404,9 +549,19 @@ class Node:
         return min, max
 
     def isBst(self):
+        """
+        Raise an error if self isn't a bst
+        ----
+        O(n)
+        """
         self._isBst()
 
     def rightRotation(self):
+        """
+        Do a right rotation while updating the attribute accordingly
+        ----
+        O(1)
+        """
         if self.isEmpty():
             return self
 
@@ -453,6 +608,11 @@ class Node:
         return oldLeft
 
     def leftRotation(self):
+        """
+        Do a left rotation while updating attribute accordingly
+        ------
+        O(1)
+        """
         if self.isEmpty():
             return self
 
@@ -496,9 +656,19 @@ class Node:
         return oldRight
 
     def isRoot(self):
+        """
+        Returns a boolean indcating if self is the root of the tree or not
+        ----
+        O(log(m))
+        """
         return self.parent is None
 
     def getOffset(self):
+        """
+        Returns the sum of offset from the root to self 
+        ----
+        O(log(m))
+        """
         offset = self.offset
         node = self
         while not node.isRoot():
@@ -507,6 +677,13 @@ class Node:
         return offset
 
     def splay(self):
+        """
+        This applied splay the node toward the root of the tree,
+        note that it isn't safe mainly cause it doesn't update the splayTree attribute of the root
+        You should use SafeSplay instead
+        ----
+        O(log(m))
+        """
         while not self.isRoot():
             parent = self.parent
 
@@ -562,6 +739,13 @@ class SplayTree():
         self.insertList(lst)
 
     def changeRoot(self, root):
+        """
+        Change the root of the splay tree to root
+        -----
+        Args: root
+        -----
+        O(log(m)) where m is the size of the tree of root
+        """
         if not root.isRoot():
             raise ValueError("The argument must be the root of his tree")
         self.root.splayTree = None
@@ -661,13 +845,16 @@ class SplayTree():
 
         return otherSplayTree
 
-    def height(self):
+    def _height(self):
         """
         This function returns the height of self
         -------
         Returns: the height of self
         -------
         O(n) where n = self.size()
+        WARNING: This function isn't recursion safe mainly cause because splay tree can have linear height
+        they have amortized log operation and it was written recursively, hence if you a too much small recursion limit it can crash,
+        it was mainly used during debug
         """
         self.checkValid()
         return self.root.height()
@@ -684,6 +871,9 @@ class SplayTree():
     def _isBst(self):
         """
         Returns: A boolean indicating if self is a valid binary search tree
+        WARNING: This function isn't recursion safe mainly cause because splay tree can have linear height
+        even though they have amortized log operation, and the function was coded recursively ,hence if you a too much small recursion limit it may crash,
+        it was mainly used during debug
         -------
         O(n) where n =  self.size()
         """
@@ -707,7 +897,8 @@ class SplayTree():
     def getNode(self, value):
         """
         The node corresponding to value in the tree if value is in the tree otherwise it return None,
-        note that node.value+node.getOffSet() == value and not node.value == value.
+        note that node.value+node.getOffSet() == value and not node.value == value, moreover it will make if it
+        exists the node the root
         ------
         Args: value
         Returns:  The node corresponding to value in the tree if value is in the tree otherwise
@@ -752,7 +943,7 @@ class SplayTree():
 
     def min(self):
         """
-        This method return the minimum of self
+        This method return the minimum of self, and make the corresponding node the root
         -------
         Returns: the minimum of self if self isn't empty and None otherwise
         -------
@@ -768,7 +959,8 @@ class SplayTree():
 
     def max(self):
         """
-        This method return the maximum of self
+        This method return the maximum of self, and make the corresponding node 
+        the root
         -------
         Returns: the maximum of self if self isn't empty and None otherwise
         -------
@@ -784,7 +976,8 @@ class SplayTree():
 
     def find(self, value):
         """
-        This return a boolean indicating if value is in self
+        This return a boolean indicating if value is in self, and if it exists
+        make the corresponding node the root
         -------
         Args: value
         Returns: A boolean indicating if value is in self
@@ -814,7 +1007,8 @@ class SplayTree():
 
     def findSmallestGreater(self, value):
         """
-        This will return the smallest element of self >= value or None if it doesn't exist
+        This will return the smallest element of self >= value or None if it doesn't exist,
+        if the value exist it will be made the root otherwise the greatest smaller will be made the root
         -------
         Args: value
         Returns: the smallest element of self >= value or None if it  doesn't exist
@@ -842,7 +1036,8 @@ class SplayTree():
 
     def findBiggestSmaller(self, value):
         """
-        This will return the smallest element of self <= value or None if it doesn't exist
+        This will return the smallest element of self <= value or None if it doesn't exist, 
+        if the value exist it will be made the root otherwise the smallest bigger will be made the root
         -------
         Args: value
         Returns: the biggest element of self <= value or None if doesn't exist

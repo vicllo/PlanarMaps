@@ -3,10 +3,9 @@ from CycleUtilsProvider import CycleUtilsProvider
 from CyclicChainedList import CyclicChainedList
 from sage.all import Permutation
 from MapPermutation import MapPermutation
-from PrimitiveRotatingPermutation import PrimitiveRotatingPermutation
 
 
-class RotatingPermutation(PrimitiveRotatingPermutation):
+class RotatingPermutation(MapPermutation):
 
     """
     A class representing permutation where it is fast to:
@@ -724,6 +723,8 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
     def apply(self, i):
         """
         This function apply self on i , we take as a convention i if i is an integer > self.size() , self.apply(i) = i
+        ----
+        O(1)
         """
         if i != int(i) or i <= 0:
             raise ValueError("{i} isn't a positive integer")
@@ -737,6 +738,8 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
     def number_of_fixed_points(self):
         """
         Returns: the number of fixed point ( we only consider i such that i<=self.size())
+        ----
+        O(1)
         """
         return self._numberOfFixedPoint
 

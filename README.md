@@ -52,7 +52,7 @@ Each class provides specific functionalities for working with maps.
 
 ## Labelled Map
 
-A *Labelled Map* is a graph representation equipped with a rotation system and an arbitrary labeling of its \(2n\) half-edges with numbers in `[1 ... 2n]`.
+A *Labelled Map* is a graph representation equipped with a rotation system and an arbitrary labeling of its \(2n\) half-edges(also called demi-edges) with numbers in `[1 ... 2n]`.
 
 This class provides two constructors:
 
@@ -134,7 +134,7 @@ This class provides a more advanced and customizable way for users to display ma
 - `TopologicalDemiEdge`: A more user-friendly way to interact with demi-edges than using raw indices.
 - `MutableTopologicalDemiEdge`: Inherits from `TopologicalDemiEdge`; adds methods only possible with mutable maps.
 - `MapPermutation`: A custom implementation of permutations used internally by the library.
-- `RotatingPermutation`: Inherits from `PrimitiveRotatingPermutation`; a special kind of mutable permutation with performant query time \(O(\log n)\) operations (e.g., checking if two indices are on the same cycle) and efficient operations like deleting or adding indices in a cycle.
+- `RotatingPermutation`: Inherits from `MapPermutation`; a special kind of mutable permutation with performant query time \(O(\log n)\) operations (e.g., checking if two indices are on the same cycle) and efficient operations like deleting or adding indices in a cycle.
 
 - `PrimitiveRotatingPermutation`: Inherits from `MapPermutation`; a more primitive version of RotatingPermutation it support modification operations in O(1).
 

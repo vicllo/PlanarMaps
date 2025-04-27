@@ -24,18 +24,50 @@ class PermutationUtilsAbstractor:
                 self._cycleIndexes[i] = j
 
     def numberInCycle(self, index):
+        """
+        Returns:
+            The size of the cycle containing index
+        ---
+        O(1)
+        """
         return self._cyclesLength[self._cycleIndexes[index]]
 
     def sameCycle(self, i, j):
+        """
+        Returns:
+            A boolean indicating if i and j are on the same cycle
+        ---
+        O(1)
+        """
         return self._cycleIndexes[i] == self._cycleIndexes[j]
 
     def numberOfCycles(self):
+        """
+        Returns:
+            The number of cycles of the permutation
+        ---
+        O(1)
+        """
         return self._numberOfCycles
 
     def numberOfFixedPoint(self):
+        """
+        Returns:
+            The number of fixed point of the permutation
+        ---
+        O(1)
+        """
         self._numberOfFixedPoint
 
     def checkTwoInTheSameCycle(self, listIndexes):
+        """
+        Args:
+            listIndexes a list of indexes
+        Returns:
+            A boolean indicating if there are two indices in listIndexes on the sameCycle
+        ---
+        O(len(listIndexes))
+        """
         checkSet = set()
         for i in listIndexes:
             if self._cycleIndexes[i] in checkSet:

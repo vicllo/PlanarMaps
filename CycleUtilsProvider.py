@@ -5,14 +5,20 @@ class CycleUtilsProvider:
     """
     This class is an abstraction of some utils used by RotatingPermutation
     It is mainly use for abstracting some operations
-    for now I didn't add an exhaustive documentation
     """
 
     def __init__(self, cycles):
+        # It should contain only non fixed point index as key
         self.nodeMap = {}
+
+        # For every cycle we will create a splay tree for it
+        # Note that the value contained in the tree must be integer
+        # For methods to work
         for c in cycles:
+            # If it is a fixed point continue
             if len(c) == 1:
                 continue
+            # Else create a splay for it
             splayTree = SplayTree(range(len(c)))
             for i in range(len(c)):
                 e = c[i]
@@ -23,6 +29,14 @@ class CycleUtilsProvider:
     # O(log(n))
 
     def numberInCycle(self, index):
+        """
+        Args:
+            index
+        Returns:
+            The number of element in the same cycle as index
+        -----
+        O(log(n))
+        """
         if self.isFixedPoint(index):
             return 1
         return self.getSplayTree(index).size()
@@ -31,6 +45,14 @@ class CycleUtilsProvider:
     # O(log(n))
 
     def sameCycle(self, i, j):
+        """
+        Args:
+            i,j
+        Returns:
+            A boolean indicating if i and j are on the same cycle
+        ----
+        O(log(n))
+        """
         if self.isFixedPoint(i) or self.isFixedPoint(j):
             return False
         rootI = self.nodeMap[i].getRoot()
@@ -42,6 +64,14 @@ class CycleUtilsProvider:
     # Otherwise it will raise an Error
     # O(log(n))
     def addAfter(self, index, otherIndex):
+        """
+        Add otherIndex in the cycle of index after index
+        ----
+        Args:
+            index,otherIndex , otherIndex != index and otherIndex is a fixed point
+        ---- 
+        O(log(n))
+        """
         assert index != otherIndex
         if not self.isFixedPoint(otherIndex):
             raise ValueError(f"{otherIndex} isn't a fixed point ")
@@ -70,6 +100,14 @@ class CycleUtilsProvider:
     # Return a boolean indicating if two index in  listIndexes
     # are in the sameCycle efficiently (here O( len(listIndexes)log(n)))
     def checkTwoInTheSameCycle(self, listIndexes):
+        """
+        Args:
+            listIndexes a list of indexes
+        Returns:
+            A boolean indicating if there are two indexes in listIndexes in the same cycle
+        ---
+        O(len(listIndexes)log(n))
+        """
         mapIndexes = set(listIndexes)
         for e in mapIndexes:
             if self.isFixedPoint(e):
@@ -90,6 +128,15 @@ class CycleUtilsProvider:
     # O(log(n))
 
     def addBefore(self, index, otherIndex):
+        """
+        Add otherIndex in the cycle of index before index
+        ----
+        Args:
+            index,otherIndex , otherIndex != index and otherIndex is a fixed point
+        ---- 
+        O(log(n))
+        """
+
         assert index != otherIndex
         if not self.isFixedPoint(otherIndex):
             raise ValueError(f"{otherIndex} isn't a fixed point ")
@@ -105,7 +152,16 @@ class CycleUtilsProvider:
         self.addAfter(otherIndex, index)
 
     # O(log(n))
+    # We don't have node for fixed point index
+    # Hence it can be dangerous to access the node map of an index when it is a fixed point
+    # This will create a node if it doesn't exist for index and the corresponding splaytree
+    # Useful during operations to not have to have a different logic for fixed point that won't be anymore after the operations
     def _safeIndex(self, index):
+        """
+        Used internaly,because we don't have node for fixed point index , it may create a different logic for them
+        this will temporarly create a node during this operations , the use must be careful that after having used 
+        this temporary node , that it is deleted from node map or isn't anymore a fixed point
+        """
         if not self.isFixedPoint(index):
             return
         splayTree = SplayTree()
@@ -117,6 +173,16 @@ class CycleUtilsProvider:
     # OK
     # O(log(n))
     def swapIndex(self, index, otherIndex):
+        """
+        This will only swap the label of the node associated to index and otherIndex while keeping
+        a relabelling of some sort
+        ----
+        Args:
+            index,otherIndex
+        -----
+        O(log(n))
+        ----
+        """
         if index not in self.nodeMap and otherIndex not in self.nodeMap:
             return
         if index not in self.nodeMap and otherIndex in self.nodeMap:
@@ -139,6 +205,14 @@ class CycleUtilsProvider:
     # OK
     # O(sizeOfCycle)
     def getCycleList(self, index):
+        """
+        Args:
+            index
+        Returns:
+            A list of all index in the cycle of index
+        ----
+        O(t+log(n)) where t is the size of the cycle of index
+        """
         if self.isFixedPoint(index):
             return [index]
         splayTree = self.getSplayTree(index)
@@ -148,26 +222,58 @@ class CycleUtilsProvider:
     # O(log(n))
     # OK
     def detach(self, index):
+        """
+        This will make index a fixed point
+        ---
+        Args : index
+        ---
+        O(log(n))
+        """
         if self.isFixedPoint(index):
             return
+        # Delete the key of index from it splay tree
         splayTree = self.getSplayTree(index)
         value = splayTree.root.value + splayTree.root.offset
         splayTree.delete(value)
 
+        # Delete index from the nodeMap
+        # We can only have no fixed point inside it
         self.nodeMap.pop(index)
 
+        # If there is only one element left in the old cycle of index
+        # We must also make him fixed point
         if splayTree.size() == 1:
             node = splayTree.root
             self.detach(node.index)
 
-    # O(log(n))
+    # O(1)
     # OK
     def isFixedPoint(self, index):
+        """
+        Args:
+            index
+        Returns: 
+            A boolean indicating if index is a fixed point or not 
+        ----
+        O(1)
+        """
         return index not in self.nodeMap
 
     # OK
     # O(log(n))
     def getValue(self, index):
+        """
+        This will return the key associated to index in the splay tree corresponding to his cycle,
+        while making sure that the node asscociated to index is the root of the tree
+        -----
+        Args:
+            index not a fixed point
+
+        Returns:
+            The value associated to index in the splay tree corresponding to his cycle 
+        ----
+        O(log(n))
+        """
         if self.isFixedPoint(index):
             raise ValueError(
                 f"A fixed point doesn't have a value: {index} is a fixed point")
@@ -177,6 +283,17 @@ class CycleUtilsProvider:
     # OK
     # O(log(n))
     def getSplayTree(self, index):
+        """
+        Returns the splay tree associated to index while making sure that the node associated to index become the root
+        index must not be a fixed point otherwise an error will be raised
+        ----
+        Args:
+            index not a fixed point
+        Returns:
+            The splay associated to index 
+        -----
+        O(log(n))
+        """
         if self.isFixedPoint(index):
             raise ValueError(
                 f"A fixed point doesn't have a splay tree : {index} is a fixed point")
@@ -185,11 +302,21 @@ class CycleUtilsProvider:
     # O(log(n))
 
     def makeMin(self, index):
+        """
+        This will make index the max and the root of the splay tree, while keeping the same cycle topology
+        -----
+        Args:
+            index
+        -----
+        O(log(n))
+
+        """
         if self.isFixedPoint(index):
             return
         value = self.getValue(index)
         splayTree = self.getSplayTree(index)
 
+        # Note that .min on a splay tree make the min become the root
         if splayTree.min() == value:
             return
 
@@ -200,11 +327,20 @@ class CycleUtilsProvider:
     # O(log(n))
 
     def makeMax(self, index):
+        """
+        This will make index the max and the root of the splay tree, while keeping the same cycle topology
+        -----
+        Args:
+            index
+        -----
+        O(log(n))
+        """
         if self.isFixedPoint(index):
             return
         value = self.getValue(index)
         splayTree = self.getSplayTree(index)
 
+        # Note that .max on a splay tree make the max become the root
         if splayTree.max() == value:
             return
         left, right = splayTree.split(value + 1 / 2)
@@ -214,6 +350,15 @@ class CycleUtilsProvider:
     # OK
     # O(log(n))
     def merge(self, beforeIndex, afterIndex):
+        """
+        beforeIndex and afterIndex must be on different cycle , it will merge both cycle in the following manner C = ...->beforeIndex and D = afterIndex-> ... 
+        it will create the following ...->beforeIndex->afterIndex-> ...
+        -----
+        Args:
+            beforeIndex,afterIndex two indexes not on the same cycle, an error will be raised otherwise
+        -----
+        O(log(n))
+        """
         if self.sameCycle(beforeIndex, afterIndex):
             raise ValueError(
                 f"Cannot merge detache two indexes in the same cycle  : {beforeIndex} and {afterIndex}")
@@ -233,6 +378,15 @@ class CycleUtilsProvider:
     # OK
     # O(log(n))
     def cut(self, startIndex, endIndex):
+        """
+        startIndex and endIndex must be on the same cycle , it will cut their cycle into two part one startIndex...endIndex ,
+        and the rest
+        -----
+        Args:
+            startIndex and endIndex they must be on the same cycle, an error will be raise otherwise
+        ----- 
+        O(log(n))
+        """
         if not self.sameCycle(startIndex, endIndex):
             raise ValueError(
                 f"Cut can only be called for index in the same cycle {startIndex} and {endIndex} are not")

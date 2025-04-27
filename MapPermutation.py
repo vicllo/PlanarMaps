@@ -65,14 +65,39 @@ class MapPermutation:
             raise InvalidMapPermutationArgument()
 
     def size(self):
+        """
+        Returns: 
+            The size of self
+        ---
+        O(1)
+        """
         return len(self._tab)
 
     def apply(self, i):
+        """
+        Args:
+            i
+        ---
+        Returns:
+            self(i)
+        ---
+        O(1)
+        """
         if i > self.size():
             return i
         return self._tab[i-1]
 
     def inverseApply(self, i):
+        """
+        Args:
+            i an index
+        ----
+        Returns:
+            j such that self(j) = i
+        ----
+        O(1)
+        """
+
         if i > self.size():
             return i
         return self._rtab[i-1]
@@ -90,6 +115,12 @@ class MapPermutation:
         print(self.pretty_repr())
 
     def to_cycles(self):
+        """
+        Returns:
+            A list of tuple representing the cycle decomposition of self
+        ---
+        O(n)
+        """
         check = np.zeros(self.size()+1)
         cycles = []
         for i in range(1, self.size()+1):
@@ -166,6 +197,8 @@ class MapPermutation:
     def number_of_fixed_points(self):
         """
         Returns: the number of fixed point ( we only consider i such that i<=self.size())
+        ----
+        O(n) where n is the size of self
         """
         return np.sum(self._tab == np.arange(1, self.size()+1))
 
