@@ -526,7 +526,7 @@ class MapGenerator:
                 cntSpecial -= isSpecial(C.c)
 
                 N, _ = A.link(C.c)
-                N.contract(sameNode=False)
+                N.contract()
                 A = (C.c).pf
                 B, C = A.f, (A.f).f
             else:
@@ -544,8 +544,8 @@ class MapGenerator:
 
         def closeOp(U, V):
             W = U.addEdgeAfter()
-            W.link(V)[0].contract(sameNode=False)
-            W.contract(sameNode=False)
+            W.link(V)[0].contract()
+            W.contract()
             return V
 
         def enclose(A, D):

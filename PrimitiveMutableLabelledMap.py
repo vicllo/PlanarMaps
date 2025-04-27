@@ -166,7 +166,15 @@ class PrimitiveMutableLabelledMap(LabelledMap):
         if not sameFace:
             self.phi.mergeDelete(demiEdge, otherDemiEdge)
         else:
-            self.phi.deleteLastKIndex(2)
+            # Because demiEdge doesn't break the connectivity
+            # demiEdge and otherDemiEdge are on the same face
+            # And the face will be cut
+            # Look Strange  cause it mean that deleting a edge will increase the
+            # Number of face but not so much because it won't increase the number of
+            # On the current surface just the map obteined has more face on
+            # The new lower genus surface
+            # Note that this case only happen in genus > 0
+            self.phi.cutDelete(demiEdge, otherDemiEdge)
 
     def deleteEdge(self, demiEdge, sameFace):
         """
@@ -256,11 +264,15 @@ class PrimitiveMutableLabelledMap(LabelledMap):
         """
         return PrimitiveMutableLabelledMap(sigma=self.sigma, alpha=self.alpha)
 
-    def contractEdge(self, demiEdge, sameNode):
+    def contractEdge(self, demiEdge):
         """
-        Contract in self the edge corresponding to demiEdge
+        Contract in self the edge corresponding to demiEdge.
+        WARNING: For this version you demiEdge cannot be on a loop anyway because 
+        contracting an loop is defined(in this library) as deleting an edge just
+        call deleteEdge.
         -----
-        Args: sameNode a boolean indicating if demiEdge and alpha(demiEdge) are on the same node
+        Args:
+            demiEdge the demiEdge to contract cannot be on a loop
         -----
         O(1)
         """
@@ -270,15 +282,12 @@ class PrimitiveMutableLabelledMap(LabelledMap):
 
         if demiEdge != self.q:
             self.labelToTheEnd([demiEdge, self.alpha(demiEdge)])
-            self.contractEdge(self.q, sameNode)
+            self.contractEdge(self.q)
             return
 
         otherDemiEdge = self.alpha(demiEdge)
 
-        if not sameNode:
-            self.sigma.mergeDelete(demiEdge, otherDemiEdge)
-        else:
-            self.sigma.deleteLastKIndex(2)
+        self.sigma.mergeDelete(demiEdge, otherDemiEdge)
         self.phi.deleteLastKIndex(2)
         self.alpha.deleteLastKIndex(2)
 

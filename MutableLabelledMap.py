@@ -1,3 +1,4 @@
+from numpy import delete
 from LabelledMap import *
 from sage.all import Permutation  # Import sage library
 from MutableTopologicalDemiEdge import *
@@ -255,9 +256,18 @@ class MutableLabelledMap(LabelledMap):
         self.sigma.deleteLastKIndex(2)
         self.alpha.deleteLastKIndex(2)
         if not self.areOnTheSameFace(demiEdge, otherDemiEdge):
+            # We are merging the face
             self.phi.mergeDelete(demiEdge, otherDemiEdge)
         else:
-            self.phi.deleteLastKIndex(2)
+            # Because demiEdge doesn't break the connectivity
+            # demiEdge and otherDemiEdge are on the same face
+            # And the face will be cut
+            # Look Strange  cause it mean that deleting a edge will increase the
+            # Number of face but not so much because it won't increase the number of
+            # On the current surface just the map obteined has more face on
+            # The new lower genus surface
+            # Note that this case only happen in genus > 0
+            self.phi.cutDelete(demiEdge, otherDemiEdge)
 
     def deleteEdge(self, demiEdge, trust=False):
         """
@@ -448,13 +458,20 @@ class MutableLabelledMap(LabelledMap):
 
     def contractEdge(self, demiEdge):
         """
-        Contract in self the edge corresponding to demiEdge
+        Contract in self the edge corresponding to demiEdge,demiEdge is on a loop edge it will just delete the edge
         -----
         O(log(m))
         """
         if self.m == 1:
             raise ValueError(
                 "Cannot contract an edge  in a map with only one edge")
+
+        # If this is a loop
+        if self.areOnTheSameNode(demiEdge, self.alpha(demiEdge)):
+            # We delete the edge
+            # We can trust here cause a loop can't make the graph not connected
+            self.deleteEdge(demiEdge, trust=True)
+            return
 
         if demiEdge != self.q:
             self.labelToTheEnd([demiEdge, self.alpha(demiEdge)])
@@ -463,10 +480,9 @@ class MutableLabelledMap(LabelledMap):
 
         otherDemiEdge = self.alpha(demiEdge)
 
-        if not self.areOnTheSameNode(demiEdge, otherDemiEdge):
-            self.sigma.mergeDelete(demiEdge, otherDemiEdge)
-        else:
-            self.sigma.deleteLastKIndex(2)
+        # Merging the nodes here
+        self.sigma.mergeDelete(demiEdge, otherDemiEdge)
+
         self.phi.deleteLastKIndex(2)
         self.alpha.deleteLastKIndex(2)
 

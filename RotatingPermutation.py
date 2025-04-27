@@ -1,7 +1,7 @@
 from time import time
 from CycleUtilsProvider import CycleUtilsProvider
 from CyclicChainedList import CyclicChainedList
-from sage.all import Permutation
+from sage.all import Permutation, end
 from MapPermutation import MapPermutation
 
 
@@ -265,7 +265,27 @@ class RotatingPermutation(MapPermutation):
         self._permCycle[otherIndex].val = otherIndex
         self._permCycle[index].val = index
 
+    def cutDelete(self, startIndex, endIndex):
+        """
+        This will cut the cycle in two part startIndex...endIndex and the rest , and than will delete startIndex and endIndex
+        ------
+        Args: 
+            startIndex, endIndex, on the sameCycle such that {startIndex,endIndex}={self.size(),self.size()-1}
+        ------ 
+        O(log(m))
+        """
+
+        assert startIndex != endIndex
+        assert self.sameCycle(startIndex, endIndex)
+
+        tempNewIndex = self._n+1
+        tempNewIndexOther = self._n+2
+        self.cutAdd(startIndex, endIndex, tempNewIndex, tempNewIndexOther)
+
+        self.deleteLastKIndex(4)
+
     # OK
+
     def cutAdd(self, startIndex, endIndex, newIndexStart, newIndexEnd):
         """
         This implement a special operation.In a nutshell it cut a cycle and add two index in each cycle,

@@ -70,15 +70,14 @@ class PrimitiveMutableTopologicalDemiEdge(TopologicalDemiEdge):
         return self.map.addEdgeBefore(self.raw)
 
     @CheckValid
-    def contract(self, sameNode):
+    def contract(self):
         """
-        Contract the edge bind to self
-        ----
-        Args: sameNode a boolean indicating if self and self.c are on the same Node
+        Contract the edge bind to self , note that self cannot be on a loop 
+        i.e self and self.c cannot be on the same node otherwise nothing is guaranted
         ----
         O(1)
         """
-        self.map.contractEdge(self.raw, sameNode)
+        self.map.contractEdge(self.raw)
 
     @CheckValid
     def isOnSameFace(self, otherTopologicalDemiEdge):
