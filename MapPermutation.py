@@ -26,7 +26,7 @@ class MapPermutation:
 
     def _init_from_cycle_list(self, lst, trust=False):
         cnt = np.max(np.array(list(map(lambda x: np.max(np.array(x)), lst))))
-        print(cnt)
+        #print(cnt)
         self._tab = np.arange(1, cnt+1, dtype=int)
         self._rtab = np.arange(1, cnt+1, dtype=int)
         for e in lst:

@@ -719,10 +719,10 @@ class DynamicShow:
         else:
             # after this number of iterations, we should be closer to the
             # optimum; start going slower to refine the positions
-            full_force_frames = int(self.nVertices * 2)
+            full_force_frames = int(self.nVertices * 1.5)
             # after this number of iterations, we start doing several frame at
             # once with decreasing delta_t to reach the optimum
-            several_iter_frames = int(self.nVertices * 4)
+            several_iter_frames = int(self.nVertices * 3)
 
             # delta_t will be proportional to 1 / frame ^ power when this
             # number is reached

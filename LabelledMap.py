@@ -402,13 +402,13 @@ class LabelledMap:
             )
             use_sage_viewer = True
 
-        vertex_size = 140 / max(1, len(vertices))**0.5 if show_vertices else 0
+        vertex_size = min(300, 1000 / len(vertices) **.5)
 
         if use_sage_viewer:
             layout = "planar" if self.genus() == 0 else "spring"
             g.show(
                 layout=layout,
-                vertex_size=vertex_size * 8,
+                vertex_size=vertex_size,
                 vertex_labels={
                     i: str(i)
                     if i <= real_n_vertices and show_vertices
@@ -440,7 +440,7 @@ class LabelledMap:
                     else ""
                     for i in range(1, len(vertices) + 1)
                 },
-                node_size=[300] * real_n_vertices
+                node_size=[vertex_size] * real_n_vertices
                 + [0] * (len(vertices) - real_n_vertices),
                 nodelist=list(range(1, len(vertices) + 1)),
                 arrows=False,
