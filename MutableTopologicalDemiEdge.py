@@ -17,7 +17,6 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
         saying that the self.map is connected thus make all the other method unsafe by default trust = False.
         ----
         Args:
-            demiEdge: a demi edge corresponding to the edge to delete
             trust: a parameter telling the function if it should trust the fact that the map will stay connected after
                 deleting demiEdge default is False
         ----

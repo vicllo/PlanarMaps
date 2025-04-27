@@ -8,3 +8,16 @@ class InvalidMapPermutationArgument(Exception):
 class InvalidSwapPermutationArgument(Exception):
     def __init__(self):
         super().__init__("Invalid argument for swap permutation")
+
+
+class NotImplemented(Exception):
+    def __init__(self, x):
+        super().__init__(
+            f"This  method isn't implemented for the class {x.__class__} ")
+
+
+class TODO(Exception):
+
+    def __init__(self):
+        super().__init__(
+            f"Todo")

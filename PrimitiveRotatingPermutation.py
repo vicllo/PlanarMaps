@@ -1,28 +1,15 @@
-from time import time
-from CycleUtilsProvider import CycleUtilsProvider
+
 from CyclicChainedList import CyclicChainedList
 from sage.all import Permutation
 from MapPermutation import MapPermutation
-from PrimitiveRotatingPermutation import PrimitiveRotatingPermutation
+from MapError import NotImplemented
 
 
-class RotatingPermutation(PrimitiveRotatingPermutation):
+class PrimitiveRotatingPermutation(MapPermutation):
 
     """
-    A class representing permutation where it is fast to:
-    - delete (O(log(n))) element,
-    - check if two indices are in the same cycle (O(log(n))),
-    - add (O(log(n))) element in its cycles representation,
-    - and more things useful in MutableLabelledMap.
 
-    Note that compared to simple MapPermutation,
-    RotatingPermutation are more heavy objects; hence they are more demanding when initializing.
-    If you don't need all the power of RotatingPermutation, consider using the simple MapPermutation.
-
-    Another thing: for compatibility reasons between MutableLabelledMap and LabelledMap,
-    every method that returns a permutation must return MapPermutation.
-    Hence, don't assume that the permutation you get is a RotatingPermutation;
-    you should do it yourself.
+    This class represent a more primitive version of rotating permutation useful in PrimitiveMutableLabelledMap
 
     WARNING: We take as a convention for this class that if i is bigger than the size of self,
     then self(i) = i.
@@ -54,7 +41,6 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
                 # identity
                 self._n = lst
                 self._numCycles = self._n
-                self.provider = CycleUtilsProvider([])
                 return
         except BaseException:
             pass
@@ -134,11 +120,10 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
                     self._numCycles += 1
                     self._numberOfFixedPoint += cnt == 1
         except ValueError as e:
-            raise
+            raise e
         except BaseException:
             raise ValueError("Invalid argument: The argument given must be Permutation or MapPermutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.")
         self._n = mx
-        self.provider = CycleUtilsProvider(self.to_cycles())
 
     # OK
 
@@ -179,7 +164,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
 
         Note that if index must be an strictly positive integer and self.size() >= 2 otherwise an error will be raised
         -------
-        O(log(n))
+        O(1)
         """
         if self.size() == 1:
             raise ValueError(
@@ -188,24 +173,24 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
             raise ValueError(
                 "{index} isn't a strictly positive integer <= self.size()")
 
+        u = self(index)
+        v = self(u)
+
         nPrev = self.size()
         node = self.getNode(index)
 
         node.remove()
 
-        if self.provider.numberInCycle(index) == 2:
+        if v == index and u != index:
             self._numberOfFixedPoint += 1
 
-        if self.provider.numberInCycle(index) == 1:
+        if u == index:
             self._numberOfFixedPoint -= 1
             self._numCycles -= 1
 
         self._n -= 1
 
         self._permCycle.pop(index)
-
-        self.provider.swapIndex(nPrev, index)
-        self.provider.detach(nPrev)
 
         if nPrev != index:
             try:
@@ -233,20 +218,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
             return self._permCycle[i].prev.val
         except BaseException:
             return i
-    # OK
 
-    def checkTwoInTheSameCycle(self, listIndexes):
-        """
-        This function will return a boolean indicating if there is two index in listIndexes in the sameCycle
-        ------
-        Args:
-            listIndexes: A list of indexes
-        Returns:
-            A boolean indicating if two indexes are in the same cycle
-        ------
-        O(plog(n)) where p = len(listIndexes)
-        """
-        return self.provider.checkTwoInTheSameCycle(listIndexes)
     # OK
 
     def swapIndex(self, index, otherIndex):
@@ -256,9 +228,8 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             index, otherIndex the two indexes <= self.size()
         ------
-        O(log(n))
+        O(1)
         """
-        self.provider.swapIndex(index, otherIndex)
         nodeIndex = self.getNode(index)
         nodeOther = self.getNode(otherIndex)
         self._permCycle[otherIndex] = nodeIndex
@@ -272,12 +243,14 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         This implement a special operation.In a nutshell it cut a cycle and add two index in each cycle,
         let denote A = startIndex, B = endIndex, C = newIndexStart, D = newIndexEnd and say the cycle is of the form F -> A -> S -> .. -> T -> B -> R -> ... -> F
         than the situation will be the following after a call to this function, A -> S -> ... -> T -> D -> A and F -> C -> B -> R -> ... -> F
+
+        WARNING: startIndex and endIndex must be not on the same cycle otherwise there is no guarantee
         ------
         Args:
             startIndex, endIndex, newIndexStart, newIndexEnd: 4 indexes, startIndex and endIndex must be on the same cycle
             and {newIndexEnd, newIndexStart} = {n+1, n+2} and should be fixed point
         ------
-        O(log(n))
+        O(1)
         """
         if newIndexEnd == newIndexStart:
             raise ValueError(
@@ -288,9 +261,6 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         if newIndexEnd <= self.size() or newIndexEnd > self.size() + 2:
             raise ValueError(
                 f"{newIndexEnd} must be  >{self.size()} and <= {self.size() + 2}")
-        if not self.sameCycle(startIndex, endIndex):
-            raise ValueError(
-                f"{newIndexEnd} and {newIndexStart} must be in the same cycle to use cutAdd")
         if startIndex == endIndex:
             self.addBefore(startIndex)
             self.addBefore(startIndex)
@@ -307,7 +277,6 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         nodeNewIndexEnd = self.getNode(newIndexEnd)
 
         # NodeNewIndexStart processing
-        comeBeforeEnd = self.inverseApply(endIndex)
         tmpNode = self.getNode(self.inverseApply(startIndex))
         nodeNewIndexStart.prev = tmpNode
         tmpNode.nxt = nodeNewIndexStart
@@ -324,14 +293,8 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         nodeEndIndex.prev = nodeNewIndexStart
         nodeStartIndex.prev = nodeNewIndexEnd
 
-        # Updating the provider
-        self.provider.cut(startIndex,
-                          comeBeforeEnd)
-
-        self.provider.addBefore(startIndex, newIndexEnd)
-        self.provider.addBefore(endIndex, newIndexStart)
-
     # OK
+
     def labelToTheEnd(self, listIndexes):
         """
         This is a helper function  it just move all of the element in listIndexes to the last indices
@@ -339,7 +302,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             listIndexes
         -----
-        O(len(listIndexes)*log(n))
+        O(len(listIndexes))
         """
         for index in listIndexes:
             if index != int(index) or index <= 0 or index > self.size():
@@ -379,7 +342,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             cycles: list of cycles
         ----
-        O(len(cycles)*log(n))
+        O(len(cycles))
         """
         for c in cycles:
             for i in range(len(c) - 1):
@@ -394,7 +357,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             cycles: list of cycles
         ----
-        O(len(cycles)*log(n))
+        O(len(cycles))
         """
 
         testSet = set()
@@ -437,18 +400,17 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             index, otherIndex
         -----
-        O(log(n))
+        O(1)
         """
         self.isValidIndex(index)
         self.isValidIndex(otherIndex)
         if index == otherIndex:
             return
-        if not self.provider.isFixedPoint(otherIndex):
+        if not self(otherIndex) == otherIndex:
             raise ValueError(
                 f"Can only add after fixed point {otherIndex} isn't one")
 
-        self._numberOfFixedPoint -= self.provider.isFixedPoint(index)
-        self.provider.addAfter(index, otherIndex)
+        self._numberOfFixedPoint -= self(index) == index
 
         node = self.getNode(index)
 
@@ -468,7 +430,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Args:
             index, otherIndex
         ----
-        O(log(n))
+        O(1)
         """
         self.isValidIndex(index)
         indexPrev = self.inverseApply(index)
@@ -480,21 +442,19 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Assuming that index and otherIndex are not in the same cycle it will do the
         following first index and otherIndex will be sent to self.size() self.size()-1 they will be deleted and given
         that before we add: U -> ... -> V -> index -> R -> U and F -> ... -> T -> otherIndex -> Q -> F, we will have after
-        U -> ... -> V -> Q -> F -> ... -> T -> R -> U
+        U -> ... -> V -> Q -> F -> ... -> T -> R -> U 
         ----
-        index, otherIndex two node not on the same cycle
+        index, otherIndex two node not on the same cycle, WARNING: if it isn't the case there is no guarantee and no error will be raised
         ----
-        O(log(n))
+        O(1)
         """
-        if self.sameCycle(index, otherIndex):
-            raise ValueError("Cannot merge delete two index on the sameCycle")
 
         backUpNumberOfFixedPoint = self.number_of_fixed_points()
 
         self.labelToTheEnd([index, otherIndex])
 
-        if self.provider.isFixedPoint(
-                self._n) or self.provider.isFixedPoint(self._n - 1):
+        if self(
+                self._n) == self._n or self(self._n - 1) == self._n-1:
             self.deleteLastKIndex(2)
             return
 
@@ -537,7 +497,6 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
 
         self._numCycles -= 1
         self._numberOfFixedPoint = backUpNumberOfFixedPoint
-        self.provider.merge(beforeIndex, afterIndex)
 
     # OK
     def getNode(self, index):
@@ -580,18 +539,16 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Let denote n=self.size() given that  n>=index>=1, this will increase the size of self by one and add
         the new element n+1 on the cycle of index after index.You should note that if index>self.size() this will raise an error.
         -----
-        O(log(n))
+        O(1)
         """
         if index != int(index) or index <= 0 or index > self.size():
             raise ValueError(
                 f"{index} isn't a strictly positive integer <= {self.size()}")
 
-        self._numberOfFixedPoint -= self.provider.isFixedPoint(index)
+        self._numberOfFixedPoint -= self(index) == index
         nPrev = self.size()
 
         self.stretch(1)
-
-        self.provider.addAfter(index, nPrev + 1)
 
         node = self.getNode(index)
 
@@ -608,7 +565,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         Let denote n=self.size() given that  n>=index>=1, this will increase the size of self by one and add
         the new element n+1 on the cycle of index before index.You should note that if index>self.size() this will raise an error.
         -----
-        O(log(n))
+        O(1)
         """
         if index != int(index) or index <= 0 or index > self.size():
             raise ValueError(
@@ -619,19 +576,12 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
 
         self.addAfter(prevIndex)
 
-    # OK
-
     def numberInCycle(self, index):
         """
-        Args:
-            -index : A strictly positive integer
-        Returns:
-            -A integer representing the number of element in the same cycle as index note that
-            if index > self.size() it will return 1(which is coherent with the convention that self(i) = i)
+        Not implemented for PrimitiveRotatingPermutation
         -------------
-        O(log(n))
         """
-        return self.provider.numberInCycle(index)
+        raise NotImplemented(self)
 
     # OK
     def numberOfCycles(self):
@@ -645,21 +595,13 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
     # OK
     def sameCycle(self, i, j):
         """
-        Args:
-            -i an strictly positive integer
-            -j an strictly positive integer
-
-        Returns:
-            A boolean indicating whether of not i and j are on the same cycle of self
+        Not implemented  for PrimitiveRotatingPermutation
         -------
-        O(log(n))
         """
-        if i <= 0 or j <= 0 or i != int(i) or j != int(j):
-            raise ValueError("{i} or {j} isn't a strictly positive integer")
-
-        return self.provider.sameCycle(i, j)
+        raise NotImplemented(self)
 
     # OK
+
     def __repr__(self):
         return str(list(self))
 
@@ -669,7 +611,7 @@ class RotatingPermutation(PrimitiveRotatingPermutation):
         """
         Return a string of self in the form of his cycle decomposition
         """
-        return f"Rotating permutation: {self.to_cycles()}"
+        return f"Primitive Rotating permutation: {self.to_cycles()}"
 
     # OK
     def pretty_print(self):

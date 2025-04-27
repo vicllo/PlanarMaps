@@ -4,6 +4,7 @@ from sage.all import Permutation
 from MutableLabelledMap import MutableLabelledMap
 from MapGenerator import MapGenerator
 from Banner import bannerExampleStart, bannerExampleEnd, mapBanner
+from DynamicShow import DynamicShow
 
 
 class MapExample:
@@ -47,11 +48,20 @@ class MapExample:
         myMap.pretty_print()
 
         print("Showing the map...")
+        print("With the basic show method...")
         myMap.show(show_halfedges=False)
+        print("Using dynamicShow...")
+        ds = DynamicShow(myMap)
+        ds.start(show_halfedges=False)
         print("Done")
 
         print("Showing the dual of the map")
-        myMap.dual().show(show_halfedges=False)
+        print("With the basic show method...")
+        myMapDual = myMap.dual()
+        myMapDual.show(show_halfedges=False)
+        print("Using dynamicShow...")
+        ds = DynamicShow(myMapDual)
+        ds.start(show_halfedges=False)
         print("Done")
 
         print("="*100)
