@@ -326,6 +326,16 @@ class MapGenerator:
         return quad.inverseQuadrangulation()
 
     def generateRandomBitstring(self, n, seed=None):
+        """
+        Args:
+            n>=1
+        Returns:
+            A uniformly generated bit string of size 4*n-2 such that for every prefix
+            3*n_1-n_0>-2 where n_1 is the number of 1 in the prefix
+            and n_0 the number of 0 in the prefix 
+        ------
+        O(n)
+        """
         rng = random.Random()
         if seed is not None:
             rng.seed(int(seed))
@@ -339,6 +349,13 @@ class MapGenerator:
         return bits
 
     def checkPrefixCondition(self, bits):
+        """
+        Args:
+            bits a list containing 0 and 1
+        Returns:
+            A boolean indicating if for every prefix 3*n_1-n_0>-2 where n_1 is the number of 1 in the prefix
+            and n_0 the number of 0 in the prefix
+        """
         current_sum = 0
         for j in range(len(bits)-1):
             bit = bits[j]
@@ -348,9 +365,24 @@ class MapGenerator:
         return True
 
     def cyclicShift(self, bits, shift):
+        """
+        Args:
+            -bits a list
+            -shift a positive integer < len(shift)
+        Returns:
+            bits shifted by shift
+        """
         return bits[shift:] + bits[:shift]
 
     def fastGenerateValidCodeword(self, n, seed=None):
+        """
+        Args:
+            n>=1
+        Returns:
+            A random valid codeword i.e a sequence of size 4n-2 of 0 and 1 such
+            that for every prefix 3*n_1-n_0>-2 where n_1 is the number of 1 in the prefix
+            and n_0 the number of 0 in the prefix
+        """
         L = 4 * n - 2
         b = self.generateRandomBitstring(n, seed=seed)
         elems = [4 * bit - 1 for bit in b]          # maps 0 to -1 and 1 to 3
@@ -400,14 +432,24 @@ class MapGenerator:
         return self.cyclicShift(b, random.choice(valid_shifts))
 
     def getRandomRootedTwoLeafTree(self, n, seed=None):
-
+        """
+        Args:
+            n>=1
+        Returns:
+            A randomly generated rooted on one leaf two leaf tree
+        """
         b = self.fastGenerateValidCodeword(n, seed=seed)
 
         return self.rootedTwoLeafTreeFromBit(b)
 
     def rootedTwoLeafTreeFromBit(self, b):
         """
-        The two leaf tree(a tree where each internal node has 2 leaf) associated to b
+        Args:
+            b a correct code word such of size of the form 4n-2, such that the sum of every prefix > -2
+        Returns:
+            The two leaf tree (a tree where each internal node has 2 leaf) associated to b rooted at a leaf
+        -----
+        O(n) where n is such that len(b)=4n-2
         """
         n = (len(b)+2)//4
 
@@ -486,8 +528,12 @@ class MapGenerator:
 
     def randomTreeToTriangulation(self, tree, seed=None):
         """
-        Given that tree is a valid two leaf tree it returns one of the two rooted triangulation
-        associated to tree with equal probability
+        Args:
+            tree a two leaf tree rooted tree rooted at a leaf
+        Returns:
+            A triangulation between the two associated to the tree with equal probability
+        -----
+        O(n) where n is the size of the tree
         """
         def isOnInnerEdge(Z):
             return Z.n != Z and (Z.c).n != Z.c
@@ -578,8 +624,11 @@ class MapGenerator:
 
     def getRandomTriangulation(self, n, seed=None):
         """
-        returns a random rooted triangulation of size n (i.e with 2n faces, 3n edge and  n+2 node)
-        uniformly
+        Args:
+            n>=1
+        Returns: 
+            A random rooted triangulation of size n (i.e with 2n faces, 3n edge and  n+2 node)
+            uniformly
         ----
         O(n)
         """
