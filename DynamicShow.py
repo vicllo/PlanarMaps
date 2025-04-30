@@ -375,7 +375,7 @@ class DynamicShow:
         # initialize the matplotlib figure
         if show_halfedges == "auto":
             show_halfedges = self.nEdges <= 10
-        print ("hI")
+            
         if not isinstance(show_halfedges, bool):
             raise ValueError("Invalid value for show_halfedges")
         size = 7
