@@ -1,7 +1,0 @@
-
-#Permutation
-https://doc.sagemath.org/html/en/reference/combinat/sage/combinat/permutation.html
-
-
-#Graph 
-https://doc.sagemath.org/html/en/reference/graphs/index.html
