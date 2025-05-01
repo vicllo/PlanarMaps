@@ -132,7 +132,7 @@ class Vector2D:
         return hash((self.x, self.y))
 
 
-class DynamicShow:
+class DynamicPlanarMapShow:
     # force expressions are heavily inspired by planarmap.js
     # (https://github.com/tgbudd/planarmap.js)
 
@@ -169,7 +169,8 @@ class DynamicShow:
     # first model
     fast_delta_t = 1.0                  # delta_t of the first iterations
     slow_delta_t = 0.05                 # delta_t of the last iterations
-    decrease_power = 1.5                # delta_t = slow_delta_t * (frame / fullForceFrames) ** power in the second phase
+    # delta_t = slow_delta_t * (frame / fullForceFrames) ** power in the second phase
+    decrease_power = 1.5
 
     # second model
     default_delta_t = 1.0              # delta_t of the first iteration
@@ -206,7 +207,7 @@ class DynamicShow:
 
     def __init__(self, map: LabelledMap, break_down_num: int = 5):
         """
-        Initializes DynamicShow object.
+        Initializes DynamicPlanarMapShow object.
 
         INPUT:
             - ``map`` -- LabelledMap: the map to show
@@ -375,7 +376,7 @@ class DynamicShow:
         # initialize the matplotlib figure
         if show_halfedges == "auto":
             show_halfedges = self.nEdges <= 10
-            
+
         if not isinstance(show_halfedges, bool):
             raise ValueError("Invalid value for show_halfedges")
         size = 7
@@ -386,7 +387,7 @@ class DynamicShow:
 
         self.ax = self.fig.add_subplot(gs[1, :])
         txt_ax = self.fig.add_subplot(gs[0, :])
-        #slider_ax = self.fig.add_subplot(gs[0, 1])
+        # slider_ax = self.fig.add_subplot(gs[0, 1])
 
         pos_centered = self.centerPos()
 
@@ -413,7 +414,7 @@ class DynamicShow:
         txt_ax.set_xlim(left=0, right=1)
         txt_ax.set_ylim(bottom=0, top=1)
 
-        #slider_ax.axis("off")
+        # slider_ax.axis("off")
 
         self.text = txt_ax.text(0, 0.5, "Frame: 0")
 
@@ -462,7 +463,7 @@ class DynamicShow:
             'xlim_changed', lambda event: self.anim._blit_cache.clear())
         self.ax.callbacks.connect(
             'ylim_changed', lambda event: self.anim._blit_cache.clear())
-        
+
         if plt_show:
             plt.show()
 
@@ -730,7 +731,8 @@ class DynamicShow:
             if self.frame < full_force_frames:
                 base_delta_t = self.fast_delta_t
             else:
-                base_delta_t = self.slow_delta_t * full_force_frames**self.decrease_power / self.frame**self.decrease_power
+                base_delta_t = self.slow_delta_t * \
+                    full_force_frames**self.decrease_power / self.frame**self.decrease_power
 
             if self.frame < several_iter_frames:
                 iters = 1
@@ -813,7 +815,8 @@ class DynamicShow:
         else:
             self.current_delta_t = 0
 
-        self.text.set_text("Frame: " + str(self.frame) + ("; done" if self.done else ""))
+        self.text.set_text("Frame: " + str(self.frame) +
+                           ("; done" if self.done else ""))
 
         # plt.axis("on")
         # plt.cla()
