@@ -44,7 +44,7 @@ The library contains 6 main classes:
 - [MutableLabelledMap](#mutable-labelled-map)
 - [PrimitiveMutableLabelledMap](#primitive-mutable-labelled-map)
 - [MapGenerator](#map-generator)
-- [DynamicShow](#dynamicshow)
+- [DynamicPlanarMapShow](#dynamicshow)
 
 Each class provides specific functionalities for working with maps.
 
@@ -123,7 +123,7 @@ Provides methods for generating maps or map-related objects, including:
 
 ---
 
-## DynamicShow
+## DynamicPlanarMapShow
 
 This class provides a more advanced and customizable way for users to display maps than the default `show` method.
 

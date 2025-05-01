@@ -4,7 +4,7 @@ from sage.all import Permutation
 from MutableLabelledMap import MutableLabelledMap
 from MapGenerator import MapGenerator
 from Banner import bannerExampleStart, bannerExampleEnd, mapBanner
-from DynamicShow import DynamicShow
+from DynamicPlanarMapShow import DynamicPlanarMapShow
 
 
 class MapExample:
@@ -51,7 +51,7 @@ class MapExample:
         print("With the basic show method...")
         myMap.show(show_halfedges=False)
         print("Using dynamicShow...")
-        ds = DynamicShow(myMap)
+        ds = DynamicPlanarMapShow(myMap)
         ds.start(show_halfedges=False)
         print("Done")
 
@@ -60,7 +60,7 @@ class MapExample:
         myMapDual = myMap.dual()
         myMapDual.show(show_halfedges=False)
         print("Using dynamicShow...")
-        ds = DynamicShow(myMapDual)
+        ds = DynamicPlanarMapShow(myMapDual)
         ds.start(show_halfedges=False)
         print("Done")
 
