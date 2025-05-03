@@ -175,8 +175,8 @@ def isRightChild(parentNode, node):
 class Node:
     """
     This class is an internal class used in SplayTree and CycleUtilsProvider,
-    most operation are O(log(n)) amortized where n is the size of the tree if there is
-    a splay after them which is done most of the time outiside of this class by the splay tree
+    most operation are O(log(n)) amortized where n is the size of the tree iff there is
+    a splay after each of them , which is done most of the time outiside of this class by the splay tree
     on which it is attached.
     """
 
@@ -853,7 +853,7 @@ class SplayTree():
         -------
         O(n) where n = self.size()
         WARNING: This function isn't recursion safe mainly cause because splay tree can have linear height
-        they have amortized log operation and it was written recursively, hence if you a too much small recursion limit it can crash,
+        even though they have amortized log operation and it was written recursively, hence if you have a too much small recursion limit it can crash,
         it was mainly used during debug
         """
         self.checkValid()
@@ -872,7 +872,7 @@ class SplayTree():
         """
         Returns: A boolean indicating if self is a valid binary search tree
         WARNING: This function isn't recursion safe mainly cause because splay tree can have linear height
-        even though they have amortized log operation, and the function was coded recursively ,hence if you a too much small recursion limit it may crash,
+        even though they have amortized log operation, and the function was coded recursively ,hence if you have a too much small recursion limit it may crash,
         it was mainly used during debug
         -------
         O(n) where n =  self.size()
