@@ -1,6 +1,6 @@
 import matplotlib.widgets
 import matplotlib.gridspec
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, writers
 
 import math
 # we use python's float type and math functions to avoid using the more accurate but much slower sage types
@@ -137,7 +137,7 @@ class DynamicPlanarMapShow:
     # (https://github.com/tgbudd/planarmap.js)
 
     # controls the vertex-vertex repulsion force between red nodes (real nodes)
-    repulsionVVRRCoef = 3.0
+    repulsionVVRRCoef = 10.0
     # controls the vertex-vertex repulsion force between a red node and a
     # white node (artificial node to split multiedges & loops)
     repulsionVVRWCoef = 2.0
@@ -363,7 +363,7 @@ class DynamicPlanarMapShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, show_halfedges="auto", plt_show=True, frame_by_frame=False):
+    def start(self, show_halfedges="auto", plt_show=True, frame_by_frame=False, max_iter = -1):
         """
         Dynamically show the map in a new matplotlib figure.
         Use Enter to pause or resume; if paused, use Space to compute a single frame; use q or Esc to quit.
@@ -372,6 +372,7 @@ class DynamicPlanarMapShow:
             - ``show_halfedges`` -- bool or "auto"; whether to show halfedges (if "auto", it will be True if nEdges <= 10)
             - ``plt_show`` -- bool; whether to call plt.show(). if False, use plt.ion() to show the map in a non-blocking way.
             - ``frame_by_frame`` -- bool; if False, automatically advance until convergence is found.
+            - ``max_iter`` -- int; the maximum number of iterations. if -1, loop until convergence is found.
         """
         # initialize the matplotlib figure
         if show_halfedges == "auto":
@@ -396,13 +397,27 @@ class DynamicPlanarMapShow:
         self.edges_plt = nx.draw_networkx_edges(
             self.G, pos_centered, ax=self.ax, arrows=False)
 
+        # if show_halfedges:
+        #     self.labels_head = nx.draw_networkx_edge_labels(
+        #         self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
+        #     self.labels_tail = nx.draw_networkx_edge_labels(
+        #         self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
+        #     self.labels_middle = nx.draw_networkx_edge_labels(
+        #         self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+
         if show_halfedges:
-            self.labels_head = nx.draw_networkx_edge_labels(
-                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_head, label_pos=0.7)
-            self.labels_tail = nx.draw_networkx_edge_labels(
-                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_tail, label_pos=0.3)
-            self.labels_middle = nx.draw_networkx_edge_labels(
-                self.G, pos_centered, ax=self.ax, rotate=False, edge_labels=self.edge_labels_middle, label_pos=0.5)
+            self.edge_texts = []
+            for (d, prop) in ((self.edge_labels_head, 0.7),
+                              (self.edge_labels_tail, 0.3), (self.edge_labels_middle, 0.5)):
+                for (pair, txt) in d.items():
+                    x = pos_centered[pair[0]][0] * prop + pos_centered[pair[1]][0] * (1 - prop)
+                    y = pos_centered[pair[0]][1] * prop + pos_centered[pair[1]][1] * (1 - prop)
+                    self.edge_texts.append((self.ax.text(x, y, txt, ha="center", va="center", bbox={"facecolor":"white", "edgecolor":"white"}), pair[0], pair[1], prop))
+                    # txt.set_x(pos_centered[edge[0]][0] * prop +
+                    #           pos_centered[edge[1]][0] * (1 - prop))
+                    # txt.set_y(pos_centered[edge[0]][1] * prop +
+                    #           pos_centered[edge[1]][1] * (1 - prop))
+
 
         self.show_halfedges = show_halfedges
 
@@ -456,9 +471,10 @@ class DynamicPlanarMapShow:
         self.currentMaxDispl = self.maxDispl
         self.prev_pos_centered = None
 
-        self.anim = FuncAnimation(
-            self.fig, self.update_fig, cache_frame_data=False, blit=True, interval=1)
-
+        if max_iter != -1:
+            self.anim = FuncAnimation(self.fig, self.update_fig, max_iter, cache_frame_data=False, blit=True, interval=10)
+        else:
+            self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data=False, blit=True, interval=10)
         self.ax.callbacks.connect(
             'xlim_changed', lambda event: self.anim._blit_cache.clear())
         self.ax.callbacks.connect(
@@ -844,7 +860,7 @@ class DynamicPlanarMapShow:
             dist = max((pos_centered[i][0] - self.prev_pos_centered[i][0]) ** 2.0 + (
                 pos_centered[i][1] - self.prev_pos_centered[i][1]) ** 2.0 for i in range(self.nVertices))
 
-            if dist < self.convergence_limit ** 2.0 and self.anim_running and not self.done and self.frame > 10:
+            if dist < self.convergence_limit ** 2.0 and self.anim_running and not self.done and self.frame > 100:
                 print("Convergence found")
                 # self.anim.event_source.stop()
                 self.anim_running = False
@@ -871,14 +887,23 @@ class DynamicPlanarMapShow:
 
             #        ret.append(dest[edge])
 
-            for (d, prop) in ((self.labels_head, 0.7),
-                              (self.labels_tail, 0.3), (self.labels_middle, 0.5)):
-                for (edge, txt) in d.items():
-                    txt.set_x(pos_centered[edge[0]][0] * prop +
-                              pos_centered[edge[1]][0] * (1 - prop))
-                    txt.set_y(pos_centered[edge[0]][1] * prop +
-                              pos_centered[edge[1]][1] * (1 - prop))
+            # for (d, prop) in ((self.labels_head, 0.7),
+            #                   (self.labels_tail, 0.3), (self.labels_middle, 0.5)):
+            #     for (edge, txt) in d.items():
+            #         txt.set_x(pos_centered[edge[0]][0] * prop +
+            #                   pos_centered[edge[1]][0] * (1 - prop))
+            #         txt.set_y(pos_centered[edge[0]][1] * prop +
+            #                   pos_centered[edge[1]][1] * (1 - prop))
 
-                    ret.append(txt)
+            #         ret.append(txt)
+            #
+                    # self.edge_texts.append((plt.text(x, y, txt), pair[0], pair[1], prop))
+
+            for (txt, i, j, prop) in self.edge_texts:
+                txt.set_x(pos_centered[i][0] * prop +
+                            pos_centered[j][0] * (1 - prop))
+                txt.set_y(pos_centered[i][1] * prop +
+                            pos_centered[j][1] * (1 - prop))
+                ret.append(txt)
 
         return tuple(ret)
