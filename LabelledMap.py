@@ -59,19 +59,20 @@ def transitiveCouplePermutation(sigma, alpha):
 
 class LabelledMap:
     """
-    A class to represent a labelled map.
+    A class to represent labelled map.
 
     Attributes
     ----------
-    sigma : Permutation or MapPermutation
-        Fixed-point free involution whose cycles are given by the edges.
-    alpha : Permutation or MapPermutation
+    sigma :  Permutation or MapPermutation
         Permutation that maps a half-edge to the half-edge incident to
-        it in a clockwise direction around the vertex it belongs to.
+        it in a anti-clockwise direction around the vertex it belongs to.
+
+    alpha : Permutation or MapPermutation
+        Fixed-point free involution whose cycles are given by the edges.
 
     phi: Permutation or MapPermutation
         Permutation that maps a half-edges to the half-edge next to it 
-        in his face in the clockwise order
+        in his face in the clockwise orde.
 
     m: The number of edge of the map
 
@@ -95,11 +96,11 @@ class LabelledMap:
         its neighbors in order; vertices must be numbered from 1 to n).
 
         INPUT:
-        - ``sigma`` -- Permutation ; Fixed-point free involution whose
-          cycles are given by the edges.
-        - ``alpha`` -- Permutation ; Permutation that maps a half-edge
-          to the half-edge incident to it in clockwise direction around
+        - ``sigma`` -- Permutation ; Permutation ; Permutation that maps a half-edge
+          to the half-edge incident to it in anti-clockwise direction around
           the vertex it belongs to.
+        - ``alpha`` -- Permutation ; Permutation that maps a half-edge
+            Fixed-point free involution whose cycles are given by the edges.
         - ``ajd``-- and adjacency list be careful the order of the
             node in your adjaceny will be used to choose the embedding
         - ``trust`` -- A parameter that indicates whether the validity check (i.e., whether the map is connex, etc.)
@@ -215,11 +216,11 @@ class LabelledMap:
         r"""
         Initializes the labelled map from the underlying permutations.
         INPUT:
-        - ``sigma`` -- Permutation ; Fixed-point free involution whose
-          cycles are given by the edges.
-        - ``alpha`` -- Permutation ; Permutation that maps a half-edge
-          to the half-edge incident to it in clockwise direction around
+        - ``sigma`` -- Permutation ; Permutation ; Permutation that maps a half-edge
+          to the half-edge incident to it in anti-clockwise direction around
           the vertex it belongs to.
+        - ``alpha`` -- Permutation ; Permutation that maps a half-edge
+            Fixed-point free involution whose cycles are given by the edges.
         - ``trust`` -- A parameter that indicates to trust the user on whether alpha 
           and sigma are valid.
 
