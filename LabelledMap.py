@@ -562,7 +562,7 @@ class LabelledMap:
                     ax=ax,
                     rotate=False,
                     edge_labels=edge_labels_head,
-                    label_pos=0.7,
+                    label_pos=0.3,
                 )
                 nx.draw_networkx_edge_labels(
                     G,
@@ -570,7 +570,7 @@ class LabelledMap:
                     ax=ax,
                     rotate=False,
                     edge_labels=edge_labels_tail,
-                    label_pos=0.3,
+                    label_pos=0.7,
                 )
                 nx.draw_networkx_edge_labels(
                     G,
