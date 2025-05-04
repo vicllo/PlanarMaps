@@ -109,7 +109,7 @@ class CycleUtilsProvider:
         O(len(listIndexes)log(n))
         """
         mapIndexes = set(listIndexes)
-        for e in mapIndexes:
+        for e in list(mapIndexes):
             if self.isFixedPoint(e):
                 mapIndexes.remove(e)
 
