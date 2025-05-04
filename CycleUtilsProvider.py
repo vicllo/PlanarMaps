@@ -1,4 +1,4 @@
-from SplayTree import SplayTree, Node
+from SplayTree import SplayTree, SplayNode
 
 
 class CycleUtilsProvider:
@@ -549,12 +549,17 @@ class CycleUtilsProvider:
         endValue = self.getValue(endIndex)
         splayTree = self.getSplayTree(startIndex)
 
+        rest = None
         if startValue < endValue:
             left, otherRight = splayTree.split(endValue + 1 / 2)
             otherLeft, _ = left.split(startValue - 1 / 2)
-            otherRight.merge(otherLeft)
+            rest = otherRight.merge(otherLeft)
         else:
             otherLeft, right = splayTree.split(startValue - 1 / 2)
             left, otherRight = otherLeft.split(endValue + 1 / 2)
             left.shift(right.max() + 1 - left.min())
             left.merge(right)
+            rest = otherRight
+
+        if rest.size() == 1:
+            self.nodeMap.pop(rest.indexList()[0])
