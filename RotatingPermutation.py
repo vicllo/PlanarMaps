@@ -37,7 +37,7 @@ class RotatingPermutation(MapPermutation):
             - lst a list representing the permutation 
             or a list of tuples representing the cycle of the permutation
             or an integer representing the size of the permutation(In This
-            case it will return the identify of size lst) or a Permutation.
+            case it will return the identify of size lst) or a Permutation or a MapPermutation.
 
 
         EXAMPLES::
@@ -161,6 +161,11 @@ class RotatingPermutation(MapPermutation):
         """
         OUTPUT:
             The size of the permutation
+
+        EXAMPLES::
+            sage: rperm = RotatingPermutation([(1,3,4), (7,8,2,5)])
+            sage: rperm.size()
+            8
 
         .. NOTE::
             O(1)
