@@ -367,14 +367,16 @@ class MapPermutation:
             other, an object
 
         OUTPUT:
-            A boolean indicating if list(other) == list(self)
+            A boolean indicating other and self are equal
 
         EXAMPLES::
             sage: m = MapPermutation([(3,9),(2,1),(7,14,8)])
             sage: m == m
             True
         """
-        return list(other) == list(self)
+        if isinstance(other, MapPermutation):
+            return list(other) == list(self)
+        return False
 
     def left_action_product(self, rperm):
         """
