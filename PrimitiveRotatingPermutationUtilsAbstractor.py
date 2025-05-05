@@ -24,6 +24,14 @@ class PrimitiveRotatingPermutationUtilsAbstractor(PermutationUtilsAbstractor):
 
 
         EXAMPLES::
+            sage: rperm = PrimitiveRotatingPermutation([(1,3,4), (7,8,2,5)])
+            sage: tAbstr = PrimitiveRotatingPermutationUtilsAbstractor(rperm)
+            sage: try:
+            ....:     tAbstr.numberInCycle(1)
+            ....: except:
+            ....:     print("OK")
+            ....:
+            OK
 
         """
         raise NotImplemented(self)
@@ -34,8 +42,10 @@ class PrimitiveRotatingPermutationUtilsAbstractor(PermutationUtilsAbstractor):
 
         EXAMPLES::
 
+            sage: rperm = PrimitiveRotatingPermutation([(1,3,4), (7,8,2,5)])
+            sage: tAbstr = PrimitiveRotatingPermutationUtilsAbstractor(rperm)
             sage: try:
-            ....:     tAbstr.numberInCycle(1)
+            ....:     tAbstr.sameCycle(1,2)
             ....: except:
             ....:     print("OK")
             ....:

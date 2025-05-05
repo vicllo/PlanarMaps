@@ -404,7 +404,7 @@ class RotatingPermutation(MapPermutation):
                 f"{newIndexEnd} and {newIndexStart} must be in the same cycle to use cutAdd")
         if startIndex == endIndex:
             self.addBefore(startIndex)
-            self.addBefore(startIndex)
+            self.stretch(1)
             return
 
         nodeStartIndex = self.getNode(startIndex)

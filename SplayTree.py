@@ -664,7 +664,7 @@ class SplayNode:
         """
         if self.isEmpty():
             self.value = newValue
-            self._addCountUpward(1)
+            self.addCountUpward(1)
             return True, self, 0
         node = self
         offset = self.offset
@@ -674,20 +674,20 @@ class SplayNode:
             if valueToTheLeft(node.value + offset, newValue):
                 if node.left is None:
                     node.left = SplayNode(newValue - offset, node)
-                    node.left._addCountUpward(1)
+                    node.left.addCountUpward(1)
                     return True, node.left, offset
                 else:
                     node = node.left
             else:
                 if node.right is None:
                     node.right = SplayNode(newValue - offset, node)
-                    node.right._addCountUpward(1)
+                    node.right.addCountUpward(1)
                     return True, node.right, offset
                 else:
                     node = node.right
             offset += node.offset
 
-    def _addCountUpward(self, toAdd):
+    def addCountUpward(self, toAdd):
         """
 
         Add toAdd to the cnt attribute of all the node in the path toward the root from self
@@ -814,7 +814,7 @@ class SplayNode:
         if node.left is None and node.right is None:
             if node.isRoot():
                 node.value = None
-                node._addCountUpward(-1)
+                node.addCountUpward(-1)
                 return node
             node.parent.addCountUpward(-1)
             if isLeftChild(node.parent, node):
@@ -1211,7 +1211,7 @@ class SplayTree():
         self.valid = True
         self.insertList(lst)
 
-    def _changeRoot(self, root):
+    def changeRoot(self, root):
         """
         Change the root of the splay tree to root
 
@@ -1502,7 +1502,7 @@ class SplayTree():
         if self.isEmpty():
             return None
         node, _ = self.root.find(value)
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         if self.root.value + self.root.offset != value:
             return None
         return self.root
@@ -1534,7 +1534,7 @@ class SplayTree():
 
         self.checkValid()
         isNew, node, _ = self.root.insert(newValue)
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         return isNew
 
     def delete(self, value):
@@ -1557,7 +1557,7 @@ class SplayTree():
         O(log(n)) where n = self.size()
         """
         self.checkValid()
-        self._changeRoot(self.root.delete(value).splay())
+        self.changeRoot(self.root.delete(value).splay())
 
     def min(self):
         """
@@ -1578,7 +1578,7 @@ class SplayTree():
         if self.isEmpty():
             return None
         node, _ = self.root.min()
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
 
         return self.root.value + self.root.offset
 
@@ -1605,7 +1605,7 @@ class SplayTree():
         if self.isEmpty():
             return None
         node, _ = self.root.max()
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         return self.root.value + self.root.offset
 
     def find(self, value):
@@ -1635,7 +1635,7 @@ class SplayTree():
         if self.isEmpty():
             return False
         node, _ = self.root.find(value)
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         return self.root.value + self.root.offset == value
 
     def insertList(self, list):
@@ -1687,7 +1687,7 @@ class SplayTree():
         if self.isEmpty():
             return None
         node, _ = self.root.findSmallestGreater(value)
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         if self.root.value + self.root.offset < value:
             return None
         return self.root.value + self.root.offset
@@ -1738,7 +1738,7 @@ class SplayTree():
         if self.isEmpty():
             return None
         node, _ = self.root.findBiggestSmaller(value)
-        self._changeRoot(node.splay())
+        self.changeRoot(node.splay())
         if self.root.value + self.root.offset > value:
             return None
         return self.root.value + self.root.offset

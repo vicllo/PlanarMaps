@@ -371,7 +371,7 @@ class PrimitiveRotatingPermutation(MapPermutation):
                 f"{newIndexEnd} must be  >{self.size()} and <= {self.size() + 2}")
         if startIndex == endIndex:
             self.addBefore(startIndex)
-            self.addBefore(startIndex)
+            self.stretch(1)
             return
 
         nodeStartIndex = self.getNode(startIndex)
