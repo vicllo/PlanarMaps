@@ -403,6 +403,10 @@ class LabelledMap:
             if the genus is not 0. For half-edges to be shown, the
             networkx viewer must be used.For prettier image use 
             DynamicPlanarMapShow.
+            WARNING: if show_halfedges = True and you have a too old
+            version of networkx it is possible that label between demi 
+            edges are reversed on the same edge are reversed, please
+            use the latest version.
 
         """
         vertices = self.sigma.to_cycles()

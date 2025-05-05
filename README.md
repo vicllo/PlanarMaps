@@ -33,6 +33,8 @@ We recommend using Conda Forge:
 
 After completing the installation, check the file `example.py` for usage examples or run it by : python example.py to see them in action.
 
+We also recommend using the latest networkx version, on some old versions problems on the visualization of map may happen.
+
 ---
 
 ## Overview

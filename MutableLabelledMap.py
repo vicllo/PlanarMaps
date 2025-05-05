@@ -216,8 +216,8 @@ class MutableLabelledMap(LabelledMap):
             sage: mmH = MutableLabelledMap(sigma=sigmaH,alpha=alphaH)
             sage: mmH.g
             1
-            sage: mm._willStillBeConnectedAfterNodeDeletionHighGenus(1)
-            True
+            sage: mmH._willStillBeConnectedAfterNodeDeletionHighGenus(1)
+            False
 
         .. NOTE::
         O(m+deg(node)log(m))
@@ -362,6 +362,15 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES:: 
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
+            sage: mm.labelToTheEnd([7,5,3])
+            sage: mm.faces()
+            [(1, 18, 2, 19, 4, 20, 11, 16, 3, 13, 12, 15, 14, 5, 7, 17, 9, 8, 10, 6)] 
+
         .. NOTE::
         O(klog(m)) where k = len(listIndexes)
         """
@@ -386,6 +395,20 @@ class MutableLabelledMap(LabelledMap):
 
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
+            sage: mm.addEdge(3,11)
+            (X(22), X(21))
+            sage: mm.faces()
+            [(1, 22, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6),
+             (2, 5, 4, 7, 21, 3)]
+            sage: mm.deleteEdge(22)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
 
         .. NOTE:: 
         O(log(m))
@@ -433,6 +456,18 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.addEdge(3,11)
+            (X(22), X(21))
+            sage: mm.faces()
+            [(1, 22, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6),
+             (2, 5, 4, 7, 21, 3)]
+            sage: mm.deleteEdge(22)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
+
         .. NOTE::
         O(log(m)) if self is planar or trust = True otherwise O(m)
         """
@@ -449,6 +484,16 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.alpha.pretty_print()
+            Rotating permutation: [(1, 3), (2, 5), (4, 6), (7, 9), (8, 10), (11, 13), (12, 15), (14, 17), (16, 18), (19, 20)]
+            sage: mm._addEdgeToAlpha()
+            sage: mm.alpha.pretty_print()
+            Rotating permutation: [(1, 3), (2, 5), (4, 6), (7, 9), (8, 10), (11, 13), (12, 15), (14, 17), (16, 18), (19, 20), (21, 22)]
+
+        .. NOTE::
         O(log(m))
         """
         self.alpha.stretch(2)
@@ -464,6 +509,19 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: try:
+            ....:    mm.X(42)
+            ....: except:
+            ....:    print("NOT TOPO")
+            ....:
+            NOT TOPO
+            sage: mm._addTopologicalDemiEdge(42)
+            sage: mm.X(42)
+            X(42)
 
         ..NOTE:
         O(1)
@@ -481,6 +539,18 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: A = mm.X(10)
+            sage: mm._removeTopologicalDemiEdge(A)
+            sage: try:
+            ....:    mm.X(10)
+            ....: except:
+            ....:    print("NOT TOPO")
+            ....:
+            NOT TOPO
+
         .. NOTE::
         O(1)
         """
@@ -497,6 +567,20 @@ class MutableLabelledMap(LabelledMap):
             demiEdge
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: A = mm.X(10)
+            sage: A.n,A.pn
+            (X(10), X(10))
+            sage: mm.addEdgeAfter(10)
+            X(22)
+            sage: mm.addEdgeBefore(10)
+            X(24)
+            sage: A.n,A.pn
+            (X(21), X(23)) 
 
         .. NOTE::
         O(log(m))
@@ -531,6 +615,20 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: A = mm.X(10)
+            sage: A.n,A.pn
+            (X(10), X(10))
+            sage: mm.addEdgeAfter(10)
+            X(22)
+            sage: mm.addEdgeBefore(10)
+            X(24)
+            sage: A.n,A.pn
+            (X(21), X(23)) 
+
         .. NOTE::
         O(log(m))
         """
@@ -552,6 +650,35 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.nodes()
+            [(1, 2, 4),
+             (3,),
+             (5,),
+             (6, 7, 8),
+             (9, 11, 12, 14),
+             (10,),
+             (13, 16),
+             (15,),
+             (17, 19),
+             (18,),
+             (20,)]
+            sage: mm.deleteNode(3)
+            sage: mm.nodes()
+            [(1, 17),
+             (2, 4),
+             (3,),
+             (5,),
+             (6, 7, 8),
+             (9, 11, 12, 14),
+             (10,),
+             (13, 16),
+             (15,),
+             (18,)]
+
         .. NOTE::
         O(deg(node)*log(m)) if self is planar and O(m+deg(node)*log(m)) otherwise
         """
@@ -571,6 +698,35 @@ class MutableLabelledMap(LabelledMap):
             demiEdge : The demi edge on the node to delete
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.nodes()
+            [(1, 2, 4),
+             (3,),
+             (5,),
+             (6, 7, 8),
+             (9, 11, 12, 14),
+             (10,),
+             (13, 16),
+             (15,),
+             (17, 19),
+             (18,),
+             (20,)]
+            sage: mm._BruteDeleteNode(3)
+            sage: mm.nodes()
+            [(1, 17),
+             (2, 4),
+             (3,),
+             (5,),
+             (6, 7, 8),
+             (9, 11, 12, 14),
+             (10,),
+             (13, 16),
+             (15,),
+             (18,)]
+
 
         .. NOTE::
         O(deg(node)*log(m))
@@ -604,6 +760,24 @@ class MutableLabelledMap(LabelledMap):
             demiEdge
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.addEdge(3,4)
+            (X(22), X(21))
+            sage: mm.faces()
+            [(1, 22, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6),
+             (2, 5, 21, 3)]
+            sage: mm.addEdge(4,7)
+            (X(24), X(23))
+            sage: mm.faces()
+            [(1, 22, 24, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6),
+             (2, 5, 21, 3),
+             (4, 23)]
+            sage: mm.contractFace(5)
+            sage: mm.faces()
+            [(1, 3, 17, 9, 8, 10, 6, 5, 7, 11, 16, 18, 13, 12, 15, 14), (2, 4)]
 
         .. NOTE::
         O(tlog(m)) where t is the number of edge on the face containing demiEdge
@@ -641,6 +815,12 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.copy() == mm
+            True
+
         .. NOTE::
         O(m)
         """
@@ -651,6 +831,15 @@ class MutableLabelledMap(LabelledMap):
         Contract in self the edge corresponding to demiEdge,demiEdge is on a loop edge it will just delete the edge
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
+            sage: mm.contractEdge(3)
+            sage: mm.faces()
+            [(1, 3, 17, 9, 8, 10, 6, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14)]
 
         .. NOTE::
         O(log(m))
@@ -694,6 +883,14 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.n
+            11
+            sage: lst = mm.copyOnDemiEdge(3,mm,4)
+            sage: mm.n
+            21
 
         .. NOTE:: 
         O(p(log(m)+log(p))) where p = otherMap.m and m is the number of edge of self,
@@ -787,6 +984,13 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.n
+            11
+            sage: lst = mm.copyOnDemiEdge(3,mm,4)
+            sage: mm.n
+            21
+
         .. NOTE::
         O(p(log(m)+log(p))) where p = otherMap.m and m is the number of edge of self,
         note that it is much more efficient than O(p+m) mainly when m>>p
@@ -806,6 +1010,15 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10, 6)]
+            sage: mm.mergeNode(1,11)
+            sage: mm.faces()
+            [(1, 3, 2, 5, 4, 7), (6, 11, 16, 18, 13, 12, 15, 14, 19, 20, 17, 9, 8, 10)] 
+
         .. NOTE::
         O(log(m)) where m is the number of edge of self
         """
@@ -822,6 +1035,22 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True
+
         .. NOTE::
         O(log(m))
         """
@@ -836,6 +1065,21 @@ class MutableLabelledMap(LabelledMap):
 
 
         EXAMPLES::
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True
 
         .. NOTE::
         O(log(m))
@@ -852,6 +1096,22 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True
+
         .. NOTE::
         O(log(m))
         """
@@ -866,6 +1126,22 @@ class MutableLabelledMap(LabelledMap):
             The number of  demi edge on the same node as demi edge
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True
 
         .. NOTE::
         O(log(m))
@@ -886,6 +1162,22 @@ class MutableLabelledMap(LabelledMap):
 
         EXAMPLES::
 
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True
+
         .. NOTE::
         O(len(listDemiEdges)*log(m))
         """
@@ -904,6 +1196,22 @@ class MutableLabelledMap(LabelledMap):
             same node
 
         EXAMPLES::
+
+            sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
+            sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
+            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
+            sage: mm.numberInTheSameNode(1)
+            3
+            sage: mm.numberInTheSameFace(1)
+            20
+            sage: mm.areOnTheSameNode(1,7)
+            False
+            sage: mm.areOnTheSameFace(1,7)
+            True
+            sage: mm.checkTwoInTheSameNode([1,7,8,9])
+            True
+            sage: mm.checkTwoInTheSameFace([1,7,8,9])
+            True    
 
         .. NOTE::
         O(len(listDemiEdges)*log(m))
