@@ -41,7 +41,7 @@ class MapPermutation:
             if lst == int(lst) or lst > 0:
                 self._init_from_number(lst)
                 return
-        except:
+        except Exception as _:
             pass
 
         try:
@@ -49,7 +49,7 @@ class MapPermutation:
                 self._init_from_cycle_list(lst, trust=trust)
                 return
             self._init_from_list(lst)
-        except:
+        except Exception as _:
             raise InvalidMapPermutationArgument()
 
     def _init_from_cycle_list(self, lst, trust=False):
