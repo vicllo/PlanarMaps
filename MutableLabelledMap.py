@@ -63,6 +63,8 @@ class MutableLabelledMap(LabelledMap):
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
 
+        .. NOTE:
+        O(mlog(m)) where m is the size of the map
         """
         if isinstance(lmap, LabelledMap):
             self.__init__(lmap.sigma, lmap.alpha)
@@ -512,7 +514,6 @@ class MutableLabelledMap(LabelledMap):
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
-            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
             sage: try:
             ....:    mm.X(42)
             ....: except:
@@ -571,7 +572,6 @@ class MutableLabelledMap(LabelledMap):
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
-            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
             sage: A = mm.X(10)
             sage: A.n,A.pn
             (X(10), X(10))
@@ -617,7 +617,6 @@ class MutableLabelledMap(LabelledMap):
 
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
-            sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
             sage: mm = MutableLabelledMap(alpha=alpha,sigma=sigma)
             sage: A = mm.X(10)
             sage: A.n,A.pn
