@@ -1,5 +1,5 @@
 
-from PermutationUtilsAbstractor import *
+from permutation_utils_abstractor import *
 
 
 class RotatingPermutationUtilsAbstractor(PermutationUtilsAbstractor):

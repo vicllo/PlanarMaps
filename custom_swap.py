@@ -1,4 +1,4 @@
-from MapPermutation import *
+from map_permutation import *
 
 
 class CustomSwap (MapPermutation):

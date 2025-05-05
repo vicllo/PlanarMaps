@@ -1,13 +1,11 @@
 from collections import deque
 import random
-from MapPermutation import MapPermutation
-from RootedMap import RootedMap
 import numpy as np
-from CustomSwap import CustomSwap
-from MapPermutation import MapPermutation
+from custom_swap import CustomSwap
+from map_permutation import MapPermutation
 from queue import deque
-from RootedMap import RootedMap
-from PrimitiveMutableLabelledMap import PrimitiveMutableLabelledMap
+from rooted_map import RootedMap
+from primitive_mutable_labelled_map import PrimitiveMutableLabelledMap
 
 
 class MapGenerator:

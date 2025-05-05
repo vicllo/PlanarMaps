@@ -1,11 +1,10 @@
 import warnings
 from collections import deque
-import PermutationUtilsAbstractor
-from CustomSwap import CustomSwap
-from TopologicalDemiEdge import TopologicalDemiEdge
-from PermutationUtilsAbstractor import PermutationUtilsAbstractor
+from custom_swap import CustomSwap
+from topological_demi_edge import TopologicalDemiEdge
+from permutation_utils_abstractor import PermutationUtilsAbstractor
 from sage.all import Permutation, Graph  # Import sage library
-from MapPermutation import *
+from map_permutation import *
 
 try:
     import networkx as nx

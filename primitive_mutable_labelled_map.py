@@ -1,10 +1,10 @@
 
-from LabelledMap import *
+from labelled_map import *
 from sage.all import Permutation  # Import sage library
-from PrimitiveRotatingPermutation import PrimitiveRotatingPermutation
-from MapError import NotImplemented
-from PrimitiveRotatingPermutationUtilsAbstractor import PrimitiveRotatingPermutationUtilsAbstractor
-from PrimitiveMutableTopologicalDemiEdge import *
+from primitive_rotating_permutation import PrimitiveRotatingPermutation
+from map_error import NotImplemented
+from primitive_rotating_permutation_utils_abstractor import PrimitiveRotatingPermutationUtilsAbstractor
+from primitive_mutable_topological_demi_edge import *
 
 
 class PrimitiveMutableLabelledMap(LabelledMap):

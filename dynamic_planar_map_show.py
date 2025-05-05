@@ -10,7 +10,7 @@ import math
 
 import time
 
-from LabelledMap import LabelledMap, nx, plt
+from labelled_map import LabelledMap, nx, plt
 
 from sage.all import Graph, Permutation, sqrt
 
@@ -363,7 +363,7 @@ class DynamicPlanarMapShow:
 
         self.is_planar = map.genus() == 0
 
-    def start(self, show_halfedges="auto", plt_show=True, frame_by_frame=False, max_iter = -1):
+    def start(self, show_halfedges="auto", plt_show=True, frame_by_frame=False, max_iter=-1):
         """
         Dynamically show the map in a new matplotlib figure.
         Use Enter to pause or resume; if paused, use Space to compute a single frame; use q or Esc to quit.
@@ -410,14 +410,16 @@ class DynamicPlanarMapShow:
             for (d, prop) in ((self.edge_labels_head, 0.7),
                               (self.edge_labels_tail, 0.3), (self.edge_labels_middle, 0.5)):
                 for (pair, txt) in d.items():
-                    x = pos_centered[pair[0]][0] * prop + pos_centered[pair[1]][0] * (1 - prop)
-                    y = pos_centered[pair[0]][1] * prop + pos_centered[pair[1]][1] * (1 - prop)
-                    self.edge_texts.append((self.ax.text(x, y, txt, ha="center", va="center", bbox={"facecolor":"white", "edgecolor":"white"}), pair[0], pair[1], prop))
+                    x = pos_centered[pair[0]][0] * prop + \
+                        pos_centered[pair[1]][0] * (1 - prop)
+                    y = pos_centered[pair[0]][1] * prop + \
+                        pos_centered[pair[1]][1] * (1 - prop)
+                    self.edge_texts.append((self.ax.text(x, y, txt, ha="center", va="center", bbox={
+                                           "facecolor": "white", "edgecolor": "white"}), pair[0], pair[1], prop))
                     # txt.set_x(pos_centered[edge[0]][0] * prop +
                     #           pos_centered[edge[1]][0] * (1 - prop))
                     # txt.set_y(pos_centered[edge[0]][1] * prop +
                     #           pos_centered[edge[1]][1] * (1 - prop))
-
 
         self.show_halfedges = show_halfedges
 
@@ -472,9 +474,11 @@ class DynamicPlanarMapShow:
         self.prev_pos_centered = None
 
         if max_iter != -1:
-            self.anim = FuncAnimation(self.fig, self.update_fig, max_iter, cache_frame_data=False, blit=True, interval=10)
+            self.anim = FuncAnimation(
+                self.fig, self.update_fig, max_iter, cache_frame_data=False, blit=True, interval=10)
         else:
-            self.anim = FuncAnimation(self.fig, self.update_fig, cache_frame_data=False, blit=True, interval=10)
+            self.anim = FuncAnimation(
+                self.fig, self.update_fig, cache_frame_data=False, blit=True, interval=10)
         self.ax.callbacks.connect(
             'xlim_changed', lambda event: self.anim._blit_cache.clear())
         self.ax.callbacks.connect(
@@ -897,13 +901,13 @@ class DynamicPlanarMapShow:
 
             #         ret.append(txt)
             #
-                    # self.edge_texts.append((plt.text(x, y, txt), pair[0], pair[1], prop))
+            # self.edge_texts.append((plt.text(x, y, txt), pair[0], pair[1], prop))
 
             for (txt, i, j, prop) in self.edge_texts:
                 txt.set_x(pos_centered[i][0] * prop +
-                            pos_centered[j][0] * (1 - prop))
+                          pos_centered[j][0] * (1 - prop))
                 txt.set_y(pos_centered[i][1] * prop +
-                            pos_centered[j][1] * (1 - prop))
+                          pos_centered[j][1] * (1 - prop))
                 ret.append(txt)
 
         return tuple(ret)

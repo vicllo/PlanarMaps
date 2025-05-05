@@ -1,5 +1,5 @@
-from TopologicalDemiEdge import TopologicalDemiEdge
-from MapDecorator import CheckValid
+from topological_demi_edge import TopologicalDemiEdge
+from map_decorator import CheckValid
 
 
 class MutableTopologicalDemiEdge(TopologicalDemiEdge):

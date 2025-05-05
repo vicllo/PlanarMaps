@@ -1,4 +1,4 @@
-from SplayTree import SplayTree, SplayNode
+from splay_tree import SplayTree, SplayNode
 
 
 class CycleUtilsProvider:

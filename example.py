@@ -1,10 +1,8 @@
-from re import M
-from numpy import kaiser
 from sage.all import Permutation
-from MutableLabelledMap import MutableLabelledMap
-from MapGenerator import MapGenerator
-from Banner import bannerExampleStart, bannerExampleEnd, mapBanner
-from DynamicPlanarMapShow import DynamicPlanarMapShow
+from mutable_labelled_map import MutableLabelledMap
+from map_generator import MapGenerator
+from banner import bannerExampleStart, bannerExampleEnd, mapBanner
+from dynamic_planar_map_show import DynamicPlanarMapShow
 
 
 class MapExample:

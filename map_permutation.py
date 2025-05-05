@@ -1,5 +1,5 @@
 from sage.all import Permutation
-from MapError import InvalidMapPermutationArgument
+from map_error import InvalidMapPermutationArgument
 import numpy as np
 
 

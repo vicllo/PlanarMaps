@@ -1,5 +1,5 @@
-from PermutationUtilsAbstractor import *
-from MapError import NotImplemented
+from permutation_utils_abstractor import *
+from map_error import NotImplemented
 
 
 class PrimitiveRotatingPermutationUtilsAbstractor(PermutationUtilsAbstractor):

@@ -1,4 +1,4 @@
-from MapDecorator import CheckValid
+from map_decorator import CheckValid
 
 
 @CheckValid

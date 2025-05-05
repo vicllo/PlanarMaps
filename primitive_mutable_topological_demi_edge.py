@@ -1,7 +1,7 @@
 
-from TopologicalDemiEdge import TopologicalDemiEdge
-from MapDecorator import CheckValid
-from MapError import NotImplemented
+from topological_demi_edge import TopologicalDemiEdge
+from map_decorator import CheckValid
+from map_error import NotImplemented
 
 
 class PrimitiveMutableTopologicalDemiEdge(TopologicalDemiEdge):

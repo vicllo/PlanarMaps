@@ -1,4 +1,4 @@
-from LabelledMap import LabelledMap
+from labelled_map import LabelledMap
 
 
 class RootedMap(LabelledMap):

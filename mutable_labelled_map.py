@@ -1,8 +1,8 @@
-from LabelledMap import *
+from labelled_map import *
 from sage.all import Permutation  # Import sage library
-from MutableTopologicalDemiEdge import *
-from RotatingPermutationUtilsAbstractor import RotatingPermutationUtilsAbstractor
-from RotatingPermutation import RotatingPermutation
+from mutable_topological_demi_edge import *
+from rotating_permutation_utils_abstractor import RotatingPermutationUtilsAbstractor
+from rotating_permutation import RotatingPermutation
 
 
 class MutableLabelledMap(LabelledMap):
