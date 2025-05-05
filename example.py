@@ -255,7 +255,7 @@ class MapExample:
         for _ in range(p - 1):
             A = A.copyOn(B)[1][0]
             A = A.addEdgeAfter()
-        A.delete()
+        A.contract()
 
         return myMap
 
