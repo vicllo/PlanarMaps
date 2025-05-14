@@ -417,7 +417,7 @@ class MutableLabelledMap(LabelledMap):
         """
         otherDemiEdge = self.alpha(demiEdge)
 
-        if demiEdge != self.q:
+        if demiEdge != self.q or otherDemiEdge != self.q-1:
             self.labelToTheEnd([demiEdge, otherDemiEdge])
             self._BruteDeleteEdge(self.q)
             return
