@@ -3,17 +3,19 @@
 def CheckValid(cls):
     """
     INPUT:
-        cls a class
+        -``cls`` ; a class
 
     OUTPUT:
-        the same class but with a check before each method 
+        The same class but with a check before each method 
 
     EXAMPLES::
 
+        sage: from map_decorator import CheckValid
+        sage: from topological_demi_edge import TopologicalDemiEdge
         sage: CheckValid(TopologicalDemiEdge)
-        <class 'TopologicalDemiEdge.TopologicalDemiEdge'>
+        <class 'topological_demi_edge.TopologicalDemiEdge'>
 
-    .. NOTE::
+    NOTE:
         Used internaly
     """
     originalMethods = {name: method for name,
