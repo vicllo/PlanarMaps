@@ -6,6 +6,7 @@ from permutation_utils_abstractor import PermutationUtilsAbstractor
 from sage.all import Permutation, Graph  # Import sage library
 from map_permutation import *
 
+
 try:
     import networkx as nx
 except ImportError:
