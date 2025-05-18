@@ -384,7 +384,7 @@ class MutableTopologicalDemiEdge(TopologicalDemiEdge):
         O(log(m)) where m is the number of edge of self.map
         """
 
-        if self.map != otherTopoDemiEdge.map:
+        if self.map is not otherTopoDemiEdge.map:
             raise ValueError(
                 "Cannot mergeNode between two demi edge on different map")
         self.map.mergeNode(self.raw, otherTopoDemiEdge.raw)
