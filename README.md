@@ -35,6 +35,40 @@ After completing the installation, check the file `example.py` for usage example
 
 We also recommend using the latest networkx version, on some old versions problems on the visualization of map may happen.
 
+Below is a more detailled installation process for linux system , first we need to create a working sage virtual environement.
+
+Run the following commands in order:
+
+```sh
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+
+bash Miniforge3-$(uname)-$(uname -m).sh (say yes to all the questions asked)
+```
+
+Close your terminal and open a new one , now choose your python version for sage denoted by X, here we will choose X=3.12, then run the following:
+
+```
+conda create -n sage sage python=3.12
+```
+
+It will take some time, when it is done you can activate the sage environment by running:
+
+```sh
+conda activate sage
+```
+
+Now it is time to get the library and run the example file, enter the following commands in order:
+
+```sh
+git clone https://github.com/vicllo/PlanarMaps
+
+cd PlanarMaps
+
+conda activate sage
+
+python example.py
+```
+
 ---
 
 ## Overview
