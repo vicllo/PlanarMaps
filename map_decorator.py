@@ -1,22 +1,28 @@
+"""Define the internal CheckValid function."""
+
+from typing import Type
 
 
-def CheckValid(cls):
+def CheckValid(cls: Type) -> Type:
     """
     INPUT:
+
         -``cls`` ; a class
 
     OUTPUT:
-        The same class but with a check before each method 
+
+        The same class but with a check before each method
 
     EXAMPLES::
 
-        sage: from map_decorator import CheckValid
-        sage: from topological_demi_edge import TopologicalDemiEdge
+        sage: from sage.graphs.maps.map_decorator import CheckValid
+        sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
         sage: CheckValid(TopologicalDemiEdge)
-        <class 'topological_demi_edge.TopologicalDemiEdge'>
+        <class 'sage.graphs.maps.topological_demi_edge.TopologicalDemiEdge'>
 
     NOTE:
-        Used internaly
+
+        Used internally
     """
     originalMethods = {name: method for name,
                        method in cls.__dict__.items() if callable(method)}

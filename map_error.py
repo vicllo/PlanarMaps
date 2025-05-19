@@ -1,4 +1,5 @@
-# This file contain some custom error used in our project
+"""Define some custom errors used in our library."""
+
 
 class InvalidMapPermutationArgumentError(Exception):
     """
@@ -11,10 +12,9 @@ class InvalidMapPermutationArgumentError(Exception):
 
         EXAMPLES::
 
-            sage: from map_error import InvalidMapPermutationArgumentError
+            sage: from sage.graphs.maps.map_error import InvalidMapPermutationArgumentError
             sage: InvalidMapPermutationArgumentError()
             InvalidMapPermutationArgumentError('Invalid argument: The argument given must be Permutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.')
-
         """
         super().__init__("Invalid argument: The argument given must be Permutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.")
 
@@ -30,10 +30,9 @@ class InvalidSwapPermutationArgumentError(Exception):
 
         EXAMPLES::
 
-            sage: from map_error import InvalidSwapPermutationArgumentError
+            sage: from sage.graphs.maps.map_error import InvalidSwapPermutationArgumentError
             sage: InvalidSwapPermutationArgumentError()
             InvalidSwapPermutationArgumentError('Invalid argument for swap permutation')
-
         """
         super().__init__("Invalid argument for swap permutation")
 
@@ -51,15 +50,14 @@ class NotImplementedError(Exception):
         Initialise the NotImplementedError.
 
         INPUT:
+
         -``x`` ; the object on which the method isn't defined
 
         EXAMPLES::
 
-            sage: from map_error import NotImplementedError
+            sage: from sage.graphs.maps.map_error import NotImplementedError
             sage: NotImplementedError(2)
             NotImplementedError("This  method isn't implemented for the class <class 'sage.rings.integer.Integer'> ")
-
-
         """
         super().__init__(
             f"This  method isn't implemented for the class {x.__class__} ")
@@ -79,10 +77,9 @@ class TODOError(Exception):
 
         EXAMPLES::
 
-            sage: from map_error import TODOError
+            sage: from sage.graphs.maps.map_error import TODOError
             sage: TODOError()
             TODOError('Todo')
-
         """
         super().__init__(
-            f"Todo")
+            "Todo")

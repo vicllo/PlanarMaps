@@ -1,4 +1,7 @@
+"""Define some internal utils tools used in LabelledMap and MutableLabelledMap."""
+
 import numpy as np
+from map_permutation import MapPermutation
 
 
 class PermutationUtilsAbstractor:
@@ -8,20 +11,23 @@ class PermutationUtilsAbstractor:
     this class and is call RotatingUtilsAbstractor
     """
 
-    def __init__(self, permutation) -> None:
+    def __init__(self, permutation: MapPermutation) -> None:
         """
         Init the PermutationUtilsAbstractor
+
         INPUT:
+
         - ``permutation`` -- MapPermutation
 
         EXAMPLES:
 
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
 
         NOTE:
+
             O(n) where n is the size of permutation
         """
         cycles = permutation.to_cycles()
@@ -38,41 +44,46 @@ class PermutationUtilsAbstractor:
             for i in c:
                 self._cycleIndexes[i] = j
 
-    def numberInCycle(self, index):
+    def numberInCycle(self, index: int) -> int:
         """
         INPUT:
+
         - ``index`` -- int
 
         OUTPUT:
+
             The size of the cycle containing index
 
         EXAMPLES::
 
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
             sage: tAbstr.numberInCycle(2)
             3
 
         NOTE:
+
             O(1)
         """
         return self._cyclesLength[self._cycleIndexes[index]]
 
-    def sameCycle(self, i, j):
+    def sameCycle(self, i: int, j: int) -> bool:
         """
         INPUT:
+
         - ``i`` -- int
         - ``j`` -- int
 
         OUTPUT:
+
             A boolean indicating if i and j are on the same cycle
 
         EXAMPLES::
 
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
             sage: tAbstr.sameCycle(2,3)
@@ -81,11 +92,12 @@ class PermutationUtilsAbstractor:
             True
 
         NOTE:
+
             O(1)
         """
         return bool(self._cycleIndexes[i] == self._cycleIndexes[j])
 
-    def numberOfCycles(self):
+    def numberOfCycles(self) -> int:
         """
         OUTPUT:
 
@@ -94,19 +106,20 @@ class PermutationUtilsAbstractor:
 
         EXAMPLES::
 
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
             sage: tAbstr.numberOfCycles()
             2
 
         NOTE:
+
             O(1)
         """
         return self._numberOfCycles
 
-    def numberOfFixedPoint(self):
+    def numberOfFixedPoint(self) -> int:
         """
         OUTPUT:
 
@@ -114,29 +127,32 @@ class PermutationUtilsAbstractor:
 
         EXAMPLES::
 
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
             sage: tAbstr.numberOfFixedPoint()
             1
 
         NOTE:
+
             O(1)
         """
         return self._numberOfFixedPoint
 
-    def checkTwoInTheSameCycle(self, listIndexes):
+    def checkTwoInTheSameCycle(self, listIndexes: list[int]) -> bool:
         """
         INPUT:
+
         - ``listIndexes`` -- List[int]
 
         OUTPUT:
             A boolean indicating if there are two indices in listIndexes on the sameCycle
 
         EXAMPLES::
-            sage: from map_permutation import MapPermutation
-            sage: from permutation_utils_abstractor import PermutationUtilsAbstractor
+
+            sage: from sage.graphs.maps.map_permutation import MapPermutation
+            sage: from sage.graphs.maps.permutation_utils_abstractor import PermutationUtilsAbstractor
             sage: t = MapPermutation([(1,2,4)])
             sage: tAbstr = PermutationUtilsAbstractor(t)
             sage: tAbstr.checkTwoInTheSameCycle([1,2,3])
@@ -145,6 +161,7 @@ class PermutationUtilsAbstractor:
             False
 
         NOTE:
+
             O(len(listIndexes))
         """
         checkSet = set()

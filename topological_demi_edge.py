@@ -1,31 +1,46 @@
-# from labelled_map import LabelledMap
-from map_decorator import CheckValid
+"""Define the TopologicalDemiEdge class, an abstraction meant to represent a demi-edge of a map in a more user-friendly way than raw indices."""
+
+from typing import TYPE_CHECKING, Self
+if TYPE_CHECKING:
+    # TYPE_CHECKING is always False at runtime, but True when when type checking
+    from labelled_map import LabelledMap
+    # otherwise, we might get circular imports
 
 
-@CheckValid
 class TopologicalDemiEdge():
+    """This class is a an abstraction meant to represent the demi edge of a map in a more user-friendly way than simple indexes. It is more related to the "topological structure" of the map than the raw index."""
+
+    _lmap: "LabelledMap"
+
     def __init__(self, lmap: "LabelledMap", index: int):
         r"""
         This class is a an abstraction meant to represent the demi edge of a map in a more user-friendly way
         than simple indexes. It is more related to the "topological structure" of the map than the raw index.
 
         INPUT:
+
         - ``lmap`` -- LabelledMap: The map to which the demi-edge is bind
         - ``index`` -- int: The index associated to the demi-edge
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge 
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3)
             X(3)
 
         NOTE:
+
             O(1)
         """
         self._lmap = lmap
         self._index = index
         self._isValid = True
+
+    def _checkValid(self) -> None:
+        """Raise an error is self isn't valid anymore."""
+        if not self._isValid:
+            raise ValueError("This TopologicalDemiEdge isn't valid anymore.")
 
     @property
     def raw(self) -> int:
@@ -34,13 +49,14 @@ class TopologicalDemiEdge():
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
 
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).raw
             3
 
         NOTE:
+
             O(1)
         """
         return self.getIndex()
@@ -52,235 +68,246 @@ class TopologicalDemiEdge():
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
 
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).map
             Labelled map | Sigma : [3, 2, 1, 4], Alpha : [2, 1, 4, 3]
 
         NOTE:
+
             O(1)
         """
 
         return self.getMap()
 
     @property
-    def c(self) -> "TopologicalDemiEdge":
+    def c(self) -> Self:
         """
         The other TopologicalDemiEdge on the edge on which self is on (equivalent to alpha(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).c
             X(4)
 
         NOTE:
+
             O(1)
         """
         return self.nextOnEdge()
 
     @property
-    def f(self) -> "TopologicalDemiEdge":
+    def f(self) -> Self:
         """
         The next TopologicalDemiEdge on the face on which self is on (equivalent to phi(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 2).f
             X(3)
 
         NOTE:
+
             O(1)
         """
         return self.nextOnFace()
 
     @property
-    def n(self) -> "TopologicalDemiEdge":
+    def n(self) -> Self:
         """
         The next TopologicalDemiEdge on the node on which self is on (equivalent to sigma(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).n
             X(1)
 
         NOTE:
+
             O(1)
         """
         return self.nextOnNode()
 
     @property
-    def pf(self) -> "TopologicalDemiEdge":
+    def pf(self) -> Self:
         """
         The previous TopologicalDemiEdge on the face on which self is on (equivalent to phi^-1(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).pf
             X(2)
 
         NOTE:
+
             O(1)
         """
         return self.prevOnFace()
 
     @property
-    def pn(self) -> "TopologicalDemiEdge":
+    def pn(self) -> Self:
         """
         The previous TopologicalDemiEdge on the node on which self is on (equivalent to sigma(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 1).n
             X(3)
 
         NOTE:
+
             O(1)
         """
         return self.prevOnNode()
 
-    @CheckValid
     def getIndex(self) -> int:
         """
         Returns the raw index associated to the demi-edge to which self is bind.
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
 
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).getIndex()
             3
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self._index
 
-    @CheckValid
     def getMap(self) -> "LabelledMap":
         """
         Returns the map to which self is bind.
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
-
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).getMap()
             Labelled map | Sigma : [3, 2, 1, 4], Alpha : [2, 1, 4, 3]
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self._lmap
 
-    @CheckValid
-    def nextOnEdge(self) -> "TopologicalDemiEdge":
+    def nextOnEdge(self) -> Self:
         """
         Returns the other TopologicalDemiEdge on the edge on which self is on (equivalent to alpha(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).nextOnEdge()
             X(4)
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
 
         return self.map.getTopologicalDemiEdge(self.map.alpha(self.raw))
 
-    @CheckValid
-    def nextOnFace(self) -> "TopologicalDemiEdge":
+    def nextOnFace(self) -> Self:
         """
         Return the next TopologicalDemiEdge on the face on which self is on (equivalent to phi(self)).
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 2).nextOnFace()
             X(3)
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self.map.getTopologicalDemiEdge(self.map.phi(self.raw))
 
-    @CheckValid
-    def nextOnNode(self) -> "TopologicalDemiEdge":
+    def nextOnNode(self) -> Self:
         """
         Return the next TopologicalDemiEdge on the node on which self is on (equivalent to sigma(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).nextOnNode()
             X(1)
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self.map.getTopologicalDemiEdge(self.map.sigma(self.raw))
 
-    @CheckValid
-    def prevOnFace(self) -> "TopologicalDemiEdge":
+    def prevOnFace(self) -> Self:
         """
         Return the previous TopologicalDemiEdge on the face on which self is on (equivalent to phi^-1(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 3).prevOnFace()
             X(2)
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self.map.getTopologicalDemiEdge(
             self.map.phi.inverseApply(self.raw))
 
-    @CheckValid
-    def prevOnNode(self) -> "TopologicalDemiEdge":
+    def prevOnNode(self) -> Self:
         """
         The previous TopologicalDemiEdge on the node on which self is on (equivalent to sigma(self))
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: lm = LabelledMap(Permutation([(1,3), (2,), (4,)]), Permutation([(1,2), (3,4)]))
             sage: TopologicalDemiEdge(lm, 1).prevOnNode()
             X(3)
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return self.map.getTopologicalDemiEdge(
             self.map.sigma.inverseApply(self.raw))
 
-    @CheckValid
-    def face(self) -> list["TopologicalDemiEdge"]:
+    def face(self) -> list[Self]:
         """
         Return the list containing all the demi-edges on the same face as self.
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: lm = LabelledMap(sigma=sigma,alpha=alpha)
@@ -289,21 +316,22 @@ class TopologicalDemiEdge():
             [X(1), X(3), X(2), X(5), X(4), X(7), X(11), X(16), X(18), X(13), X(12), X(15), X(14), X(19), X(20), X(17), X(9), X(8), X(10), X(6)]
 
         NOTE:
+
             O(k), where k is the number of demi-edges on the face
         """
+        self._checkValid()
         lst = []
         for e in self.map.demiEdgesOnTheSameFace(self.raw):
             lst.append(self.map.getTopologicalDemiEdge(e))
         return lst
 
-    @CheckValid
-    def node(self) -> list["TopologicalDemiEdge"]:
+    def node(self) -> list[Self]:
         """
         Return the list containing all the demi-edges on the same node as self.
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: lm = LabelledMap(sigma=sigma,alpha=alpha)
@@ -312,8 +340,10 @@ class TopologicalDemiEdge():
             [X(1), X(2), X(4)]
 
         NOTE:
+
             O(k), where k is the number of demi-edges on the node
         """
+        self._checkValid()
 
         lst = []
         for e in self.map.demiEdgesOnTheSameNode(self.raw):
@@ -321,17 +351,17 @@ class TopologicalDemiEdge():
 
         return lst
 
-    @CheckValid
-    def isOnSameFace(self, otherTopologicalDemiEdge: "TopologicalDemiEdge") -> bool:
+    def isOnSameFace(self, otherTopologicalDemiEdge: Self) -> bool:
         """
         Return whether self and otherTopologicalDemiEdge are on the same face.
 
         INPUT:
+
         - ``otherTopologicalDemiEdge`` -- TopologicalDemiEdge: a demi-edge on the same map as self
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: lm = LabelledMap(sigma=sigma, alpha=alpha)
@@ -341,22 +371,24 @@ class TopologicalDemiEdge():
             True
 
         NOTE:
+
             O(1)
         """
+        self._checkValid()
         return bool(self.map.areOnTheSameFace(
             self.raw, otherTopologicalDemiEdge.raw))
 
-    @CheckValid
-    def isOnSameNode(self, otherTopologicalDemiEdge: "TopologicalDemiEdge") -> bool:
+    def isOnSameNode(self, otherTopologicalDemiEdge: Self) -> bool:
         """
         Return whether self and otherTopologicalDemiEdge are on the same node.
 
         INPUT:
+
         - ``otherTopologicalDemiEdge`` -- TopologicalDemiEdge: a demi-edge on the same map as self
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: sigma = Permutation([2, 4, 3, 1, 5, 7, 8, 6, 11, 10, 12, 14, 16, 9, 15, 13, 19, 18, 17, 20])
             sage: alpha = Permutation([3, 5, 1, 6, 2, 4, 9, 10, 7, 8, 13, 15, 11, 17, 12, 18, 14, 16, 20, 19])
             sage: lm = LabelledMap(sigma=sigma, alpha=alpha)
@@ -365,9 +397,11 @@ class TopologicalDemiEdge():
             sage: B.isOnSameNode(A)
             False
 
-    .. NOTE:
+        NOTE:
+
             O(1)
         """
+        self._checkValid()
 
         return bool(self.map.areOnTheSameNode(
             self.raw, otherTopologicalDemiEdge.raw))
@@ -378,10 +412,11 @@ class TopologicalDemiEdge():
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: TopologicalDemiEdge(None,5)._invalidate()
 
-    .. NOTE:
+        NOTE:
+
             O(1)
         """
         self._isValid = False
@@ -392,9 +427,9 @@ class TopologicalDemiEdge():
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: TopologicalDemiEdge(None,5)
-            X(5) 
+            X(5)
         """
         return f"X({self.raw})"
 
@@ -402,34 +437,37 @@ class TopologicalDemiEdge():
         """
         Change the index of self
 
-        INPUT: 
+        INPUT:
+
         - ``newIndex`` -- int
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: U  = TopologicalDemiEdge(None,5)
             sage: U
             X(5)
             sage: U._setIndex(22)
             sage: U
-            X(22) 
+            X(22)
 
         NOTE:
+
             O(1)
         """
         self._index = newIndex
 
-    def _swapIndex(self, otherTopologicalDemiEdge: "TopologicalDemiEdge") -> None:
+    def _swapIndex(self, otherTopologicalDemiEdge: Self) -> None:
         """
         Swap indexes with otherTopologicalDemiEdge.
 
-        INPUT: 
+        INPUT:
+
         - ``otherTopologicalDemiEdge`` -- TopologicalDemiEdge
 
         EXAMPLES::
 
-            sage: from topological_demi_edge import TopologicalDemiEdge
+            sage: from sage.graphs.maps.topological_demi_edge import TopologicalDemiEdge
             sage: U  = TopologicalDemiEdge(None,5)
             sage: V  = TopologicalDemiEdge(None,10)
             sage: U,V
@@ -439,6 +477,7 @@ class TopologicalDemiEdge():
             (X(10), X(5))
 
         NOTE:
+
             O(1)
         """
         tmp = self.raw
