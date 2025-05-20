@@ -35,8 +35,6 @@ class MutableLabelledMap(LabelledMap):
 
     """
 
-    topologicalMap: dict[int, MutableTopologicalDemiEdge]
-
     def __init__(
         self,
         sigma: Permutation | None = None,
