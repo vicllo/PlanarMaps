@@ -45,7 +45,7 @@ curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Mi
 bash Miniforge3-$(uname)-$(uname -m).sh (say yes to all the questions asked)
 ```
 
-Close your terminal and open a new one , now choose your python version for sage denoted by X, here we will choose X=3.12, then run the following:
+Once they finished running, close your terminal and open a new one , now choose your python version for sage denoted by X, here we will choose X=3.12, then run the following:
 
 ```
 conda create -n sage sage python=3.12
