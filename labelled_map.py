@@ -86,8 +86,6 @@ class LabelledMap:
     q: The number of demi edges of the map
     """
 
-    topologicalMap: dict[int, TopologicalDemiEdge]
-
     def __init__(
         self,
         sigma: Permutation | MapPermutation | None = None,
