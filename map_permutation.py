@@ -1,8 +1,7 @@
-from typing import Any
-from sage.all import Permutation
-from map_error import InvalidMapPermutationArgumentError
-from sage.rings.integer import Integer
 import numpy as np
+from sage.all import Permutation
+
+from map_error import InvalidMapPermutationArgumentError
 
 
 class MapPermutation:
@@ -35,7 +34,7 @@ class MapPermutation:
         def isInt(x) -> bool:
             try:
                 _ = int(x)
-            except Exception:
+            except (TypeError, ValueError):
                 return False
             else:
                 return True
@@ -413,7 +412,7 @@ class MapPermutation:
         """
         return self.size()
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         INPUT:
 

@@ -1,10 +1,9 @@
 """Define the RotatingPermutation class, with fast mutable operations."""
+from sage.all import Permutation
 
 from cycle_utils_provider import CycleUtilsProvider
 from cyclic_chained_list import CyclicChainedList
-from sage.all import Permutation
 from map_permutation import MapPermutation
-from typing import Any
 
 
 class RotatingPermutation(MapPermutation):
@@ -49,7 +48,7 @@ class RotatingPermutation(MapPermutation):
 
             O(nlog(n)) where n is the size of the permutation
         """
-        if isinstance(lst, Permutation) or isinstance(lst, MapPermutation):
+        if isinstance(lst, (Permutation, MapPermutation)):
             self.__init__(list(lst))
             return
 
@@ -149,7 +148,7 @@ class RotatingPermutation(MapPermutation):
                         cnt += 1
                     self._numCycles += 1
                     self._numberOfFixedPoint += cnt == 1
-        except ValueError as e:
+        except ValueError:
             raise
         except BaseException:
             raise ValueError("Invalid argument: The argument given must be Permutation or MapPermutation or a non empty list of integers representing the permutation or a non empty list of tuples representing the cycles of the permutations or a positive integer.")
@@ -254,7 +253,7 @@ class RotatingPermutation(MapPermutation):
                 "Cannot delete an element from a Permutation of size 1")
         if index != int(index) or index <= 0 or index > self.size():
             raise ValueError(
-                "{index} isn't a strictly positive integer <= self.size()")
+                f"{index} isn't a strictly positive integer <= self.size()")
 
         nPrev = self.size()
         node = self.getNode(index)
@@ -311,7 +310,7 @@ class RotatingPermutation(MapPermutation):
             O(1)
         """
         if i != int(i) or i <= 0:
-            raise ValueError("{i} isn't a positive integer")
+            raise ValueError(f"{i} isn't a positive integer")
         try:
             return self._permCycle[i].prev.val
         except BaseException:
@@ -402,8 +401,8 @@ class RotatingPermutation(MapPermutation):
         assert startIndex != endIndex
         assert self.sameCycle(startIndex, endIndex)
 
-        tempNewIndex = self._n+1
-        tempNewIndexOther = self._n+2
+        tempNewIndex = self._n + 1
+        tempNewIndexOther = self._n + 2
         self.cutAdd(startIndex, endIndex, tempNewIndex, tempNewIndexOther)
 
         self.deleteLastKIndex(4)
@@ -607,9 +606,9 @@ class RotatingPermutation(MapPermutation):
             for e in c:
                 testSet.add(e)
                 if e <= self.size() or e <= 0 or e != int(e) or e > self.size() + N:
-                    raise ValueError("{cycles} isn't valid")
+                    raise ValueError(f"{cycles} isn't valid")
         if len(testSet) != N:
-            raise ValueError("{cycles} isn't valid")
+            raise ValueError(f"{cycles} isn't valid")
 
         self.stretch(N)
 
@@ -824,11 +823,11 @@ class RotatingPermutation(MapPermutation):
         """
         if index != int(index) or index <= 0 or index > self.size():
             raise ValueError(
-                "{index} isn't a strictly positive integer <= self.size()")
+                f"{index} isn't a strictly positive integer <= self.size()")
 
         try:
             node = self._permCycle[index]
-        except BaseException:
+        except (KeyError, AttributeError):
             node = CyclicChainedList(index)
             self._permCycle[index] = node
         return node
@@ -932,7 +931,7 @@ class RotatingPermutation(MapPermutation):
         """
         if index != int(index) or index <= 0 or index > self.size():
             raise ValueError(
-                "{index} isn't a strictly positive integer <= self.size()")
+                f"{index} isn't a strictly positive integer <= self.size()")
 
         node = self.getNode(index)
         prevIndex = node.prev.val
@@ -1017,7 +1016,7 @@ class RotatingPermutation(MapPermutation):
             O(log(n))
         """
         if i <= 0 or j <= 0 or i != int(i) or j != int(j):
-            raise ValueError("{i} or {j} isn't a strictly positive integer")
+            raise ValueError(f"{i} or {j} isn't a strictly positive integer")
 
         return self.provider.sameCycle(i, j)
 
@@ -1153,7 +1152,7 @@ class RotatingPermutation(MapPermutation):
             O(1)
         """
         if i != int(i) or i <= 0:
-            raise ValueError("{i} isn't a positive integer")
+            raise ValueError(f"{i} isn't a positive integer")
         try:
             return self._permCycle[i].nxt.val
         except BaseException:
@@ -1180,7 +1179,7 @@ class RotatingPermutation(MapPermutation):
         """
         return self._numberOfFixedPoint
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         INPUT:
 
