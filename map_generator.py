@@ -1,10 +1,12 @@
-from collections import deque
 import random
+from collections import deque
+
 import numpy as np
+
 from custom_swap import CustomSwap
 from map_permutation import MapPermutation
-from rooted_map import RootedMap
 from primitive_mutable_labelled_map import PrimitiveMutableLabelledMap
+from rooted_map import RootedMap
 from topological_demi_edge import TopologicalDemiEdge
 
 
@@ -85,8 +87,8 @@ class MapGenerator:
 
             Complexity is O(n^2)
         """
-        adj = list(tuple((j + i) % n + 1 for j in range(1, n))
-                   for i in range(n))
+        adj = [tuple((j + i) % n + 1 for j in range(1, n))
+               for i in range(n)]
         m = RootedMap(
             adj=adj,
             trust=self._production,
@@ -297,7 +299,6 @@ class MapGenerator:
         if seed is not None:
             rng.seed(int(seed))
 
-        sigma = tree.sigma
         alpha = tree.alpha
 
         p = deque()
